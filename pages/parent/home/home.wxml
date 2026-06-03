@@ -68,6 +68,26 @@
   <view wx:if="{{activePanel === 'courses'}}" class="qf-panel parent-panel">
     <view class="qf-section">我的课程</view>
     <view class="qf-card tight">
+      <scroll-view wx:if="{{weekRows.length}}" class="qf-week-scroll home-week-scroll" scroll-x enhanced show-scrollbar="{{true}}">
+        <view class="qf-week-table">
+          <view class="qf-week-row head">
+            <view class="qf-week-time">时间</view>
+            <view wx:for="{{weekDays}}" wx:key="*this" class="qf-week-cell">{{item}}</view>
+          </view>
+          <view wx:for="{{weekRows}}" wx:key="time" class="qf-week-row">
+            <view class="qf-week-time">{{item.time}}</view>
+            <view wx:for="{{item.cells}}" wx:for-item="cell" wx:key="day" class="qf-week-cell">
+              <block wx:if="{{cell.sessions.length}}">
+                <view wx:for="{{cell.sessions}}" wx:for-item="session" wx:key="id" class="qf-week-course" data-id="{{session.id}}" bindtap="goSession">
+                  <text class="qf-week-title">{{session.courseName}}</text>
+                  <text class="qf-week-meta">{{session.lesson}}</text>
+                </view>
+              </block>
+              <text wx:else class="qf-week-empty">空</text>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
       <view wx:if="{{dashboard.courses.length}}" class="qf-list">
         <view wx:for="{{dashboard.courses}}" wx:key="id" class="qf-list-item">
           <view class="qf-row">

@@ -824,7 +824,8 @@ const mockApi = {
           id: course.id,
           name: course.name,
           studentCount: course.studentIds.length,
-          students: getCourseStudents(course.id)
+          students: getCourseStudents(course.id),
+          studentsText: getCourseStudents(course.id).map((student) => student.name).join('、') || '暂无学生'
         }))
       };
     }));

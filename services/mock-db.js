@@ -62,6 +62,13 @@ const db = {
       role: 'teacher',
       linkedId: 'teacher_002',
       nickname: '王思琪老师'
+    },
+    {
+      id: 'account_teacher_003',
+      phone: '13800000013',
+      role: 'teacher',
+      linkedId: 'teacher_003',
+      nickname: '李景澜老师'
     }
   ],
 
@@ -110,10 +117,10 @@ const db = {
       fullName: '周明远',
       name: '周明远老师',
       phone: '13800000002',
-      subject: '生物 / 数学',
-      subjects: ['生物', '数学'],
-      courseIds: ['course_bio_001', 'course_math_001'],
-      title: '主讲老师',
+      subject: '生物',
+      subjects: ['生物'],
+      courseIds: ['course_bio_001'],
+      title: '生物老师',
       status: 'active'
     },
     {
@@ -125,6 +132,17 @@ const db = {
       subjects: ['英语'],
       courseIds: ['course_eng_001'],
       title: '英语老师',
+      status: 'active'
+    },
+    {
+      id: 'teacher_003',
+      fullName: '李景澜',
+      name: '李景澜老师',
+      phone: '13800000013',
+      subject: '数学',
+      subjects: ['数学'],
+      courseIds: ['course_math_001'],
+      title: '数学老师',
       status: 'active'
     }
   ],
@@ -160,7 +178,7 @@ const db = {
       name: '初二数学A班',
       subject: '数学',
       grade: '初二',
-      mainTeacherId: 'teacher_001',
+      mainTeacherId: 'teacher_003',
       studentIds: ['stu_001', 'stu_002'],
       defaultClassroomId: 'room_12',
       status: 'active'
@@ -200,8 +218,8 @@ const db = {
       name: '初二数学A班',
       subject: '数学',
       grade: '初二',
-      teacherId: 'teacher_001',
-      mainTeacherId: 'teacher_001',
+      teacherId: 'teacher_003',
+      mainTeacherId: 'teacher_003',
       classroomId: 'room_12',
       defaultClassroomId: 'room_12',
       studentIds: ['stu_001', 'stu_002'],
@@ -276,7 +294,7 @@ const db = {
       date: '2026-06-03',
       startTime: '20:10',
       endTime: '21:40',
-      teacherId: 'teacher_001',
+      teacherId: 'teacher_003',
       classroomId: 'room_12',
       studentIds: ['stu_001', 'stu_002'],
       status: 'finished',
@@ -295,7 +313,7 @@ const db = {
       date: '2026-06-10',
       startTime: '20:10',
       endTime: '21:40',
-      teacherId: 'teacher_001',
+      teacherId: 'teacher_003',
       classroomId: 'room_12',
       studentIds: ['stu_001', 'stu_002'],
       status: 'scheduled',
@@ -398,7 +416,7 @@ const db = {
     {
       id: 'feedback_003',
       studentId: 'stu_002',
-      teacherId: 'teacher_001',
+      teacherId: 'teacher_003',
       courseId: 'course_math_001',
       courseSessionId: 'lesson_math_001_01',
       text: '一次函数图像题审题有进步，定义域限制仍要先写出来。',

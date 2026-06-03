@@ -33,7 +33,7 @@ authMode: 'mock' // mock | wechatPhone | sms | http
 核心 mock 数据在 `services/mock-db.js`：
 
 - `phoneAccounts`：手机号到老师、学生/家长、管理员档案的映射。
-- `students` / `teachers` / `courses` / `courseSessions`：课程与课次基础数据。
+- `students` / `teachers` / `courses` / `courseSessions`：课程与课次基础数据；老师按“一名老师对应一个学科”建模。
 - `lessonFeedbacks`：老师上传给学生的课后反馈。
 - `mediaFiles`：图片、语音元信息，包含 `storageKey`、`retentionUntil` 和下载权限。
 - `classrooms` / `liveRooms`：15 间教室和 ClassIn 直播入口占位。
@@ -56,11 +56,11 @@ authMode: 'mock' // mock | wechatPhone | sms | http
 - `pages/course-detail`：课程详情/课次详情。老师在课次学生名单里上传或查看反馈。
 - `pages/wrong-record-editor`：历史文件名保留，页面文案和功能已改为“上传课后反馈”。
 - `pages/parent/home`：学生/家长“我的学习”首页。
-- `pages/parent/courses`：当前学生课程和课次反馈数量。
+- `pages/parent/courses`：当前学生课程、传统周课程表和课次反馈数量。
 - `pages/parent/exercises`：老师反馈列表，支持按课程筛选。
 - `pages/file-preview`：媒体预览。图片可查看/下载，语音只能播放。
 - `pages/live-player`：ClassIn 直播入口占位。
-- `pages/admin/home` / `pages/admin/manage`：课程关系、手机号映射、反馈记录、直播配置占位。
+- `pages/admin/home` / `pages/admin/manage`：传统课程表、课程关系、学生详情、课程反馈记录、手机号映射和直播配置占位；数据多时用下拉选择和姓名/手机号搜索缩小范围。
 
 ## 真实上线前需要甲方提供
 

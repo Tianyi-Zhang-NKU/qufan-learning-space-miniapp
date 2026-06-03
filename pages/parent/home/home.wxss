@@ -10,7 +10,7 @@
 .home-summary-strip,
 .home-action-list,
 .parent-panel {
-  max-width: 660rpx;
+  max-width: 620rpx;
   margin-left: auto;
   margin-right: auto;
 }
@@ -67,28 +67,29 @@
 .home-action-list {
   position: relative;
   z-index: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 30rpx;
-  margin-bottom: 58rpx;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24rpx;
+  margin-bottom: 56rpx;
 }
 
 .home-action-card {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 158rpx;
-  padding: 34rpx 36rpx;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 154rpx;
+  padding: 30rpx 26rpx;
   text-align: left;
-  border: 1rpx solid rgba(83, 117, 91, 0.2);
-  border-radius: 32rpx;
+  border: 2rpx solid rgba(83, 117, 91, 0.22);
+  border-radius: 30rpx;
   color: #173a32;
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.78), rgba(255, 247, 232, 0.46)),
     rgba(255, 250, 238, 0.66);
   -webkit-backdrop-filter: blur(24rpx);
   backdrop-filter: blur(24rpx);
-  box-shadow: 0 18rpx 48rpx rgba(74, 92, 68, 0.14);
+  box-shadow: 0 18rpx 48rpx rgba(74, 92, 68, 0.18);
 }
 
 .home-action-card.active {
@@ -97,7 +98,7 @@
   background:
     linear-gradient(145deg, #f97316, #d95b11),
     #f97316;
-  box-shadow: 0 22rpx 58rpx rgba(249, 115, 22, 0.3);
+  box-shadow: 0 24rpx 58rpx rgba(249, 115, 22, 0.38);
 }
 
 .home-action-copy {
@@ -106,12 +107,12 @@
 }
 
 .home-action-card .qf-entry-title {
-  font-size: 32rpx;
+  font-size: 30rpx;
 }
 
 .home-action-card .qf-entry-sub {
   margin-top: 12rpx;
-  font-size: 23rpx;
+  font-size: 22rpx;
 }
 
 .home-action-card.active .qf-entry-sub {
@@ -120,6 +121,7 @@
 
 .home-action-chip {
   flex: 0 0 auto;
+  margin-top: 20rpx;
   min-width: 82rpx;
   min-height: 48rpx;
   padding: 0 18rpx;
@@ -149,4 +151,8 @@
 
 .parent-panel .qf-btn.full {
   margin-top: 28rpx;
+}
+
+.home-week-scroll {
+  margin-bottom: 28rpx;
 }

@@ -767,7 +767,7 @@ navigator {
 
 /* Relaxed mobile rhythm: keep home cards from crowding each other. */
 .qf-page {
-  padding: 68rpx 44rpx 220rpx;
+  padding: 64rpx 42rpx 240rpx;
 }
 
 .qf-top {
@@ -810,20 +810,22 @@ navigator {
 }
 
 .qf-entry-grid {
-  max-width: 660rpx;
-  grid-template-columns: 1fr;
-  gap: 30rpx;
-  margin: 46rpx auto 58rpx;
+  max-width: 620rpx;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24rpx;
+  margin: 42rpx auto 56rpx;
 }
 
 .qf-entry-card {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 154rpx;
-  padding: 34rpx 36rpx;
+  min-height: 148rpx;
+  padding: 30rpx 28rpx;
   text-align: left;
-  border-radius: 32rpx;
+  border-width: 2rpx;
+  border-radius: 30rpx;
+  box-shadow: 0 18rpx 48rpx rgba(74, 92, 68, 0.18);
 }
 
 .qf-entry-title {
@@ -863,12 +865,126 @@ navigator {
 }
 
 .qf-btn {
-  min-height: 82rpx;
-  padding: 0 34rpx;
-  border-radius: 24rpx;
+  min-height: 86rpx;
+  padding: 0 36rpx;
+  border-width: 2rpx;
+  border-radius: 26rpx;
+  font-weight: 700;
+  box-shadow: 0 20rpx 42rpx rgba(234, 88, 12, 0.38);
 }
 
 .qf-btn.small {
-  min-height: 60rpx;
-  padding: 0 22rpx;
+  min-height: 64rpx;
+  padding: 0 24rpx;
+  border-radius: 22rpx;
+}
+
+.qf-btn.ghost {
+  color: #173a32;
+  border-color: rgba(23, 58, 50, 0.42);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(255, 248, 232, 0.64)),
+    rgba(255, 250, 238, 0.82);
+  box-shadow: 0 14rpx 30rpx rgba(74, 92, 68, 0.18);
+}
+
+.qf-entry-card.active {
+  border-color: rgba(194, 65, 12, 0.62);
+  box-shadow: 0 24rpx 58rpx rgba(249, 115, 22, 0.38);
+}
+
+.qf-week-scroll {
+  position: relative;
+  z-index: 1;
+  max-width: 660rpx;
+  margin: 0 auto 42rpx;
+}
+
+.qf-week-table {
+  width: 1060rpx;
+  overflow: hidden;
+  border: 1rpx solid rgba(83, 117, 91, 0.22);
+  border-radius: 30rpx;
+  background: rgba(255, 250, 238, 0.66);
+  -webkit-backdrop-filter: blur(24rpx);
+  backdrop-filter: blur(24rpx);
+  box-shadow: 0 18rpx 50rpx rgba(74, 92, 68, 0.14);
+}
+
+.qf-week-row {
+  display: grid;
+  grid-template-columns: 128rpx repeat(7, 132rpx);
+  min-height: 104rpx;
+  border-bottom: 1rpx solid rgba(83, 117, 91, 0.14);
+}
+
+.qf-week-row:last-child {
+  border-bottom: 0;
+}
+
+.qf-week-row.head {
+  min-height: 72rpx;
+  color: #173a32;
+  font-weight: 700;
+  background: rgba(214, 230, 190, 0.46);
+}
+
+.qf-week-time,
+.qf-week-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16rpx 12rpx;
+  border-right: 1rpx solid rgba(83, 117, 91, 0.14);
+  color: #1f352e;
+  font-size: 22rpx;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.qf-week-cell:last-child {
+  border-right: 0;
+}
+
+.qf-week-time {
+  color: #506157;
+  font-weight: 650;
+  background: rgba(255, 255, 255, 0.36);
+}
+
+.qf-week-course {
+  width: 100%;
+  min-height: 72rpx;
+  padding: 12rpx;
+  border: 1rpx solid rgba(234, 88, 12, 0.24);
+  border-radius: 18rpx;
+  color: #173a32;
+  background:
+    linear-gradient(145deg, rgba(255, 237, 213, 0.78), rgba(255, 255, 255, 0.56)),
+    rgba(255, 247, 232, 0.82);
+}
+
+.qf-week-course + .qf-week-course {
+  margin-top: 10rpx;
+}
+
+.qf-week-title,
+.qf-week-meta {
+  display: block;
+}
+
+.qf-week-title {
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
+.qf-week-meta {
+  margin-top: 6rpx;
+  color: rgba(45, 75, 64, 0.68);
+  font-size: 19rpx;
+}
+
+.qf-week-empty {
+  color: rgba(45, 75, 64, 0.34);
+  font-size: 20rpx;
 }

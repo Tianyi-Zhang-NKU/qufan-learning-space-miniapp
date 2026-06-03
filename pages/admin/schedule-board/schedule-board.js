@@ -17,7 +17,7 @@ Page({
     teacherIndex: 0,
     classroomIndex: 0,
     form: {
-      courseId: 'course_001',
+      courseId: 'course_bio_001',
       title: '新课次',
       teacherId: 'teacher_001',
       classroomId: 'room_01',

@@ -129,6 +129,11 @@ async function run() {
   assert(db.teachers.length >= 2, 'should model at least 2 teachers');
   assert(db.students.length >= 4, 'should model at least 4 students');
   assert(db.courses.length >= 3, 'should model at least 3 courses');
+  assert(db.teachers.every((teacher) => !teacher.subjects || teacher.subjects.length === 1), 'each teacher should map to one subject');
+  assert(db.courses.every((course) => {
+    const teacher = db.teachers.find((item) => item.id === course.teacherId);
+    return teacher && teacher.subject === course.subject;
+  }), 'course subject should match its teacher subject');
   assert(db.courses.every((course) => db.courseSessions.filter((item) => item.courseId === course.id).length >= 2), 'each course should have at least 2 lessons');
   assert(db.lessonFeedbacks.length >= 3, 'should include lesson feedback samples');
   assert(db.mediaFiles.some((item) => item.type === 'image' && item.downloadable === true), 'image media should be downloadable');
@@ -145,8 +150,9 @@ async function run() {
   Api.setSession(teacherSession);
 
   const teacherCourses = await Api.getTeacherCourses();
-  assert(teacherCourses.courseGroups.length >= 2, 'teacher should see own courses');
+  assert(teacherCourses.courseGroups.length >= 1, 'teacher should see own courses');
   assert(teacherCourses.courseGroups.every((item) => item.teacherId === 'teacher_001'), 'teacher courses should be scoped');
+  assert(teacherCourses.courseGroups.every((item) => item.subject === '生物'), 'teacher courses should stay in one subject');
   const bioCourse = teacherCourses.courseGroups.find((item) => item.id === 'course_bio_001');
   assert(bioCourse && bioCourse.sessions.length >= 2, 'teacher course should expand lessons');
 

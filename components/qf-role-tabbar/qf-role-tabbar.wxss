@@ -1,13 +1,14 @@
 .qf-role-tabbar {
-  position: fixed;
-  left: 40rpx;
-  right: 40rpx;
-  bottom: 26rpx;
-  z-index: 50;
+  position: fixed !important;
+  left: 34rpx;
+  right: 34rpx;
+  bottom: calc(22rpx + env(safe-area-inset-bottom));
+  z-index: 999;
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 14rpx;
+  padding: 14rpx 14rpx calc(14rpx + constant(safe-area-inset-bottom));
+  padding-bottom: calc(14rpx + env(safe-area-inset-bottom));
   border: 1rpx solid rgba(83, 117, 91, 0.24);
   border-radius: 38rpx;
   background:
@@ -17,6 +18,8 @@
   backdrop-filter: blur(28rpx) saturate(1.2);
   box-shadow: 0 -18rpx 56rpx rgba(74, 92, 68, 0.22);
   overflow: hidden;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .qf-tab-slider {
