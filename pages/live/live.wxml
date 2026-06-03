@@ -1,10 +1,10 @@
 <view class="screen live-screen">
   <z-bg></z-bg>
-  <z-page-head kicker="LIVE CLASSROOM" title="教室直播" desc="仅在上课时段向已绑定家长开放，离线教室保持隐藏。"></z-page-head>
+  <z-page-head kicker="LIVE CLASSROOM" title="教室直播" desc="直播入口保留，正式部署后接入 ClassIn 或真实服务器。"></z-page-head>
 
   <z-card mode="hero">
     <z-section-title title="直播权限" right="已绑定" right-type-alias="status"></z-section-title>
-    <view class="body-copy">当前可查看孩子所在班级的实时画面。直播流正式接入时建议走视频云，不建议学生项目自行维护转码服务器。</view>
+    <view class="body-copy">当前只展示直播入口占位。真实播放地址由后端或云函数签发，小程序前端不保存密钥。</view>
   </z-card>
 
   <view class="grid-2 camera-grid">

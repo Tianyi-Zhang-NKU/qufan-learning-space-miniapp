@@ -2,31 +2,23 @@
   <z-bg mode="dark"></z-bg>
   <view class="qf-top">
     <view class="qf-brand">
-      <text class="qf-brand-title">身份切换</text>
+      <text class="qf-brand-title">当前手机号身份</text>
       <text class="qf-brand-sub">趣帆学习空间</text>
     </view>
-    <button class="qf-btn ghost small" bindtap="goLogin">继续绑定</button>
+    <button class="qf-btn ghost small" bindtap="goLogin">换手机号</button>
   </view>
 
   <view class="qf-card">
-    <view wx:if="{{identities.length}}">
-      <text class="qf-h2">当前身份</text>
-      <picker range="{{identityOptions}}" value="{{identityIndex}}" bindchange="chooseIdentity">
-        <view class="qf-picker">
-          <text class="qf-picker-label">选择身份</text>
-          <text class="qf-picker-value">{{selectedIdentity.label}}</text>
-        </view>
-      </picker>
-      <text class="qf-muted identity-meta">{{selectedIdentity.roleName}} · {{selectedIdentity.inviteCode}}</text>
-      <button class="qf-btn full identity-enter" bindtap="enterSelected">进入</button>
-      <view class="qf-divider"></view>
-      <view class="qf-list">
-        <view wx:for="{{identities}}" wx:key="id" class="qf-list-item">
-          <text class="qf-h3">{{item.label}}</text>
-          <text class="qf-muted">{{item.roleName}} · {{item.inviteCode}}</text>
-        </view>
+    <text class="qf-h2">{{session.displayName}}</text>
+    <text class="qf-muted">手机号：{{session.phone}}</text>
+    <view class="qf-divider"></view>
+    <view wx:if="{{identities.length}}" class="qf-list">
+      <view wx:for="{{identities}}" wx:key="id" class="qf-list-item">
+        <text class="qf-h3">{{item.displayName}}</text>
+        <text class="qf-muted">{{item.roleName}} · 当前登录身份</text>
       </view>
     </view>
-    <view wx:else class="qf-empty">当前微信账号暂无已绑定身份</view>
+    <view wx:else class="qf-empty">当前手机号暂无身份</view>
+    <button class="qf-btn full identity-enter" bindtap="enterHome">进入首页</button>
   </view>
 </view>

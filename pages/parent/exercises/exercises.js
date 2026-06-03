@@ -5,14 +5,10 @@ const Notice = require('../../../utils/notice');
 Page({
   data: {
     session: {},
-    children: [],
-    currentChild: {},
-    assignments: [],
-    wrongRecords: [],
-    filter: 'all',
-    childOptions: [],
-    childIndex: 0,
-    currentChildLabel: ''
+    currentStudent: {},
+    courses: [],
+    feedbacks: [],
+    selectedCourseId: ''
   },
 
   onShow() {
@@ -23,38 +19,35 @@ Page({
   },
 
   load() {
-    Promise.all([Api.listParentChildren(), Api.getParentExercises({})])
-      .then(([children, result]) => {
-        const activeId = result.currentChild ? result.currentChild.id : '';
-        const childIndex = Math.max(0, children.findIndex((item) => item.id === activeId));
+    Promise.all([Api.getStudentCourses(), Api.getStudentLessonFeedbacks({ courseId: this.data.selectedCourseId })])
+      .then(([courseResult, feedbackResult]) => {
         this.setData({
-          children,
-          currentChild: result.currentChild,
-          assignments: result.assignments,
-          wrongRecords: result.wrongRecords,
-          childOptions: children.map((item) => item.displayLabel || item.name),
-          childIndex,
-          currentChildLabel: children[childIndex] ? (children[childIndex].displayLabel || children[childIndex].name) : ''
+          currentStudent: courseResult.currentStudent || {},
+          courses: courseResult.courses || courseResult.courseGroups || [],
+          feedbacks: feedbackResult.feedbacks || []
         });
       })
-      .catch((error) => Notice.alert(error.message || '习题加载失败'));
+      .catch((error) => Notice.alert(error.message || '反馈加载失败'));
   },
 
-  switchChild(event) {
-    const child = this.data.children[Number(event.detail.value || 0)];
-    if (!child) return;
-    Api.switchActiveChild(child.id).then((session) => {
-      getApp().setSession(session);
-      this.setData({ session });
-      this.load();
-    });
+  setCourse(event) {
+    const courseId = event.currentTarget.dataset.id || '';
+    this.setData({ selectedCourseId: courseId }, () => this.load());
   },
 
-  setFilter(event) {
-    this.setData({ filter: event.currentTarget.dataset.filter });
-  },
-
-  previewFile(event) {
+  previewMedia(event) {
     wx.navigateTo({ url: `/pages/file-preview/file-preview?id=${event.currentTarget.dataset.id}` });
+  },
+
+  downloadImage(event) {
+    Api.downloadFeedbackImage(event.currentTarget.dataset.id)
+      .then((result) => Notice.alert(result.message, '图片下载'))
+      .catch((error) => Notice.alert(error.message || '下载失败'));
+  },
+
+  playVoice(event) {
+    Api.playFeedbackVoice(event.currentTarget.dataset.id)
+      .then((result) => Notice.alert(result.message, '语音播放'))
+      .catch((error) => Notice.alert(error.message || '播放失败'));
   }
 });

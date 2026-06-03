@@ -4,49 +4,21 @@ const Notice = require('../../utils/notice');
 
 Page({
   data: {
-    identities: [],
-    identityOptions: [],
-    identityIndex: 0,
-    selectedIdentity: null
+    session: {},
+    identities: []
   },
 
   onShow() {
-    this.load();
+    const session = Guard.ensureLogin();
+    if (!session) return;
+    this.setData({ session });
+    Api.listIdentities()
+      .then((identities) => this.setData({ identities }))
+      .catch((error) => Notice.alert(error.message || '身份加载失败'));
   },
 
-  load() {
-    Api.listIdentities().then((identities) => {
-      this.setData({
-        identities,
-        identityOptions: identities.map((item) => `${item.label} · ${item.roleName}`),
-        identityIndex: 0,
-        selectedIdentity: identities[0] || null
-      });
-    });
-  },
-
-  chooseIdentity(event) {
-    const identityIndex = Number(event.detail.value || 0);
-    this.setData({
-      identityIndex,
-      selectedIdentity: this.data.identities[identityIndex] || null
-    });
-  },
-
-  enterSelected() {
-    const identityId = this.data.selectedIdentity ? this.data.selectedIdentity.id : '';
-    if (!identityId) {
-      Notice.toast('请选择身份');
-      return;
-    }
-    Api.switchIdentity(identityId)
-      .then((session) => {
-        getApp().setSession(session);
-        wx.redirectTo({ url: Guard.roleHome(session.role) });
-      })
-      .catch((error) => {
-        Notice.alert(error.message || '切换身份失败');
-      });
+  enterHome() {
+    wx.redirectTo({ url: Guard.roleHome(this.data.session.role) });
   },
 
   goLogin() {

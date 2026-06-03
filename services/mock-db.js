@@ -17,118 +17,90 @@ const classrooms = Array.from({ length: 15 }, (_, index) => {
     capacity: no <= 5 ? 18 : 24,
     campus: '主校区',
     cameraStatus: classroomStatus(no),
-    streamPlaceholder: `classroom-${code}`
+    streamPlaceholder: `classroom-${code}`,
+    liveProvider: 'classin',
+    liveConfigStatus: 'pending'
   };
 });
 
 const db = {
-  currentWechatAccountId: 'wx_demo_001',
+  currentSessionId: '',
   sessions: {},
 
-  wechatAccounts: [
+  phoneAccounts: [
     {
-      id: 'wx_demo_001',
-      nickname: '微信演示账号',
+      id: 'account_student_001',
       phone: '13800000001',
-      avatarUrl: '',
-      activeIdentityId: '',
-      activeChildId: ''
-    },
-    {
-      id: 'wx_guardian_002',
-      nickname: '第二家长账号',
-      phone: '13800000009',
-      avatarUrl: '',
-      activeIdentityId: '',
-      activeChildId: ''
-    }
-  ],
-
-  identities: [],
-
-  inviteCodes: [
-    {
-      id: 'invite_student_001',
-      code: 'STUDENT-001',
       role: 'parent',
-      targetType: 'student',
-      targetId: 'stu_001',
-      targetName: '陈一诺',
-      reusable: true,
-      maxUses: 0,
-      useCount: 0,
-      status: 'active',
-      expiresAt: '',
-      createdBy: 'admin_001',
-      note: '学生邀请码长期有效，可被多个微信账号绑定。'
+      linkedId: 'stu_001',
+      nickname: '陈一诺'
     },
     {
-      id: 'invite_teacher_2026',
-      code: 'TEACHER-2026',
+      id: 'account_teacher_001',
+      phone: '13800000002',
       role: 'teacher',
-      targetType: 'teacher',
-      targetId: 'teacher_001',
-      targetName: '周明远老师',
-      reusable: true,
-      maxUses: 20,
-      useCount: 0,
-      status: 'active',
-      expiresAt: '2026-12-31',
-      createdBy: 'admin_001',
-      note: '教师邀请码绑定到指定老师档案。'
+      linkedId: 'teacher_001',
+      nickname: '周明远老师'
     },
     {
-      id: 'invite_admin_2026',
-      code: 'ADMIN-2026',
+      id: 'account_admin_001',
+      phone: '13800000003',
       role: 'admin',
-      targetType: 'admin',
-      targetId: 'admin_001',
-      targetName: '教务管理员',
-      reusable: true,
-      maxUses: 10,
-      useCount: 0,
-      status: 'active',
-      expiresAt: '2026-12-31',
-      createdBy: 'admin_001',
-      note: '管理员邀请码绑定到机构教务管理员档案。'
+      linkedId: 'admin_001',
+      nickname: '教务管理员'
+    },
+    {
+      id: 'account_student_002',
+      phone: '13800000004',
+      role: 'parent',
+      linkedId: 'stu_002',
+      nickname: '许知远'
+    },
+    {
+      id: 'account_teacher_002',
+      phone: '13800000012',
+      role: 'teacher',
+      linkedId: 'teacher_002',
+      nickname: '王思琪老师'
     }
   ],
 
+  wechatAccounts: [],
+  identities: [],
   guardianBindings: [],
 
   students: [
     {
       id: 'stu_001',
       name: '陈一诺',
+      phone: '13800000001',
       grade: '初三',
-      classId: 'class_001',
-      className: '初三生物1班',
-      courseIds: ['course_001', 'course_002'],
-      status: 'active',
-      primaryGuardian: '林女士',
-      guardianPhone: '13800000001'
+      courseIds: ['course_bio_001', 'course_math_001'],
+      status: 'active'
     },
     {
       id: 'stu_002',
       name: '许知远',
+      phone: '13800000004',
       grade: '初二',
-      classId: 'class_002',
-      className: '初二数学A班',
-      courseIds: ['course_002', 'course_003'],
-      status: 'active',
-      primaryGuardian: '许先生',
-      guardianPhone: '13800000009'
+      courseIds: ['course_math_001', 'course_eng_001'],
+      status: 'active'
     },
     {
       id: 'stu_003',
       name: '姜明澈',
+      phone: '13800000005',
       grade: '初三',
-      classId: 'class_001',
-      className: '初三生物1班',
-      courseIds: ['course_001'],
-      status: 'active',
-      primaryGuardian: '姜先生',
-      guardianPhone: '13800000011'
+      courseIds: ['course_bio_001'],
+      status: 'active'
+    },
+    {
+      id: 'stu_004',
+      name: '罗语桐',
+      phone: '13800000006',
+      grade: '初一',
+      courseIds: ['course_eng_001'],
+      status: 'active'
     }
   ],
 
@@ -140,7 +112,7 @@ const db = {
       phone: '13800000002',
       subject: '生物 / 数学',
       subjects: ['生物', '数学'],
-      courseIds: ['course_001', 'course_002'],
+      courseIds: ['course_bio_001', 'course_math_001'],
       title: '主讲老师',
       status: 'active'
     },
@@ -151,7 +123,7 @@ const db = {
       phone: '13800000012',
       subject: '英语',
       subjects: ['英语'],
-      courseIds: ['course_003'],
+      courseIds: ['course_eng_001'],
       title: '英语老师',
       status: 'active'
     }
@@ -172,8 +144,8 @@ const db = {
 
   classes: [
     {
-      id: 'class_001',
-      courseId: 'course_001',
+      id: 'class_bio_001',
+      courseId: 'course_bio_001',
       name: '初三生物1班',
       subject: '生物',
       grade: '初三',
@@ -183,8 +155,8 @@ const db = {
       status: 'active'
     },
     {
-      id: 'class_002',
-      courseId: 'course_002',
+      id: 'class_math_001',
+      courseId: 'course_math_001',
       name: '初二数学A班',
       subject: '数学',
       grade: '初二',
@@ -194,13 +166,13 @@ const db = {
       status: 'active'
     },
     {
-      id: 'class_003',
-      courseId: 'course_003',
+      id: 'class_eng_001',
+      courseId: 'course_eng_001',
       name: '初一英语提高班',
       subject: '英语',
       grade: '初一',
       mainTeacherId: 'teacher_002',
-      studentIds: ['stu_002'],
+      studentIds: ['stu_002', 'stu_004'],
       defaultClassroomId: 'room_03',
       status: 'active'
     }
@@ -208,9 +180,8 @@ const db = {
 
   courses: [
     {
-      id: 'course_001',
-      courseId: 'course_001',
-      classId: 'class_001',
+      id: 'course_bio_001',
+      classId: 'class_bio_001',
       name: '初三生物1班',
       subject: '生物',
       grade: '初三',
@@ -221,12 +192,11 @@ const db = {
       studentIds: ['stu_001', 'stu_003'],
       defaultDurationMinutes: 90,
       status: 'active',
-      description: '中考生物复习课程班。'
+      description: '中考生物复习课后反馈班。'
     },
     {
-      id: 'course_002',
-      courseId: 'course_002',
-      classId: 'class_002',
+      id: 'course_math_001',
+      classId: 'class_math_001',
       name: '初二数学A班',
       subject: '数学',
       grade: '初二',
@@ -237,12 +207,11 @@ const db = {
       studentIds: ['stu_001', 'stu_002'],
       defaultDurationMinutes: 90,
       status: 'active',
-      description: '函数与几何综合提升课程班。'
+      description: '函数与几何课后反馈班。'
     },
     {
-      id: 'course_003',
-      courseId: 'course_003',
-      classId: 'class_003',
+      id: 'course_eng_001',
+      classId: 'class_eng_001',
       name: '初一英语提高班',
       subject: '英语',
       grade: '初一',
@@ -250,23 +219,23 @@ const db = {
       mainTeacherId: 'teacher_002',
       classroomId: 'room_03',
       defaultClassroomId: 'room_03',
-      studentIds: ['stu_002'],
+      studentIds: ['stu_002', 'stu_004'],
       defaultDurationMinutes: 90,
       status: 'active',
-      description: '阅读理解与词汇提高课程班。'
+      description: '阅读理解与词汇课后反馈班。'
     }
   ],
 
   courseSessions: [
     {
-      id: 'cs_004',
-      courseId: 'course_001',
-      classId: 'class_001',
+      id: 'lesson_bio_001_01',
+      courseId: 'course_bio_001',
+      classId: 'class_bio_001',
       sessionIndex: 1,
       sessionTitle: '第一次课',
-      displayTitle: '第一次课：细胞结构复习',
       title: '第一次课：细胞结构复习',
-      date: '2026-06-01',
+      displayTitle: '第一次课：细胞结构复习',
+      date: '2026-06-03',
       startTime: '18:30',
       endTime: '20:00',
       teacherId: 'teacher_001',
@@ -274,36 +243,17 @@ const db = {
       studentIds: ['stu_001', 'stu_003'],
       status: 'finished',
       statusText: '已结束',
-      liveRoomId: 'live_room_004',
-      note: '历史课次。'
+      liveRoomId: 'live_room_08',
+      note: '线下完成练习，课后上传反馈。'
     },
     {
-      id: 'cs_001',
-      courseId: 'course_001',
-      classId: 'class_001',
+      id: 'lesson_bio_001_02',
+      courseId: 'course_bio_001',
+      classId: 'class_bio_001',
       sessionIndex: 2,
       sessionTitle: '第二次课',
-      displayTitle: '第二次课：遗传与变异',
       title: '第二次课：遗传与变异',
-      date: '2026-06-03',
-      startTime: '18:30',
-      endTime: '20:00',
-      teacherId: 'teacher_001',
-      classroomId: 'room_08',
-      studentIds: ['stu_001', 'stu_003'],
-      status: 'in_progress',
-      statusText: '正在进行',
-      liveRoomId: 'live_room_001',
-      note: '正在进行的演示课，家长可进入直播占位页。'
-    },
-    {
-      id: 'cs_005',
-      courseId: 'course_001',
-      classId: 'class_001',
-      sessionIndex: 3,
-      sessionTitle: '第三次课',
-      displayTitle: '第三次课：生态系统综合题',
-      title: '第三次课：生态系统综合题',
+      displayTitle: '第二次课：遗传与变异',
       date: '2026-06-08',
       startTime: '18:30',
       endTime: '20:00',
@@ -312,37 +262,37 @@ const db = {
       studentIds: ['stu_001', 'stu_003'],
       status: 'scheduled',
       statusText: '未开始',
-      liveRoomId: 'live_room_005',
-      note: '待上课后开放直播。'
+      liveRoomId: 'live_room_08',
+      note: '保留直播入口，正式部署后接入 ClassIn。'
     },
     {
-      id: 'cs_006',
-      courseId: 'course_002',
-      classId: 'class_002',
+      id: 'lesson_math_001_01',
+      courseId: 'course_math_001',
+      classId: 'class_math_001',
       sessionIndex: 1,
       sessionTitle: '第一次课',
-      displayTitle: '第一次课：一次函数图像',
       title: '第一次课：一次函数图像',
-      date: '2026-06-02',
-      startTime: '18:30',
-      endTime: '20:00',
+      displayTitle: '第一次课：一次函数图像',
+      date: '2026-06-03',
+      startTime: '20:10',
+      endTime: '21:40',
       teacherId: 'teacher_001',
       classroomId: 'room_12',
       studentIds: ['stu_001', 'stu_002'],
       status: 'finished',
       statusText: '已结束',
-      liveRoomId: 'live_room_006',
-      note: '历史课次。'
+      liveRoomId: 'live_room_12',
+      note: '线下讲义批改后上传反馈。'
     },
     {
-      id: 'cs_002',
-      courseId: 'course_002',
-      classId: 'class_002',
+      id: 'lesson_math_001_02',
+      courseId: 'course_math_001',
+      classId: 'class_math_001',
       sessionIndex: 2,
       sessionTitle: '第二次课',
-      displayTitle: '第二次课：方程与函数转化',
       title: '第二次课：方程与函数转化',
-      date: '2026-06-03',
+      displayTitle: '第二次课：方程与函数转化',
+      date: '2026-06-10',
       startTime: '20:10',
       endTime: '21:40',
       teacherId: 'teacher_001',
@@ -350,275 +300,267 @@ const db = {
       studentIds: ['stu_001', 'stu_002'],
       status: 'scheduled',
       statusText: '未开始',
-      liveRoomId: 'live_room_002',
-      note: '待上课后开放直播。'
+      liveRoomId: 'live_room_12',
+      note: '课后反馈为主，可选测验资料。'
     },
     {
-      id: 'cs_003',
-      courseId: 'course_003',
-      classId: 'class_003',
+      id: 'lesson_eng_001_01',
+      courseId: 'course_eng_001',
+      classId: 'class_eng_001',
       sessionIndex: 1,
       sessionTitle: '第一次课',
-      displayTitle: '第一次课：阅读理解精讲',
-      title: '第一次课：阅读理解精讲',
+      title: '第一次课：阅读理解定位',
+      displayTitle: '第一次课：阅读理解定位',
       date: '2026-06-04',
       startTime: '18:30',
       endTime: '20:00',
       teacherId: 'teacher_002',
       classroomId: 'room_03',
-      studentIds: ['stu_002'],
+      studentIds: ['stu_002', 'stu_004'],
+      status: 'finished',
+      statusText: '已结束',
+      liveRoomId: 'live_room_03',
+      note: '课后反馈已开放。'
+    },
+    {
+      id: 'lesson_eng_001_02',
+      courseId: 'course_eng_001',
+      classId: 'class_eng_001',
+      sessionIndex: 2,
+      sessionTitle: '第二次课',
+      title: '第二次课：完形填空线索',
+      displayTitle: '第二次课：完形填空线索',
+      date: '2026-06-11',
+      startTime: '18:30',
+      endTime: '20:00',
+      teacherId: 'teacher_002',
+      classroomId: 'room_03',
+      studentIds: ['stu_002', 'stu_004'],
       status: 'scheduled',
       statusText: '未开始',
-      liveRoomId: 'live_room_003',
-      note: '教室硬件待联调。'
+      liveRoomId: 'live_room_03',
+      note: '保留直播入口。'
     }
   ],
 
   assignments: [
     {
-      id: 'assignment_001',
-      courseSessionId: 'cs_001',
-      courseId: 'course_001',
-      classId: 'class_001',
+      id: 'assignment_optional_001',
+      courseId: 'course_bio_001',
+      courseSessionId: 'lesson_bio_001_01',
       teacherId: 'teacher_001',
       type: 'pre',
-      title: '遗传与变异课前测',
-      status: 'published',
-      fileId: 'file_pdf_001',
-      dueAt: '2026-06-03 18:20',
-      pendingCount: 0,
-      gradedCount: 0,
-      totalCount: 18
+      title: '细胞结构课前测记录',
+      status: 'optional',
+      statusText: '可选记录',
+      fileId: 'file_optional_pdf_001',
+      dueAt: '2026-06-03 18:20'
     },
     {
-      id: 'assignment_002',
-      courseSessionId: 'cs_001',
-      courseId: 'course_001',
-      classId: 'class_001',
+      id: 'assignment_optional_002',
+      courseId: 'course_math_001',
+      courseSessionId: 'lesson_math_001_01',
       teacherId: 'teacher_001',
       type: 'post',
-      title: '遗传与变异课后测',
-      status: 'not_uploaded',
+      title: '一次函数课后测记录',
+      status: 'optional',
+      statusText: '可选记录',
       fileId: '',
-      dueAt: '2026-06-03 20:20',
-      pendingCount: 0,
-      gradedCount: 0,
-      totalCount: 18
-    },
-    {
-      id: 'assignment_003',
-      courseSessionId: 'cs_002',
-      courseId: 'course_002',
-      classId: 'class_002',
-      teacherId: 'teacher_001',
-      type: 'post',
-      title: '函数转化课后测',
-      status: 'published',
-      fileId: 'file_docx_001',
-      dueAt: '2026-06-04 21:00',
-      pendingCount: 0,
-      gradedCount: 0,
-      totalCount: 14
-    },
-    {
-      id: 'assignment_004',
-      courseSessionId: 'cs_003',
-      courseId: 'course_003',
-      classId: 'class_003',
-      teacherId: 'teacher_002',
-      type: 'pre',
-      title: '英语阅读课前词汇',
-      status: 'not_uploaded',
-      fileId: '',
-      dueAt: '2026-06-04 18:20',
-      pendingCount: 0,
-      gradedCount: 0,
-      totalCount: 22
+      dueAt: '2026-06-03 21:50'
     }
   ],
 
-  wrongRecords: [
+  lessonFeedbacks: [
     {
-      id: 'wrong_001',
+      id: 'feedback_001',
       studentId: 'stu_001',
-      studentName: '陈一诺',
-      courseSessionId: 'cs_001',
-      courseId: 'course_001',
-      classId: 'class_001',
       teacherId: 'teacher_001',
-      subject: '生物',
-      topic: '遗传图谱判断',
-      source: '课前测',
-      mistakeReason: '没有先区分显性与隐性性状。',
-      correction: '先标注亲代表现型，再按基因型逐步推导。',
-      imageFileId: 'file_img_001',
-      status: 'todo',
-      tags: ['遗传', '推导'],
-      createdAt: '2026-06-03 19:30'
+      courseId: 'course_bio_001',
+      courseSessionId: 'lesson_bio_001_01',
+      text: '本次课前测错在细胞器功能区分，已当面讲解，建议回家复看笔记。',
+      imageFileIds: ['media_img_001'],
+      voiceFileIds: ['media_voice_001'],
+      createdAt: '2026-06-03 20:10',
+      visibleToStudent: true
     },
     {
-      id: 'wrong_002',
-      studentId: 'stu_002',
-      studentName: '许知远',
-      courseSessionId: 'cs_006',
-      courseId: 'course_002',
-      classId: 'class_002',
-      teacherId: 'teacher_001',
-      subject: '数学',
-      topic: '方程与函数转化',
-      source: '课后测',
-      mistakeReason: '审题遗漏定义域。',
-      correction: '补充定义域限制后再求交点。',
-      imageFileId: '',
-      status: 'corrected',
-      tags: ['审题', '定义域'],
-      createdAt: '2026-06-02 20:10'
-    },
-    {
-      id: 'wrong_003',
+      id: 'feedback_002',
       studentId: 'stu_003',
-      studentName: '姜明澈',
-      courseSessionId: 'cs_001',
-      courseId: 'course_001',
-      classId: 'class_001',
       teacherId: 'teacher_001',
-      subject: '生物',
-      topic: '生态系统能量流动',
-      source: '课堂练习',
-      mistakeReason: '营养级和食物链层级混淆。',
-      correction: '先画食物链，再对应每一级能量来源。',
-      imageFileId: '',
-      status: 'todo',
-      tags: ['生态系统'],
-      createdAt: '2026-06-03 21:00'
+      courseId: 'course_bio_001',
+      courseSessionId: 'lesson_bio_001_01',
+      text: '课堂练习完成度较好，生态系统能量流动部分还需要按步骤画图。',
+      imageFileIds: ['media_img_002'],
+      voiceFileIds: [],
+      createdAt: '2026-06-03 20:18',
+      visibleToStudent: true
+    },
+    {
+      id: 'feedback_003',
+      studentId: 'stu_002',
+      teacherId: 'teacher_001',
+      courseId: 'course_math_001',
+      courseSessionId: 'lesson_math_001_01',
+      text: '一次函数图像题审题有进步，定义域限制仍要先写出来。',
+      imageFileIds: [],
+      voiceFileIds: ['media_voice_002'],
+      createdAt: '2026-06-03 21:55',
+      visibleToStudent: true
+    },
+    {
+      id: 'feedback_004',
+      studentId: 'stu_004',
+      teacherId: 'teacher_002',
+      courseId: 'course_eng_001',
+      courseSessionId: 'lesson_eng_001_01',
+      text: '阅读定位速度提升明显，长难句建议继续拆主谓宾。',
+      imageFileIds: ['media_img_003'],
+      voiceFileIds: ['media_voice_003'],
+      createdAt: '2026-06-04 20:08',
+      visibleToStudent: true
+    }
+  ],
+
+  mediaFiles: [
+    {
+      id: 'media_img_001',
+      type: 'image',
+      name: '细胞结构批改照片.jpg',
+      url: '',
+      tempPath: '',
+      storageKey: 'feedback/course_bio_001/lesson_bio_001_01/stu_001/img_001.jpg',
+      size: 320000,
+      createdAt: '2026-06-03 20:08',
+      retentionUntil: '2026-12-03',
+      downloadable: true
+    },
+    {
+      id: 'media_img_002',
+      type: 'image',
+      name: '生态系统练习反馈.jpg',
+      url: '',
+      tempPath: '',
+      storageKey: 'feedback/course_bio_001/lesson_bio_001_01/stu_003/img_001.jpg',
+      size: 286000,
+      createdAt: '2026-06-03 20:17',
+      retentionUntil: '2026-12-03',
+      downloadable: true
+    },
+    {
+      id: 'media_img_003',
+      type: 'image',
+      name: '英语阅读批注照片.jpg',
+      url: '',
+      tempPath: '',
+      storageKey: 'feedback/course_eng_001/lesson_eng_001_01/stu_004/img_001.jpg',
+      size: 248000,
+      createdAt: '2026-06-04 20:06',
+      retentionUntil: '2026-12-04',
+      downloadable: true
+    },
+    {
+      id: 'media_voice_001',
+      type: 'voice',
+      name: '老师语音反馈.m4a',
+      url: '',
+      tempPath: '',
+      storageKey: 'feedback/course_bio_001/lesson_bio_001_01/stu_001/voice_001.m4a',
+      duration: 18,
+      size: 120000,
+      createdAt: '2026-06-03 20:09',
+      retentionUntil: '2026-12-03',
+      downloadable: false
+    },
+    {
+      id: 'media_voice_002',
+      type: 'voice',
+      name: '数学课后语音.m4a',
+      url: '',
+      tempPath: '',
+      storageKey: 'feedback/course_math_001/lesson_math_001_01/stu_002/voice_001.m4a',
+      duration: 22,
+      size: 148000,
+      createdAt: '2026-06-03 21:54',
+      retentionUntil: '2026-12-03',
+      downloadable: false
+    },
+    {
+      id: 'media_voice_003',
+      type: 'voice',
+      name: '英语阅读反馈.m4a',
+      url: '',
+      tempPath: '',
+      storageKey: 'feedback/course_eng_001/lesson_eng_001_01/stu_004/voice_001.m4a',
+      duration: 16,
+      size: 108000,
+      createdAt: '2026-06-04 20:07',
+      retentionUntil: '2026-12-04',
+      downloadable: false
     }
   ],
 
   files: [
     {
-      id: 'file_pdf_001',
-      name: '遗传与变异课前测.pdf',
+      id: 'file_optional_pdf_001',
+      name: '细胞结构课前测记录.pdf',
       ext: 'pdf',
       mimeType: 'application/pdf',
       size: 734003,
-      ownerType: 'assignment',
-      ownerId: 'assignment_001',
+      ownerType: 'optionalMaterial',
+      ownerId: 'assignment_optional_001',
       uploadedBy: 'teacher_001',
       uploadedAt: '2026-06-02 21:30',
       fileID: '',
       downloadUrl: '',
-      placeholder: true
+      placeholder: true,
+      optional: true
     },
     {
-      id: 'file_docx_001',
-      name: '函数转化课后测.docx',
+      id: 'file_optional_docx_001',
+      name: '一次函数课后测记录.docx',
       ext: 'docx',
       mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       size: 524288,
-      ownerType: 'assignment',
-      ownerId: 'assignment_003',
+      ownerType: 'optionalMaterial',
+      ownerId: 'assignment_optional_002',
       uploadedBy: 'teacher_001',
       uploadedAt: '2026-06-03 12:05',
       fileID: '',
       downloadUrl: '',
-      placeholder: true
-    },
-    {
-      id: 'file_img_001',
-      name: '遗传图谱错题照片.jpg',
-      ext: 'jpg',
-      mimeType: 'image/jpeg',
-      size: 258048,
-      ownerType: 'wrongRecord',
-      ownerId: 'wrong_001',
-      uploadedBy: 'teacher_001',
-      uploadedAt: '2026-06-03 19:28',
-      fileID: '',
-      downloadUrl: '',
-      placeholder: true
+      placeholder: true,
+      optional: true
     }
   ],
 
-  liveRooms: [
-    {
-      id: 'live_room_001',
-      courseSessionId: 'cs_001',
-      classroomId: 'room_08',
-      status: 'open',
-      statusText: '直播入口已开放',
-      streamUrl: '',
-      provider: 'placeholder',
-      lastHeartbeatAt: '2026-06-03 18:35',
-      note: '演示数据，暂无真实播放流。'
-    },
-    {
-      id: 'live_room_002',
-      courseSessionId: 'cs_002',
-      classroomId: 'room_12',
-      status: 'scheduled',
-      statusText: '待上课开放',
-      streamUrl: '',
-      provider: 'placeholder',
-      lastHeartbeatAt: '',
-      note: '正式版由服务端按权限签发播放地址。'
-    },
-    {
-      id: 'live_room_003',
-      courseSessionId: 'cs_003',
-      classroomId: 'room_03',
-      status: 'offline',
-      statusText: '待硬件联调',
-      streamUrl: '',
-      provider: 'placeholder',
-      lastHeartbeatAt: '',
-      note: '教室直播设备待接入。'
-    },
-    {
-      id: 'live_room_004',
-      courseSessionId: 'cs_004',
-      classroomId: 'room_08',
-      status: 'closed',
-      statusText: '已结束',
-      streamUrl: '',
-      provider: 'placeholder',
-      lastHeartbeatAt: '',
-      note: '历史课次。'
-    },
-    {
-      id: 'live_room_005',
-      courseSessionId: 'cs_005',
-      classroomId: 'room_08',
-      status: 'scheduled',
-      statusText: '待上课开放',
-      streamUrl: '',
-      provider: 'placeholder',
-      lastHeartbeatAt: '',
-      note: '待上课后开放。'
-    },
-    {
-      id: 'live_room_006',
-      courseSessionId: 'cs_006',
-      classroomId: 'room_12',
-      status: 'closed',
-      statusText: '已结束',
-      streamUrl: '',
-      provider: 'placeholder',
-      lastHeartbeatAt: '',
-      note: '历史课次。'
-    }
-  ],
+  liveRooms: classrooms.map((room) => ({
+    id: `live_${room.id}`,
+    courseSessionId: '',
+    classroomId: room.id,
+    status: 'pending',
+    statusText: 'ClassIn 接口待接入',
+    streamUrl: '',
+    classinEntryUrl: '',
+    provider: 'classin',
+    lastHeartbeatAt: '',
+    note: '正式部署后由后端或云函数签发 ClassIn 入口。'
+  })),
 
   auditLogs: [
     {
       id: 'audit_001',
       actorId: 'admin_001',
-      action: 'create_invite',
-      targetType: 'inviteCode',
-      targetId: 'invite_student_001',
-      message: '创建学生演示邀请码 STUDENT-001',
-      createdAt: '2026-06-01 09:00'
+      action: 'seed_feedback_data',
+      targetType: 'lessonFeedback',
+      targetId: 'feedback_001',
+      message: '初始化课后反馈演示数据',
+      createdAt: '2026-06-03 20:10'
     }
   ]
 };
+
+db.liveRooms.forEach((room) => {
+  const session = db.courseSessions.find((item) => item.classroomId === room.classroomId);
+  if (session) room.courseSessionId = session.id;
+});
 
 module.exports = db;

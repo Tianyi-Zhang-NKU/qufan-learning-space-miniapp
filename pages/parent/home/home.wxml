@@ -2,25 +2,9 @@
   <z-bg mode="dark"></z-bg>
   <view class="qf-top">
     <view class="qf-brand">
-      <text class="qf-brand-title">家长首页</text>
-      <text class="qf-brand-sub">{{dashboard.currentChild.name || '孩子学习状态'}}</text>
+      <text class="qf-brand-title">我的学习</text>
+      <text class="qf-brand-sub">{{dashboard.currentStudent.name || session.displayName}} · 趣帆学习空间</text>
     </view>
-  </view>
-
-  <view class="qf-card qf-hero">
-    <view class="qf-row">
-      <view>
-        <text class="qf-h2">{{dashboard.currentChild.name || '未选择孩子'}}</text>
-        <text class="qf-muted">{{dashboard.currentChild.className}}</text>
-      </view>
-      <button class="qf-btn small" bindtap="goCourses">课程</button>
-    </view>
-    <picker wx:if="{{dashboard.children.length}}" range="{{childOptions}}" value="{{childIndex}}" bindchange="switchChild">
-      <view class="qf-picker child-picker">
-        <text class="qf-picker-label">当前孩子</text>
-        <text class="qf-picker-value">{{currentChildLabel}}</text>
-      </view>
-    </picker>
   </view>
 
   <view class="qf-grid">
@@ -30,6 +14,35 @@
     </view>
   </view>
 
+  <view class="qf-section">我的课程</view>
+  <view class="qf-card tight">
+    <view wx:if="{{dashboard.courses.length}}" class="qf-list">
+      <view wx:for="{{dashboard.courses}}" wx:key="id" class="qf-list-item">
+        <view class="qf-row">
+          <view>
+            <text class="qf-h3">{{item.name}}</text>
+            <text class="qf-muted">{{item.teacherName}} · {{item.sessions.length}} 次课 · 反馈 {{item.feedbackCount}} 条</text>
+          </view>
+          <button class="qf-btn ghost small" bindtap="goCourses">查看</button>
+        </view>
+      </view>
+    </view>
+    <view wx:else class="qf-empty">暂无课程</view>
+  </view>
+
+  <view class="qf-section">最近反馈</view>
+  <view class="qf-card tight">
+    <view wx:if="{{dashboard.recentFeedbacks.length}}" class="qf-list">
+      <view wx:for="{{dashboard.recentFeedbacks}}" wx:key="id" class="qf-list-item">
+        <text class="qf-h3">{{item.courseName}} · {{item.courseSessionTitle}}</text>
+        <text class="qf-muted">{{item.teacherName}} · {{item.createdAt}}</text>
+        <text class="qf-text">{{item.text}}</text>
+      </view>
+    </view>
+    <view wx:else class="qf-empty">暂无老师反馈</view>
+    <button class="qf-btn full" bindtap="goFeedbacks">查看全部反馈</button>
+  </view>
+
   <view class="qf-section">今日课程</view>
   <view class="qf-card tight">
     <view wx:if="{{dashboard.todayCourses.length}}" class="qf-list">
@@ -37,27 +50,18 @@
         <view class="qf-row">
           <view>
             <text class="qf-h3">{{item.displayTitle}}</text>
-            <text class="qf-muted">{{item.courseName}} · {{item.startTime}}-{{item.endTime}} · {{item.teacherName}} · {{item.classroomName}}</text>
+            <text class="qf-muted">{{item.courseName}} · {{item.startTime}}-{{item.endTime}} · {{item.teacherName}}</text>
           </view>
-          <text class="qf-tag {{item.status === 'in_progress' ? 'ok' : 'warn'}}">{{item.statusText}}</text>
+          <button class="qf-btn ghost small" data-id="{{item.id}}" bindtap="goLive">直播入口</button>
         </view>
-        <button wx:if="{{item.status === 'in_progress'}}" class="qf-btn small course-action" data-id="{{item.id}}" bindtap="goLive">进入直播</button>
       </view>
     </view>
     <view wx:else class="qf-empty">今天暂无课程</view>
   </view>
 
-  <view class="qf-section">待处理</view>
+  <view class="qf-section">直播入口</view>
   <view class="qf-card tight">
-    <view class="qf-row">
-      <text class="qf-muted">习题 {{dashboard.pendingAssignments.length}} 项</text>
-      <button class="qf-btn ghost small" bindtap="goExercises">查看</button>
-    </view>
-    <view class="qf-divider"></view>
-    <view class="qf-row">
-      <text class="qf-muted">错题 {{dashboard.pendingWrongRecords.length}} 项</text>
-      <button class="qf-btn ghost small" bindtap="goExercises">订正</button>
-    </view>
+    <text class="qf-text">上课直播入口已保留，正式部署后接入 ClassIn 或真实服务器。</text>
   </view>
 
   <qf-role-tabbar role="parent" current="/pages/parent/home/home"></qf-role-tabbar>

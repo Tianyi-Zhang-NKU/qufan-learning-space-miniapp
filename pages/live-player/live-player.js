@@ -7,9 +7,10 @@ Page({
     session: {},
     id: '',
     detail: {
-      courseSession: {}
+      courseSession: {},
+      course: {}
     },
-    ticket: null,
+    entry: null,
     error: ''
   },
 
@@ -28,14 +29,22 @@ Page({
     if (!this.data.id) return;
     Promise.all([
       Api.getCourseDetail(this.data.id),
-      Api.requestLiveTicket(this.data.id)
+      Api.requestClassInLiveEntry({ courseSessionId: this.data.id })
     ])
-      .then(([detail, ticket]) => {
-        this.setData({ detail, ticket, error: '' });
+      .then(([detail, entry]) => {
+        this.setData({ detail, entry, error: '' });
       })
       .catch((error) => {
-        this.setData({ error: error.message || '直播未开放' });
-        Notice.toast(error.message || '直播未开放');
+        this.setData({ error: error.message || '直播入口暂不可用' });
+        Notice.toast(error.message || '直播入口暂不可用');
       });
+  },
+
+  openClassIn() {
+    if (!this.data.entry || !this.data.entry.classinEntryUrl) {
+      Notice.toast('ClassIn 入口待正式接入');
+      return;
+    }
+    Notice.alert('正式部署后将跳转 ClassIn 直播入口。', '打开直播');
   }
 });

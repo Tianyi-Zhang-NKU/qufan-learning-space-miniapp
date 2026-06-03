@@ -1,20 +1,35 @@
 <view class="qf-page">
+  <z-bg mode="dark"></z-bg>
   <view class="qf-top">
     <view class="qf-brand">
-      <text class="qf-brand-title">文件预览</text>
-      <text class="qf-brand-sub">课前测 / 课后测 / 错题图片</text>
+      <text class="qf-brand-title">媒体预览</text>
+      <text class="qf-brand-sub">课后反馈图片 / 语音 / 可选资料</text>
     </view>
   </view>
 
   <view wx:if="{{preview}}" class="qf-card">
     <text class="qf-h2">{{preview.file.name}}</text>
-    <text class="qf-muted">类型：{{preview.file.ext}}</text>
+    <text class="qf-muted">类型：{{preview.kind}}</text>
     <text class="qf-muted">大小：{{preview.file.size}} bytes</text>
     <view class="qf-divider"></view>
-    <view class="qf-empty">{{preview.message}}</view>
-    <view class="qf-wrap file-actions">
-      <button class="qf-btn {{preview.canPreview ? '' : 'ghost'}}">预览</button>
-      <button class="qf-btn ghost">下载</button>
+
+    <view wx:if="{{preview.kind === 'image'}}">
+      <image wx:if="{{preview.file.previewUrl}}" class="preview-image" mode="widthFix" src="{{preview.file.previewUrl}}"></image>
+      <view wx:else class="qf-empty">当前为 mock 图片，真实部署后显示临时预览地址。</view>
+      <view class="qf-wrap file-actions">
+        <button class="qf-btn" bindtap="previewImage">查看图片</button>
+        <button wx:if="{{preview.downloadable}}" class="qf-btn ghost" bindtap="downloadImage">下载图片</button>
+      </view>
+    </view>
+
+    <view wx:elif="{{preview.kind === 'voice'}}">
+      <view class="qf-empty">语音反馈只能收听，不提供下载入口。</view>
+      <button class="qf-btn full" bindtap="playVoice">播放语音</button>
+    </view>
+
+    <view wx:else>
+      <view class="qf-empty">{{preview.message}}</view>
+      <text class="qf-muted">PDF / Word 仅作为可选资料兼容，不是当前主流程。</text>
     </view>
   </view>
 </view>

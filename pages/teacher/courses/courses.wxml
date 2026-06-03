@@ -2,14 +2,14 @@
   <z-bg mode="dark"></z-bg>
   <view class="qf-top">
     <view class="qf-brand">
-      <text class="qf-brand-title">课程管理</text>
-      <text class="qf-brand-sub">{{teacher.name || session.displayName}} · 课程班 / 课次 / 学生</text>
+      <text class="qf-brand-title">我的课程</text>
+      <text class="qf-brand-sub">{{teacher.name || session.displayName}} · 课程 / 课次 / 学生 / 反馈</text>
     </view>
   </view>
 
   <view class="qf-card qf-hero">
-    <text class="qf-h2">{{teacher.name || session.displayName}}</text>
-    <text class="qf-muted">从课程班进入课次，再在学生名单中录入错题。</text>
+    <text class="qf-h2">{{teacher.fullName || teacher.name || session.displayName}}</text>
+    <text class="qf-muted">从课程进入课次，在学生名单中上传课后反馈。</text>
   </view>
 
   <view class="qf-card tight">
@@ -18,7 +18,8 @@
         <view class="qf-row">
           <view>
             <text class="qf-h3">{{item.name}}</text>
-            <text class="qf-muted">{{item.subject}} · {{item.classroomName}} · 学生 {{item.studentCount}} 人</text>
+            <text class="qf-muted">{{item.subject}} · 学生 {{item.studentCount}} 人 · 已上传反馈 {{item.feedbackCount}} 条</text>
+            <text class="qf-muted">最近课次：{{item.recentSessionTitle || '暂无课次'}}</text>
           </view>
           <button class="qf-btn ghost small" data-id="{{item.id}}" bindtap="goCourse">进入课程</button>
         </view>
@@ -28,24 +29,14 @@
             <view>
               <text class="qf-h3">{{session.sessionTitle}}</text>
               <text class="qf-muted">{{session.displayTitle}} · {{session.date}} {{session.startTime}}-{{session.endTime}}</text>
+              <text class="qf-muted">反馈 {{session.feedbackCount}} 条</text>
             </view>
-            <text class="qf-tag {{session.statusTone}}">{{session.statusText}}</text>
+            <button class="qf-btn small" data-id="{{session.id}}" bindtap="goSession">进入课次</button>
           </view>
-          <button class="qf-btn ghost small session-entry" data-id="{{session.id}}" bindtap="goSession">进入课次</button>
-        </view>
-        <view wx:if="{{item.assignments.length}}" class="qf-wrap course-files">
-          <block wx:for="{{item.assignments}}" wx:for-item="assignment" wx:key="id">
-            <button
-              wx:if="{{assignment.file}}"
-              class="qf-btn ghost small"
-              data-id="{{assignment.file.id}}"
-              bindtap="previewFile"
-            >{{assignment.title}}</button>
-          </block>
         </view>
       </view>
     </view>
-    <view wx:else class="qf-empty">暂无授课安排</view>
+    <view wx:else class="qf-empty">暂无课程</view>
   </view>
 
   <qf-role-tabbar role="teacher" current="/pages/teacher/courses/courses"></qf-role-tabbar>

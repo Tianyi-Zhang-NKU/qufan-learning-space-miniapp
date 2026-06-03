@@ -2,46 +2,32 @@ const Api = require('../../services/api');
 const Guard = require('../../utils/page-guard');
 const Notice = require('../../utils/notice');
 
+function roleName(role) {
+  if (role === 'teacher') return '教师端';
+  if (role === 'admin') return '管理端';
+  return '学生/家长端';
+}
+
 Page({
   data: {
     session: {},
-    identities: [],
-    children: [],
-    childOptions: [],
-    childIndex: 0,
-    currentChildLabel: ''
+    profile: {},
+    roleName: ''
   },
 
   onShow() {
     const session = Guard.ensureLogin();
     if (!session) return;
-    Promise.all([Api.getCurrentSession(), Api.listIdentities()]).then(([current, identities]) => {
-      const active = current || session;
-      this.setData({ session: active, identities });
-      if (active.role === 'parent') {
-        Api.listParentChildren().then((children) => {
-          const childIndex = Math.max(0, children.findIndex((item) => item.id === active.activeChildId));
-          this.setData({
-            children,
-            childOptions: children.map((item) => item.displayLabel || item.name),
-            childIndex,
-            currentChildLabel: children[childIndex] ? (children[childIndex].displayLabel || children[childIndex].name) : ''
-          });
+    Api.getCurrentUserProfile()
+      .then((result) => {
+        const active = result.session || session;
+        this.setData({
+          session: active,
+          profile: result.profile || {},
+          roleName: roleName(active.role)
         });
-      }
-    });
-  },
-
-  switchChild(event) {
-    const child = this.data.children[Number(event.detail.value || 0)];
-    if (!child) return;
-    Api.switchActiveChild(child.id)
-      .then((session) => {
-        getApp().setSession(session);
-        this.setData({ session });
-        this.onShow();
       })
-      .catch((error) => Notice.alert(error.message || '切换孩子失败'));
+      .catch((error) => Notice.alert(error.message || '个人信息加载失败'));
   },
 
   goIdentitySwitch() {

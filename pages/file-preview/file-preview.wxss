@@ -1,3 +1,8 @@
 .file-actions {
   margin-top: 20rpx;
 }
+.preview-image {
+  width: 100%;
+  margin: 18rpx 0;
+  border-radius: 18rpx;
+}

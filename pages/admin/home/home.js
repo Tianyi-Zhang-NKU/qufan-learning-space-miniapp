@@ -6,7 +6,9 @@ Page({
   data: {
     overview: {
       metrics: [],
+      relationOverview: [],
       liveRooms: [],
+      recentFeedbacks: [],
       recentAuditLogs: [],
       todaySessions: []
     }

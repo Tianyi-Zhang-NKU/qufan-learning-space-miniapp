@@ -1,12 +1,20 @@
 module.exports = {
   apiMode: 'mock',
+  authMode: 'mock', // mock | wechatPhone | sms | http
   localBaseUrl: 'http://127.0.0.1:8787',
   cloudEnv: '',
   httpBaseUrl: '',
-  demoInvites: {
-    student: 'STUDENT-001',
-    parent: 'STUDENT-001',
-    teacher: 'TEACHER-2026',
-    admin: 'ADMIN-2026'
+  demoPhones: {
+    student: '13800000001',
+    teacher: '13800000002',
+    admin: '13800000003'
+  },
+  mediaStorage: {
+    provider: 'mock',
+    retentionPolicy: 'at_least_6_months'
+  },
+  classIn: {
+    provider: 'classin',
+    enabled: false
   }
 };

@@ -17,7 +17,7 @@ Page({
   },
 
   load() {
-    Api.getTeacherCourseGroups()
+    Api.getTeacherCourses()
       .then((result) => {
         this.setData({
           teacher: result.teacher || {},
@@ -33,9 +33,5 @@ Page({
 
   goSession(event) {
     wx.navigateTo({ url: `/pages/course-detail/course-detail?id=${event.currentTarget.dataset.id}` });
-  },
-
-  previewFile(event) {
-    wx.navigateTo({ url: `/pages/file-preview/file-preview?id=${event.currentTarget.dataset.id}` });
   }
 });

@@ -2,39 +2,37 @@
   <z-bg mode="auth"></z-bg>
   <view class="login-brand">
     <text class="login-title">趣帆学习空间</text>
-    <text class="login-sub">邀请码绑定身份</text>
+    <text class="login-sub">用报班手机号登录</text>
   </view>
 
   <view class="qf-card qf-hero">
     <view class="qf-field">
-      <text class="qf-label">邀请码</text>
-      <input class="qf-input" value="{{inviteCode}}" placeholder="请输入机构提供的邀请码" bindinput="onInviteInput" />
+      <text class="qf-label">手机号</text>
+      <input
+        class="qf-input"
+        type="number"
+        maxlength="11"
+        value="{{phone}}"
+        placeholder="请输入手机号"
+        bindinput="onPhoneInput"
+      />
     </view>
 
-    <view wx:if="{{needRelation}}" class="qf-field">
-      <text class="qf-label">亲属关系</text>
-      <picker range="{{relations}}" value="{{relationIndex}}" bindchange="chooseRelation">
-        <view class="qf-picker">
-          <text class="qf-picker-label">选择关系</text>
-          <text class="qf-picker-value">{{relation}}</text>
-        </view>
-      </picker>
-    </view>
-
-    <button class="qf-btn full" loading="{{binding}}" bindtap="bindInvite">模拟微信登录并绑定</button>
-    <button class="qf-btn ghost full identity-entry" bindtap="goIdentitySwitch">已有身份入口</button>
+    <button class="qf-btn full" loading="{{logging}}" bindtap="login">登录</button>
+    <button class="qf-btn ghost full identity-entry" open-type="getPhoneNumber" bindgetphonenumber="onGetPhoneNumber">预留微信手机号授权</button>
+    <button class="qf-btn ghost full identity-entry" bindtap="smsPlaceholder">预留短信验证码登录</button>
   </view>
 
   <view class="qf-card tight demo-card">
-    <text class="qf-muted qf-small">演示邀请码</text>
+    <text class="qf-muted qf-small">演示手机号</text>
     <view class="qf-wrap demo-row">
       <button
-        wx:for="{{demoCodes}}"
-        wx:key="code"
+        wx:for="{{demoPhones}}"
+        wx:key="phone"
         class="qf-btn ghost small"
-        data-code="{{item.code}}"
-        bindtap="useDemoCode"
-      >{{item.label}} {{item.code}}</button>
+        data-phone="{{item.phone}}"
+        bindtap="useDemoPhone"
+      >{{item.label}} {{item.phone}}</button>
     </view>
   </view>
 </view>

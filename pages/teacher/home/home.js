@@ -8,8 +8,8 @@ Page({
     dashboard: {
       metrics: [],
       todayCourses: [],
-      pendingAssignments: [],
-      recentWrongRecords: []
+      pendingFeedbackSessions: [],
+      recentFeedbacks: []
     }
   },
 
@@ -17,12 +17,16 @@ Page({
     const session = Guard.ensureLogin('teacher');
     if (!session) return;
     this.setData({ session });
-    Api.getDashboard()
+    Api.getTeacherDashboard()
       .then((dashboard) => this.setData({ dashboard }))
       .catch((error) => Notice.alert(error.message || '首页加载失败'));
   },
 
   goCourses() {
     wx.redirectTo({ url: '/pages/teacher/courses/courses' });
+  },
+
+  goSession(event) {
+    wx.navigateTo({ url: `/pages/course-detail/course-detail?id=${event.currentTarget.dataset.id}` });
   }
 });

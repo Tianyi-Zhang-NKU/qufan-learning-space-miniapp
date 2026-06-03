@@ -3,34 +3,19 @@
   <view class="qf-top">
     <view class="qf-brand">
       <text class="qf-brand-title">个人中心</text>
-      <text class="qf-brand-sub">{{session.displayName}} · {{session.roleName}}</text>
+      <text class="qf-brand-sub">{{session.displayName}} · {{roleName}}</text>
     </view>
   </view>
 
   <view class="qf-card">
     <text class="qf-h2">{{session.displayName}}</text>
-    <text class="qf-muted">微信账号：{{session.accountName}}</text>
-    <text class="qf-muted">当前身份：{{session.roleName}}</text>
-    <picker wx:if="{{session.role === 'parent' && children.length}}" range="{{childOptions}}" value="{{childIndex}}" bindchange="switchChild">
-      <view class="qf-picker profile-child-picker">
-        <text class="qf-picker-label">当前孩子</text>
-        <text class="qf-picker-value">{{currentChildLabel}}</text>
-      </view>
-    </picker>
+    <text class="qf-muted">登录手机号：{{session.phone}}</text>
+    <text class="qf-muted">当前身份：{{roleName}}</text>
+    <text wx:if="{{session.role === 'parent'}}" class="qf-muted">绑定学生：{{profile.name}} · {{profile.grade}}</text>
+    <text wx:if="{{session.role === 'teacher'}}" class="qf-muted">负责学科：{{profile.subject}}</text>
     <view class="qf-divider"></view>
-    <button class="qf-btn full" bindtap="goIdentitySwitch">切换身份</button>
+    <button class="qf-btn full" bindtap="goIdentitySwitch">查看当前手机号身份</button>
     <button class="qf-btn ghost full profile-logout" bindtap="logout">退出登录</button>
-  </view>
-
-  <view class="qf-section">已绑定身份</view>
-  <view class="qf-card tight">
-    <view wx:if="{{identities.length}}" class="qf-list">
-      <view wx:for="{{identities}}" wx:key="id" class="qf-list-item">
-        <text class="qf-h3">{{item.label}}</text>
-        <text class="qf-muted">{{item.roleName}} · {{item.inviteCode}}</text>
-      </view>
-    </view>
-    <view wx:else class="qf-empty">暂无身份</view>
   </view>
 
   <qf-role-tabbar role="{{session.role}}" current="/pages/profile/profile"></qf-role-tabbar>

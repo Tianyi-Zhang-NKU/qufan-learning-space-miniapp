@@ -20,7 +20,7 @@
   <z-card mode="hero">
     <text class="page-kicker">ADMIN OPS</text>
     <view class="page-title">机构配置中心</view>
-    <view class="page-desc">管理邀请码、班级课表、摄像头映射和家长可见权限。</view>
+    <view class="page-desc">管理课程课次、手机号映射、反馈记录和直播接口配置。</view>
   </z-card>
 
   <z-card>
@@ -30,7 +30,7 @@
   </z-card>
 
   <view class="grid-2">
-    <view><z-tile icon="码" title="邀请码" desc="家长通过邀请码绑定学生"></z-tile></view>
-    <view><z-tile icon="表" title="排课管理" desc="班级、老师、教室统一维护"></z-tile></view>
+    <view><z-tile icon="号" title="手机号映射" desc="老师和学生按手机号识别身份"></z-tile></view>
+    <view><z-tile icon="表" title="课程课次" desc="课程、老师、学生统一维护"></z-tile></view>
   </view>
 </view>

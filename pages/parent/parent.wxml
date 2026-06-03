@@ -4,27 +4,27 @@
     <view class="brand-row">
       <z-logo></z-logo>
       <view>
-        <text class="brand-name">家长端</text>
-        <text class="brand-sub">学生：林同学 · 初二</text>
+        <text class="brand-name">学生/家长端</text>
+        <text class="brand-sub">我的学习 · 趣帆学习空间</text>
       </view>
     </view>
     <button class="ghost-btn small-ghost" bindtap="logout">退出</button>
   </view>
 
   <z-card mode="hero">
-    <text class="page-kicker">PARENT VIEW</text>
-    <view class="page-title">今天需要关注 3 件事</view>
-    <view class="page-desc">一节课程正在进行，一组习题待完成，三道错题需要订正。</view>
+    <text class="page-kicker">LEARNING VIEW</text>
+    <view class="page-title">查看课程与老师反馈</view>
+    <view class="page-desc">用报班手机号进入，查看课程、课次、图片反馈和语音反馈。</view>
   </z-card>
 
   <view class="grid-2">
-    <view><z-tile icon="看" title="课堂画面" desc="18:30 后可查看教室 03" url="/pages/live/live" open-type-alias="switchTab"></z-tile></view>
-    <view><z-tile icon="错" title="错题订正" desc="本周新增 6 道" url="/pages/wrongbook/wrongbook" open-type-alias="switchTab"></z-tile></view>
+    <view><z-tile icon="看" title="直播入口" desc="ClassIn 接口待接入" url="/pages/live/live" open-type-alias="switchTab"></z-tile></view>
+    <view><z-tile icon="反" title="老师反馈" desc="查看课后反馈" url="/pages/parent/exercises/exercises"></z-tile></view>
   </view>
 
   <z-card>
-    <z-section-title title="孩子课表" right="今日"></z-section-title>
-    <z-list-item time="18:30" title="初二数学强化 A 班" sub="教室 03 · 王老师 · 上课中"></z-list-item>
-    <z-list-item time="20:10" title="英语阅读提升" sub="教室 07 · 刘老师 · 待开始"></z-list-item>
+    <z-section-title title="今日课程" right="我的学习"></z-section-title>
+    <z-list-item time="18:30" title="初三生物1班" sub="周明远老师 · 课后查看反馈"></z-list-item>
+    <z-list-item time="20:10" title="初二数学A班" sub="周明远老师 · 直播入口预留"></z-list-item>
   </z-card>
 </view>

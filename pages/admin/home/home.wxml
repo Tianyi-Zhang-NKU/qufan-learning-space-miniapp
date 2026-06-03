@@ -2,8 +2,8 @@
   <z-bg mode="dark"></z-bg>
   <view class="qf-top">
     <view class="qf-brand">
-      <text class="qf-brand-title">管理员首页</text>
-      <text class="qf-brand-sub">校区运营总览</text>
+      <text class="qf-brand-title">管理首页</text>
+      <text class="qf-brand-sub">课程 / 课次 / 关系 / 反馈 / 直播配置</text>
     </view>
     <button class="qf-btn ghost small" bindtap="goManage">数据管理</button>
   </view>
@@ -27,28 +27,28 @@
           <text class="qf-tag {{item.liveTone}}">{{item.liveStatusText}}</text>
         </view>
         <view class="qf-divider"></view>
-        <text class="qf-muted">学生 {{item.studentCount}} 人 · 已绑定家长 {{item.guardianCount}} 人</text>
-        <text wx:if="{{item.recentOrNextSession}}" class="qf-muted">{{item.recentOrNextSession.sessionTitle}} · {{item.recentOrNextSession.date}} {{item.recentOrNextSession.startTime}}-{{item.recentOrNextSession.endTime}}</text>
+        <text class="qf-muted">学生 {{item.studentCount}} 人 · 手机号映射 {{item.phoneAccountCount}} 个 · 反馈 {{item.feedbackCount}} 条</text>
       </view>
     </view>
     <view wx:else class="qf-empty">暂无课程关系</view>
   </view>
 
-  <view class="qf-section">今日课次</view>
+  <view class="qf-section">最近反馈</view>
   <view class="qf-card tight">
-    <view wx:if="{{overview.todaySessions.length}}" class="qf-list">
-      <view wx:for="{{overview.todaySessions}}" wx:key="id" class="qf-list-item">
-        <text class="qf-h3">{{item.displayTitle}}</text>
-        <text class="qf-muted">{{item.courseName}} · {{item.startTime}}-{{item.endTime}} · {{item.teacherName}} · {{item.classroomName}}</text>
+    <view wx:if="{{overview.recentFeedbacks.length}}" class="qf-list">
+      <view wx:for="{{overview.recentFeedbacks}}" wx:key="id" class="qf-list-item">
+        <text class="qf-h3">{{item.studentName}} · {{item.courseName}}</text>
+        <text class="qf-muted">{{item.courseSessionTitle}} · {{item.createdAt}}</text>
+        <text class="qf-text">{{item.text}}</text>
       </view>
     </view>
-    <view wx:else class="qf-empty">今日暂无课次</view>
+    <view wx:else class="qf-empty">暂无反馈记录</view>
   </view>
 
-  <view class="qf-section">直播房间状态</view>
+  <view class="qf-section">直播配置状态</view>
   <view class="qf-card tight">
     <view class="qf-wrap">
-      <text wx:for="{{overview.liveRooms}}" wx:key="id" class="qf-tag {{item.status === 'open' ? 'ok' : item.status === 'offline' ? 'danger' : 'warn'}}">{{item.classroom.name}} {{item.statusText}}</text>
+      <text wx:for="{{overview.liveRooms}}" wx:key="id" class="qf-tag warn">{{item.classroom.name}} ClassIn 待接入</text>
     </view>
   </view>
 

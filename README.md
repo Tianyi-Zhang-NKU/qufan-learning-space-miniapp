@@ -1,120 +1,81 @@
 # 趣帆学习空间微信小程序 Demo
 
-这是为“趣帆学习空间”规划出的教培机构小程序 demo。当前版本先实现可在本地调试的前端和极简后端接口，核心目标是展示业务流程，不接 AI 搜题，不接正式摄像头流。
+第一版核心路线已经收敛为：手机号登录 + 老师上传课后反馈 + 学生/家长查看反馈。直播入口保留，但当前只预留 ClassIn/真实服务接口，不实现伪直播。
 
-## 已实现范围
+## 第一版主流程
 
-- 微信登录 + 邀请码绑定的模拟流程。
-- 教务管理端：基础数据概览、生成邀请码。
-- 教务录入：录入家长/学生并生成家长邀请码，录入课程安排。
-- 老师端：查看课程班和课次、发布课前测/课后测、从学生名单进入错题录入。
-- 家长端：按孩子查看课程班、课次、直播入口、已发布测验和近期错题。
-- 实时课表：按角色过滤课程。
-- 课堂直播：展示 15 间教室直播接入前的权限和签权接口思路，当前没有真实流地址。
-- 课堂测试习题：老师选择 PDF/Word 文件，demo 保存文件元信息。
-- 错题本：老师从课程课次下选择学生，保存错题图片元信息、错因和订正建议。
-- 极简本地后端：`server/index.js`，不依赖第三方包。
+1. 用户用报班手机号登录。
+2. 小程序按手机号识别老师、学生/家长或管理员身份。
+3. 老师进入“我的课程”，选择课程、课次和学生。
+4. 老师上传课后反馈：文字、图片、语音。
+5. 学生/家长用绑定学生的手机号登录后，查看课程、课次和老师反馈。
+6. 图片可查看和下载；语音只能收听，不提供下载入口。
+7. 直播入口始终保留，正式部署后接入 ClassIn 或真实服务器。
 
-## Demo 邀请码
+## 演示手机号
 
-| 角色 | 邀请码 | 手机号 |
-|---|---|---|
-| 家长端 | `STUDENT-001` | `13800000001` |
-| 老师端 | `TEACHER-2026` | `13800000002` |
-| 教务端 | `ADMIN-2026` | `13800000003` |
+| 角色 | 手机号 | 登录后 |
+|---|---:|---|
+| 学生/家长 | `13800000001` | 我的学习、我的课程、课后反馈 |
+| 老师 | `13800000002` | 教师首页、我的课程、上传课后反馈 |
+| 管理员 | `13800000003` | 管理首页、数据关系、手机号映射、反馈记录 |
 
-登录页也提供了快速填充按钮。
-
-## 如何打开小程序
-
-1. 打开微信开发者工具。
-2. 选择导入项目。
-3. 项目目录选择：`D:\Desktop\miniapp`
-4. AppID 暂时可使用测试号或 `touristappid`。
-5. 本地调试时勾选“不校验合法域名、web-view 域名、TLS 版本以及 HTTPS 证书”。
-6. 编译后从登录页进入 demo。
-
-## 前端默认数据模式
-
-默认使用小程序内置 mock 数据：
+开发阶段 `services/config.js` 使用：
 
 ```js
-// services/config.js
-module.exports = {
-  apiMode: 'mock'
-};
+authMode: 'mock' // mock | wechatPhone | sms | http
 ```
 
-这样不需要启动本地后端，也能直接在微信开发者工具里看页面。
+后续可接微信手机号授权或短信验证码，但真实 API 密钥、短信密钥、ClassIn secret 不能放在小程序前端。
 
-## 启动本地极简后端
+## 数据与接口
 
-如需测试 HTTP 接口：
+核心 mock 数据在 `services/mock-db.js`：
+
+- `phoneAccounts`：手机号到老师、学生/家长、管理员档案的映射。
+- `students` / `teachers` / `courses` / `courseSessions`：课程与课次基础数据。
+- `lessonFeedbacks`：老师上传给学生的课后反馈。
+- `mediaFiles`：图片、语音元信息，包含 `storageKey`、`retentionUntil` 和下载权限。
+- `classrooms` / `liveRooms`：15 间教室和 ClassIn 直播入口占位。
+
+核心 API 在 `services/api.js`：
+
+- 登录：`loginByPhone`、`logout`、`getCurrentSession`、`getCurrentUserProfile`
+- 老师端：`getTeacherDashboard`、`getTeacherCourses`、`getTeacherCourseDetail`、`getTeacherLessonDetail`、`getTeacherStudentsByCourse`
+- 反馈：`uploadFeedbackImage`、`uploadFeedbackVoice`、`createLessonFeedback`
+- 学生/家长端：`getStudentDashboard`、`getStudentCourses`、`getStudentCourseDetail`、`getStudentLessonFeedbacks`、`getFeedbackDetail`
+- 媒体：`getMediaPreview`、`downloadFeedbackImage`、`playFeedbackVoice`
+- 管理端：`getAdminOverview`、`getAdminCourseTree`、`getAdminTeacherRelations`、`getAdminStudentRelations`
+- 直播：`requestClassInLiveEntry`
+
+## 页面说明
+
+- `pages/login`：手机号登录页，保留趣帆学习空间品牌。
+- `pages/teacher/home`：教师首页，展示今日课程、近期需要反馈的课次和最近上传反馈。
+- `pages/teacher/courses`：老师课程列表，进入课程和课次。
+- `pages/course-detail`：课程详情/课次详情。老师在课次学生名单里上传或查看反馈。
+- `pages/wrong-record-editor`：历史文件名保留，页面文案和功能已改为“上传课后反馈”。
+- `pages/parent/home`：学生/家长“我的学习”首页。
+- `pages/parent/courses`：当前学生课程和课次反馈数量。
+- `pages/parent/exercises`：老师反馈列表，支持按课程筛选。
+- `pages/file-preview`：媒体预览。图片可查看/下载，语音只能播放。
+- `pages/live-player`：ClassIn 直播入口占位。
+- `pages/admin/home` / `pages/admin/manage`：课程关系、手机号映射、反馈记录、直播配置占位。
+
+## 真实上线前需要甲方提供
+
+- 真实手机号登录方式：微信手机号授权或短信验证码服务。
+- 学员、老师、课程、课次数据 API。
+- 媒体存储方案：微信云存储、腾讯云 COS 或其他对象存储。
+- 图片下载签名接口。
+- 语音播放签名接口。
+- ClassIn 对接参数与服务端签名 URL 生成方案。
+
+## 开发与验证
 
 ```bash
-cd /d D:\Desktop\miniapp
-npm run start:backend
+node scripts/check-js.js
+node scripts/smoke-test.js
 ```
 
-然后把 `services/config.js` 改成：
-
-```js
-module.exports = {
-  apiMode: 'http',
-  localBaseUrl: 'http://127.0.0.1:8787'
-};
-```
-
-接口清单：
-
-- `POST /api/auth/bind-invite`
-- `GET /api/bootstrap`
-- `GET /api/dashboard`
-- `GET /api/schedule`
-- `POST /api/schedule`
-- `POST /api/students`
-- `GET /api/live/rooms`
-- `GET /api/live/ticket?roomId=live_08`
-- `GET /api/tests`
-- `POST /api/tests/import`
-- `POST /api/tests/grade`
-- `GET /api/wrong-records`
-- `POST /api/wrong-records`
-- `POST /api/invites`
-
-## 直播接入说明
-
-当前 demo 不包含真实直播流地址。直播页已经预留：
-
-- 教室直播状态。
-- 家长/老师/教务权限判断。
-- 观看凭证申请接口。
-- `<live-player>` 播放容器。
-
-正式接入前必须线下确认：
-
-1. 现有摄像头或 NVR 是否支持 RTMP 推流。
-2. 是否能输出低码率子码流。
-3. 每间教室是否能绑定独立推流地址。
-4. 是否需要腾讯云直播播放域名和推流域名。
-5. 是否需要防盗链和过期签名。
-
-## 后续接云开发的建议
-
-1. 把 `services/mock-db.js` 的数据结构迁移为云开发数据库集合。
-2. 把 `services/api.js` 的 mock/http 适配改成云函数调用。
-3. 文件上传从本地临时路径改成 `wx.cloud.uploadFile`。
-4. 直播地址由云函数按权限生成短时有效播放地址。
-5. 课表、测试、错题全部按角色做服务端过滤，不只依赖前端隐藏。
-
-## 验证命令
-
-```bash
-cd /d D:\Desktop\miniapp
-npm run check:js
-npm run smoke
-```
-
-`check:js` 只检查 JavaScript 语法；`smoke` 会检查页面文件、15 间教室、课程班到课次层级、家长多孩子切换、教师错题录入路径、管理端关系数据、直播凭证、文件占位和旧品牌/旧文案清理。
-
-微信开发者工具第一次打开本项目时可能提示“您信任此项目的作者吗？”。这是本地新项目的安全确认，点击“信任并运行”后即可进入模拟器。当前项目使用 `touristappid`，CLI 预览二维码可能受测试 AppID 权限限制；正式 AppID 创建后再做上传和预览验证。
+`check-js` 检查 JavaScript 语法；`smoke-test` 覆盖手机号登录、老师课程课次学生路径、反馈创建、图片/语音媒体权限、学生/家长查看反馈、ClassIn 占位、15 间教室/直播占位和旧品牌/旧主流程文案清理。

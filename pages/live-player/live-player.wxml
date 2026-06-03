@@ -1,26 +1,24 @@
 <view class="qf-page">
+  <z-bg mode="dark"></z-bg>
   <view class="qf-top">
     <view class="qf-brand">
       <text class="qf-brand-title">课堂直播</text>
-      <text class="qf-brand-sub">{{detail.courseSession.title || '直播状态'}}</text>
+      <text class="qf-brand-sub">{{detail.courseSession.displayTitle || '直播入口预留'}}</text>
     </view>
   </view>
 
   <view class="qf-card live-panel">
-    <view wx:if="{{ticket && ticket.streamUrl}}">
-      <live-player src="{{ticket.streamUrl}}" autoplay binderror="load"></live-player>
-    </view>
-    <view wx:elif="{{ticket}}" class="qf-empty live-placeholder">
-      {{ticket.message}}
-    </view>
-    <view wx:else class="qf-empty live-placeholder">
-      {{error || '正在申请观看凭证'}}
-    </view>
+    <text class="qf-h2">ClassIn 直播接口待接入</text>
+    <text class="qf-muted">{{detail.course.name}} · {{detail.courseSession.date}} {{detail.courseSession.startTime}}-{{detail.courseSession.endTime}}</text>
+    <view class="qf-divider"></view>
+    <view wx:if="{{entry && entry.classinEntryUrl}}" class="qf-empty live-placeholder">已获取真实 ClassIn 入口。</view>
+    <view wx:elif="{{entry}}" class="qf-empty live-placeholder">{{entry.message}}，已预留直播入口，正式部署后接入 ClassIn。</view>
+    <view wx:else class="qf-empty live-placeholder">{{error || '正在申请直播入口'}}</view>
+    <button class="qf-btn full" bindtap="openClassIn">{{entry && entry.classinEntryUrl ? '打开直播' : '直播入口预留'}}</button>
   </view>
 
-  <view wx:if="{{detail}}" class="qf-card tight">
-    <text class="qf-h3">{{detail.courseSession.className}}</text>
-    <text class="qf-muted">{{detail.courseSession.date}} {{detail.courseSession.startTime}}-{{detail.courseSession.endTime}}</text>
-    <text class="qf-muted">{{detail.courseSession.teacherName}} · {{detail.courseSession.classroomName}}</text>
+  <view class="qf-card tight">
+    <text class="qf-h3">真实部署说明</text>
+    <text class="qf-muted">ClassIn secret 不放在小程序前端，后续由后端或云函数生成签名 URL。</text>
   </view>
 </view>

@@ -1,44 +1,44 @@
 <view class="screen wrongbook-screen">
   <z-bg></z-bg>
-  <z-page-head kicker="WRONG BOOK" title="错题本" desc="按学生、科目和知识点沉淀错题，家长实时看到订正进度。"></z-page-head>
+  <z-page-head kicker="FEEDBACK" title="课后反馈" desc="老师上传图片、文字和语音，学生/家长查看课后反馈。"></z-page-head>
 
   <view class="grid-3 wrong-stats">
-    <view><z-metric value="126" label="累计错题"></z-metric></view>
-    <view><z-metric value="18" label="待订正"></z-metric></view>
-    <view><z-metric value="74%" label="掌握率"></z-metric></view>
+    <view><z-metric value="4" label="反馈样例"></z-metric></view>
+    <view><z-metric value="3" label="图片素材"></z-metric></view>
+    <view><z-metric value="3" label="语音素材"></z-metric></view>
   </view>
 
   <view class="chip-row filter-row">
     <z-chip text="全部" active="{{true}}"></z-chip>
+    <z-chip text="生物"></z-chip>
     <z-chip text="数学"></z-chip>
     <z-chip text="英语"></z-chip>
-    <z-chip text="本周新增"></z-chip>
   </view>
 
   <z-card mode="light">
     <view class="wrong-head">
       <view>
-        <text class="wrong-subject">数学 · 一次函数</text>
-        <text class="wrong-title">函数图像经过第二、四象限时符号判断错误</text>
+        <text class="wrong-subject">初三生物1班 · 第一次课</text>
+        <text class="wrong-title">细胞结构复习反馈</text>
       </view>
-      <z-status text="待订正" tone="warn"></z-status>
+      <z-status text="已反馈"></z-status>
     </view>
-    <view class="wrong-body">来源：06-03 每日习题第 4 题。建议重新画坐标轴，并标注 k、b 的正负关系。</view>
+    <view class="wrong-body">老师已上传批改照片和语音说明，家长可查看图片并收听语音。</view>
   </z-card>
 
   <z-card mode="light">
     <view class="wrong-head">
       <view>
-        <text class="wrong-subject">英语 · 语法</text>
-        <text class="wrong-title">一般过去时与现在完成时混用</text>
+        <text class="wrong-subject">初二数学A班 · 第一次课</text>
+        <text class="wrong-title">一次函数图像反馈</text>
       </view>
-      <z-status text="已掌握"></z-status>
+      <z-status text="已反馈"></z-status>
     </view>
-    <view class="wrong-body">来源：06-02 课后练习。老师已批注，家长可查看订正照片。</view>
+    <view class="wrong-body">本页是历史入口兼容展示，主流程请进入“老师反馈”。</view>
   </z-card>
 
   <z-card>
-    <z-section-title title="订正节奏" right="本周"></z-section-title>
-    <view class="body-copy">建议每晚完成当天新增错题订正，周末统一复盘高频知识点。</view>
+    <z-section-title title="当前主流程" right="手机号登录"></z-section-title>
+    <view class="body-copy">老师从课程课次进入学生名单上传课后反馈；学生/家长用报班手机号查看。</view>
   </z-card>
 </view>

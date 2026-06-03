@@ -2,7 +2,7 @@
   <z-bg mode="dark"></z-bg>
   <view class="qf-top">
     <view class="qf-brand">
-      <text class="qf-brand-title">录入错题</text>
+      <text class="qf-brand-title">上传课后反馈</text>
       <text class="qf-brand-sub">{{session.displayName}}</text>
     </view>
   </view>
@@ -15,18 +15,39 @@
 
   <view class="qf-card">
     <view class="qf-field">
-      <text class="qf-label">知识点</text>
-      <input class="qf-input" value="{{draft.topic}}" data-field="topic" bindinput="input" />
+      <text class="qf-label">文字反馈</text>
+      <textarea class="qf-textarea" value="{{draft.text}}" placeholder="填写本次课后反馈、订正建议或回家复习提醒" bindinput="inputText"></textarea>
     </view>
-    <view class="qf-field">
-      <text class="qf-label">错因</text>
-      <textarea class="qf-textarea" value="{{draft.mistakeReason}}" data-field="mistakeReason" bindinput="input"></textarea>
+
+    <view class="qf-section">图片反馈</view>
+    <view class="qf-wrap media-row">
+      <button class="qf-btn ghost small" bindtap="chooseImage">上传图片</button>
+      <button class="qf-btn ghost small" bindtap="addMockImage">添加演示图片</button>
     </view>
-    <view class="qf-field">
-      <text class="qf-label">订正建议</text>
-      <textarea class="qf-textarea" value="{{draft.correction}}" data-field="correction" bindinput="input"></textarea>
+    <view wx:if="{{imageFiles.length}}" class="qf-list media-list">
+      <view wx:for="{{imageFiles}}" wx:key="id" class="qf-list-item qf-row">
+        <view>
+          <text class="qf-h3">{{item.name}}</text>
+          <text class="qf-muted">图片可供学生/家长查看和下载</text>
+        </view>
+        <button class="qf-btn ghost small" data-id="{{item.id}}" bindtap="removeImage">移除</button>
+      </view>
     </view>
-    <button class="qf-btn ghost full" bindtap="mockImage">{{imageFile ? imageFile.name : '选择错题图片（演示保存元信息）'}}</button>
-    <button class="qf-btn full editor-save" bindtap="save">保存错题</button>
+
+    <view class="qf-section">语音反馈</view>
+    <view class="qf-wrap media-row">
+      <button class="qf-btn ghost small" bindtap="addMockVoice">添加演示语音</button>
+    </view>
+    <view wx:if="{{voiceFiles.length}}" class="qf-list media-list">
+      <view wx:for="{{voiceFiles}}" wx:key="id" class="qf-list-item qf-row">
+        <view>
+          <text class="qf-h3">{{item.name}}</text>
+          <text class="qf-muted">语音仅支持收听，不提供下载入口</text>
+        </view>
+        <button class="qf-btn ghost small" data-id="{{item.id}}" bindtap="removeVoice">移除</button>
+      </view>
+    </view>
+
+    <button class="qf-btn full editor-save" loading="{{saving}}" bindtap="save">保存反馈</button>
   </view>
 </view>

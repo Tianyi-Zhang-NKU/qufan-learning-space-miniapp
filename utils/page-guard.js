@@ -20,7 +20,7 @@ function ensureLogin(role) {
 function roleLabel(role) {
   if (role === 'admin') return '管理员端';
   if (role === 'teacher') return '教师端';
-  if (role === 'parent') return '家长端';
+  if (role === 'parent' || role === 'student') return '学生/家长端';
   return '未绑定';
 }
 

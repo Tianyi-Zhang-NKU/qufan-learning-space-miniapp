@@ -85,8 +85,8 @@
 - 首页：`pages/home/home`
 - 实时课表：`pages/schedule/schedule`
 - 教室直播：`pages/live/live`
-- 每日习题：`pages/exercises/exercises`
-- 错题本：`pages/wrongbook/wrongbook`
+- 可选测验资料：`pages/exercises/exercises`
+- 课后反馈：`pages/parent/exercises/exercises`
 - 家长端：`pages/parent/parent`
 - 教师端：`pages/teacher/teacher`
 - 机构端：`pages/admin/admin`
@@ -96,5 +96,5 @@
 - Figma 不重新发明视觉语言，以小程序 `assets/images` 和当前页面实现为视觉源。
 - 所有页面先放背景，再放头部、卡片、功能区。
 - 暗色页面保留植物边缘和中心留白，不在内容区堆满卡片。
-- 错题/习题内容优先使用纸面卡片。
+- 课后反馈内容优先使用纸面卡片。
 - 直播卡不画假播放器控件，只画教室画面容器、在线点、课程状态。

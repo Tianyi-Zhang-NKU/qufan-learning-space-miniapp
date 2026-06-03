@@ -2,30 +2,18 @@
   <z-bg mode="dark"></z-bg>
   <view class="qf-top">
     <view class="qf-brand">
-      <text class="qf-brand-title">课程中心</text>
-      <text class="qf-brand-sub">{{currentChild.name || '当前孩子'}}</text>
+      <text class="qf-brand-title">我的课程</text>
+      <text class="qf-brand-sub">{{currentStudent.name || session.displayName}} · 当前手机号绑定学生</text>
     </view>
   </view>
 
-  <view class="qf-card qf-hero">
-    <text class="qf-h2">{{currentChild.name || '未选择孩子'}}</text>
-    <text class="qf-muted">{{currentChild.className}}</text>
-    <picker wx:if="{{children.length}}" range="{{childOptions}}" value="{{childIndex}}" bindchange="switchChild">
-      <view class="qf-picker child-picker">
-        <text class="qf-picker-label">当前孩子</text>
-        <text class="qf-picker-value">{{currentChildLabel}}</text>
-      </view>
-    </picker>
-  </view>
-
-  <view class="qf-section">我的课程</view>
   <view class="qf-card tight">
     <view wx:if="{{courseGroups.length}}" class="qf-list">
       <view wx:for="{{courseGroups}}" wx:key="id" class="qf-list-item">
         <view class="qf-row">
           <view>
             <text class="qf-h3">{{item.name}}</text>
-            <text class="qf-muted">{{item.teacherName}} · {{item.classroomName}} · {{item.sessions.length}} 次课</text>
+            <text class="qf-muted">{{item.teacherName}} · {{item.sessions.length}} 次课 · 反馈 {{item.feedbackCount}} 条</text>
           </view>
           <button class="qf-btn ghost small" data-id="{{item.id}}" bindtap="goDetail">课程详情</button>
         </view>
@@ -35,19 +23,17 @@
             <view>
               <text class="qf-h3">{{session.sessionTitle}}</text>
               <text class="qf-muted">{{session.displayTitle}} · {{session.date}} {{session.startTime}}-{{session.endTime}}</text>
+              <text class="qf-muted">反馈 {{session.feedbackCount}} 条 · 上课直播入口预留</text>
             </view>
-            <text class="qf-tag {{session.statusTone}}">{{session.statusText}}</text>
-          </view>
-          <view class="qf-wrap course-actions">
-            <button class="qf-btn ghost small" data-id="{{session.id}}" bindtap="goLive" wx:if="{{session.status === 'in_progress'}}">进入直播</button>
-            <text wx:elif="{{session.status === 'scheduled'}}" class="qf-muted qf-small">待接入直播流</text>
-            <text wx:else class="qf-muted qf-small">课程已结束</text>
+            <view class="qf-wrap">
+              <button class="qf-btn ghost small" data-id="{{session.id}}" bindtap="goSession">反馈</button>
+              <button class="qf-btn ghost small" data-id="{{session.id}}" bindtap="goLive">直播入口</button>
+            </view>
           </view>
         </view>
-        <text wx:if="{{item.wrongRecords.length}}" class="qf-muted course-tail">错题记录 {{item.wrongRecords.length}} 条</text>
       </view>
     </view>
-    <view wx:else class="qf-empty">当前孩子暂无课程</view>
+    <view wx:else class="qf-empty">当前学生暂无课程</view>
   </view>
 
   <qf-role-tabbar role="parent" current="/pages/parent/courses/courses"></qf-role-tabbar>

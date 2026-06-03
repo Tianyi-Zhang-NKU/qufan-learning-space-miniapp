@@ -5,12 +5,8 @@ const Notice = require('../../../utils/notice');
 Page({
   data: {
     session: {},
-    children: [],
-    currentChild: {},
-    courseGroups: [],
-    childOptions: [],
-    childIndex: 0,
-    currentChildLabel: ''
+    currentStudent: {},
+    courseGroups: []
   },
 
   onShow() {
@@ -21,34 +17,22 @@ Page({
   },
 
   load() {
-    Promise.all([Api.listParentChildren(), Api.getParentCourses({})])
-      .then(([children, result]) => {
-        const activeId = result.currentChild ? result.currentChild.id : '';
-        const childIndex = Math.max(0, children.findIndex((item) => item.id === activeId));
+    Api.getStudentCourses()
+      .then((result) => {
         this.setData({
-          children,
-          currentChild: result.currentChild,
-          courseGroups: result.courseGroups || result.courses || [],
-          childOptions: children.map((item) => item.displayLabel || item.name),
-          childIndex,
-          currentChildLabel: children[childIndex] ? (children[childIndex].displayLabel || children[childIndex].name) : ''
+          currentStudent: result.currentStudent || {},
+          courseGroups: result.courseGroups || result.courses || []
         });
       })
       .catch((error) => Notice.alert(error.message || '课程加载失败'));
   },
 
-  switchChild(event) {
-    const child = this.data.children[Number(event.detail.value || 0)];
-    if (!child) return;
-    Api.switchActiveChild(child.id).then((session) => {
-      getApp().setSession(session);
-      this.setData({ session });
-      this.load();
-    });
-  },
-
   goDetail(event) {
     wx.navigateTo({ url: `/pages/course-detail/course-detail?courseId=${event.currentTarget.dataset.id}` });
+  },
+
+  goSession(event) {
+    wx.navigateTo({ url: `/pages/course-detail/course-detail?id=${event.currentTarget.dataset.id}` });
   },
 
   goLive(event) {

@@ -9,114 +9,96 @@
 
   <view wx:if="{{mode === 'course'}}">
     <view class="qf-card qf-hero">
-      <view class="qf-row">
-        <view>
-          <text class="qf-h2">{{detail.course.name}}</text>
-          <text class="qf-muted">{{detail.course.teacherName}} · {{detail.course.classroomName}} · 学生 {{detail.course.studentCount}} 人</text>
-        </view>
-        <text class="qf-tag {{detail.course.liveTone}}">{{detail.course.liveStatusText}}</text>
-      </view>
-    </view>
-
-    <view class="qf-section">课次列表</view>
-    <view class="qf-card tight">
-      <view wx:if="{{detail.course.sessions.length}}" class="qf-list">
-        <view wx:for="{{detail.course.sessions}}" wx:key="id" class="qf-list-item">
-          <view class="qf-row">
-            <view>
-              <text class="qf-h3">{{item.sessionTitle}}</text>
-              <text class="qf-muted">{{item.displayTitle}} · {{item.date}} {{item.startTime}}-{{item.endTime}}</text>
-            </view>
-            <text class="qf-tag {{item.statusTone}}">{{item.statusText}}</text>
-          </view>
-          <view class="qf-wrap detail-actions">
-            <button class="qf-btn ghost small" data-id="{{item.id}}" bindtap="openSession">进入课次</button>
-            <button wx:if="{{item.status === 'in_progress'}}" class="qf-btn small" data-id="{{item.id}}" bindtap="goLive">进入直播</button>
-          </view>
-        </view>
-      </view>
-      <view wx:else class="qf-empty">暂无课次</view>
-    </view>
-
-    <view class="qf-section">学生概览</view>
-    <view class="qf-card tight">
-      <view wx:if="{{detail.course.students.length}}" class="qf-wrap">
-        <text wx:for="{{detail.course.students}}" wx:key="id" class="qf-tag">{{item.name}}</text>
-      </view>
-      <view wx:else class="qf-empty">暂无学生</view>
-    </view>
-
-    <view class="qf-section">该课程错题</view>
-    <view class="qf-card tight">
-      <view wx:if="{{detail.course.wrongRecords.length}}" class="qf-list">
-        <view wx:for="{{detail.course.wrongRecords}}" wx:key="id" class="qf-list-item">
-          <text class="qf-h3">{{item.studentName}} · {{item.topic}}</text>
-          <text class="qf-muted">{{item.courseSession.sessionTitle}} · {{item.statusText}}</text>
-        </view>
-      </view>
-      <view wx:else class="qf-empty">暂无错题记录</view>
-    </view>
-  </view>
-
-  <view wx:else>
-    <view wx:if="{{detail.courseSession}}" class="qf-card qf-hero">
-      <view class="qf-row">
-        <view>
-          <text class="qf-h2">{{detail.courseSession.displayTitle}}</text>
-          <text class="qf-muted">{{detail.course.name}} · {{detail.courseSession.teacherName}} · {{detail.courseSession.classroomName}}</text>
-          <text class="qf-muted">{{detail.courseSession.date}} {{detail.courseSession.startTime}}-{{detail.courseSession.endTime}}</text>
-        </view>
-        <text class="qf-tag {{detail.courseSession.statusTone}}">{{detail.courseSession.statusText}}</text>
-      </view>
-      <button wx:if="{{detail.courseSession.status === 'in_progress'}}" class="qf-btn full detail-live" bindtap="goLive">进入直播</button>
-    </view>
-
-    <view class="qf-section">课前测 / 课后测</view>
-    <view class="qf-card tight">
-      <view wx:if="{{session.role === 'teacher'}}" class="qf-wrap publish-actions">
-        <button class="qf-btn small" data-type="pre" bindtap="publishAssignment">发布课前测</button>
-        <button class="qf-btn small" data-type="post" bindtap="publishAssignment">发布课后测</button>
-      </view>
-      <view wx:if="{{detail.assignments.length}}" class="qf-list">
-        <view wx:for="{{detail.assignments}}" wx:key="id" class="qf-list-item qf-row">
-          <view>
-            <text class="qf-h3">{{item.title}}</text>
-            <text class="qf-muted">{{item.typeText}} · {{item.statusText}}</text>
-          </view>
-          <button wx:if="{{item.file}}" class="qf-btn ghost small" data-id="{{item.file.id}}" bindtap="previewFile">预览</button>
-          <text wx:else class="qf-tag warn">未发布</text>
-        </view>
-      </view>
-      <view wx:else class="qf-empty">暂无测验文件</view>
+      <text class="qf-h2">{{detail.course.name}}</text>
+      <text class="qf-muted">{{detail.course.teacherFullName || detail.course.teacherName}} · {{detail.course.subject}} · 学生 {{detail.course.studentCount}} 人</text>
+      <text class="qf-muted">已上传反馈 {{detail.course.feedbackCount}} 条</text>
     </view>
 
     <view class="qf-section">学生名单</view>
     <view class="qf-card tight">
       <view wx:if="{{detail.students.length}}" class="qf-list">
-        <view wx:for="{{detail.students}}" wx:key="id" class="qf-list-item qf-row">
-          <view>
-            <text class="qf-h3">{{item.name}}</text>
-            <text class="qf-muted">{{item.grade}} · {{detail.course.name}}</text>
-          </view>
-          <button wx:if="{{session.role === 'teacher'}}" class="qf-btn small" data-id="{{item.id}}" bindtap="recordWrong">录入错题</button>
+        <view wx:for="{{detail.students}}" wx:key="id" class="qf-list-item">
+          <text class="qf-h3">{{item.name}}</text>
+          <text class="qf-muted">{{item.grade}} · {{detail.course.name}}</text>
         </view>
       </view>
       <view wx:else class="qf-empty">暂无学生</view>
     </view>
 
-    <view class="qf-section">错题记录</view>
+    <view class="qf-section">课次列表</view>
     <view class="qf-card tight">
-      <view wx:if="{{detail.wrongRecords.length}}" class="qf-list">
-        <view wx:for="{{detail.wrongRecords}}" wx:key="id" class="qf-list-item">
+      <view wx:if="{{detail.sessions.length}}" class="qf-list">
+        <view wx:for="{{detail.sessions}}" wx:key="id" class="qf-list-item">
           <view class="qf-row">
-            <text class="qf-h3">{{item.studentName}} · {{item.topic}}</text>
-            <text class="qf-tag {{item.statusTone}}">{{item.statusText}}</text>
+            <view>
+              <text class="qf-h3">{{item.sessionTitle}}</text>
+              <text class="qf-muted">{{item.displayTitle}} · {{item.date}} {{item.startTime}}-{{item.endTime}}</text>
+              <text class="qf-muted">反馈 {{item.feedbackCount}} 条 · 直播入口预留</text>
+            </view>
+            <button class="qf-btn small" data-id="{{item.id}}" bindtap="openSession">进入课次</button>
           </view>
-          <text class="qf-muted">{{item.mistakeReason}}</text>
-          <text class="qf-text">{{item.correction}}</text>
         </view>
       </view>
-      <view wx:else class="qf-empty">暂无错题记录</view>
+      <view wx:else class="qf-empty">暂无课次</view>
+    </view>
+  </view>
+
+  <view wx:if="{{mode === 'session'}}">
+    <view class="qf-card qf-hero">
+      <text class="qf-h2">{{detail.courseSession.displayTitle}}</text>
+      <text class="qf-muted">{{detail.course.name}} · {{detail.course.teacherFullName || detail.course.teacherName}}</text>
+      <text class="qf-muted">{{detail.courseSession.date}} {{detail.courseSession.startTime}}-{{detail.courseSession.endTime}}</text>
+      <button class="qf-btn full detail-live" bindtap="goLive">直播入口预留</button>
+    </view>
+
+    <view class="qf-section">学生名单</view>
+    <view class="qf-card tight">
+      <view wx:if="{{detail.students.length}}" class="qf-list">
+        <view wx:for="{{detail.students}}" wx:key="id" class="qf-list-item">
+          <view class="qf-row">
+            <view>
+              <text class="qf-h3">{{item.name}}</text>
+              <text class="qf-muted">{{item.grade}} · 已有反馈 {{item.feedbackCount || 0}} 条</text>
+              <text wx:if="{{item.latestFeedback}}" class="qf-text">{{item.latestFeedback.text}}</text>
+            </view>
+            <view class="qf-wrap">
+              <button wx:if="{{session.role === 'teacher'}}" class="qf-btn small" data-id="{{item.id}}" bindtap="uploadFeedback">上传反馈</button>
+              <button wx:if="{{item.latestFeedback}}" class="qf-btn ghost small" data-id="{{item.latestFeedback.id}}" bindtap="viewFeedback">查看反馈</button>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view wx:else class="qf-empty">暂无学生</view>
+    </view>
+
+    <view class="qf-section">课后反馈</view>
+    <view class="qf-card tight">
+      <view wx:if="{{detail.lessonFeedbacks.length}}" class="qf-list">
+        <view wx:for="{{detail.lessonFeedbacks}}" wx:key="id" class="qf-list-item">
+          <text class="qf-h3">{{item.studentName}} · {{item.createdAt}}</text>
+          <text class="qf-text">{{item.text}}</text>
+          <view class="qf-wrap detail-actions">
+            <button wx:for="{{item.imageFiles}}" wx:for-item="media" wx:key="id" class="qf-btn ghost small" data-id="{{media.id}}" bindtap="previewMedia">查看图片</button>
+            <button wx:for="{{item.voiceFiles}}" wx:for-item="voice" wx:key="id" class="qf-btn ghost small" data-id="{{voice.id}}" bindtap="previewMedia">播放语音</button>
+          </view>
+        </view>
+      </view>
+      <view wx:else class="qf-empty">暂无课后反馈</view>
+    </view>
+
+    <view class="qf-section">可选测验资料</view>
+    <view class="qf-card tight">
+      <view wx:if="{{session.role === 'teacher'}}" class="qf-wrap publish-actions">
+        <button class="qf-btn ghost small" data-type="pre" bindtap="publishOptionalRecord">保存课前测记录</button>
+        <button class="qf-btn ghost small" data-type="post" bindtap="publishOptionalRecord">保存课后测记录</button>
+      </view>
+      <view wx:if="{{detail.assignments.length}}" class="qf-list">
+        <view wx:for="{{detail.assignments}}" wx:key="id" class="qf-list-item">
+          <text class="qf-h3">{{item.title}}</text>
+          <text class="qf-muted">{{item.typeText}} · {{item.statusText}}</text>
+        </view>
+      </view>
+      <view wx:else class="qf-empty">暂无可选资料</view>
     </view>
   </view>
 </view>

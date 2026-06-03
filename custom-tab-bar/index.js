@@ -22,8 +22,8 @@ Component({
       },
       {
         pagePath: "/pages/wrongbook/wrongbook",
-        text: "错题",
-        mark: "错",
+        text: "反馈",
+        mark: "反",
         className: "tab-item"
       }
     ]

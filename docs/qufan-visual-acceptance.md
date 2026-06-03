@@ -8,8 +8,8 @@
 2. 首页：`pages/home/home`
 3. 实时课表：`pages/schedule/schedule`
 4. 教室直播：`pages/live/live`
-5. 每日习题：`pages/exercises/exercises`
-6. 错题本：`pages/wrongbook/wrongbook`
+5. 可选测验资料：`pages/exercises/exercises`
+6. 课后反馈：`pages/parent/exercises/exercises`
 7. 家长端：`pages/parent/parent`
 8. 教师端：`pages/teacher/teacher`
 9. 机构端：`pages/admin/admin`
@@ -46,7 +46,7 @@
 - 底部导航应显示深松绿玻璃底。
 - 当前页应有奶油绿高亮圆形标识。
 - tabBar 不应遮挡页面最后一块内容。
-- 切换 首页 / 课表 / 直播 / 错题 时选中态应正确同步。
+- 切换 首页 / 课程 / 直播 / 反馈 时选中态应正确同步。
 
 ## 移动端布局
 

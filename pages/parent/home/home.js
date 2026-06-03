@@ -6,16 +6,12 @@ Page({
   data: {
     session: {},
     dashboard: {
-      currentChild: {},
+      currentStudent: {},
       metrics: [],
-      children: [],
+      courses: [],
       todayCourses: [],
-      pendingAssignments: [],
-      pendingWrongRecords: []
-    },
-    childOptions: [],
-    childIndex: 0,
-    currentChildLabel: ''
+      recentFeedbacks: []
+    }
   },
 
   onShow() {
@@ -26,39 +22,16 @@ Page({
   },
 
   load() {
-    Api.getDashboard()
-      .then((dashboard) => {
-        const children = dashboard.children || [];
-        const activeId = dashboard.currentChild ? dashboard.currentChild.id : '';
-        const childIndex = Math.max(0, children.findIndex((item) => item.id === activeId));
-        this.setData({
-          dashboard,
-          childOptions: children.map((item) => item.displayLabel || item.name),
-          childIndex,
-          currentChildLabel: children[childIndex] ? (children[childIndex].displayLabel || children[childIndex].name) : ''
-        });
-      })
+    Api.getStudentDashboard()
+      .then((dashboard) => this.setData({ dashboard }))
       .catch((error) => Notice.alert(error.message || '首页加载失败'));
-  },
-
-  switchChild(event) {
-    const child = this.data.dashboard.children[Number(event.detail.value || 0)];
-    const studentId = child ? child.id : '';
-    if (!studentId) return;
-    Api.switchActiveChild(studentId)
-      .then((session) => {
-        getApp().setSession(session);
-        this.setData({ session });
-        this.load();
-      })
-      .catch((error) => Notice.alert(error.message || '切换孩子失败'));
   },
 
   goCourses() {
     wx.redirectTo({ url: '/pages/parent/courses/courses' });
   },
 
-  goExercises() {
+  goFeedbacks() {
     wx.redirectTo({ url: '/pages/parent/exercises/exercises' });
   },
 

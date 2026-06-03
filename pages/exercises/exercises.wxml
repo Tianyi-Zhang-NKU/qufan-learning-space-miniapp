@@ -1,35 +1,35 @@
 <view class="screen exercises-screen">
   <z-bg></z-bg>
-  <z-page-head kicker="EXERCISES" title="每日习题" desc="记录老师每天发布的练习、完成状态和家长可见反馈。"></z-page-head>
+  <z-page-head kicker="OPTIONAL TESTS" title="可选测验资料" desc="课前测、课后测可作为弱功能保留，第一版主流程仍是课后反馈。"></z-page-head>
 
   <z-card mode="hero">
-    <z-section-title title="今天" right="已发布" right-type-alias="status"></z-section-title>
+    <z-section-title title="今天" right="可选记录" right-type-alias="status"></z-section-title>
     <view class="grid-3">
-      <view><z-metric value="12" label="数学题" size="mini"></z-metric></view>
-      <view><z-metric value="8" label="英语题" size="mini"></z-metric></view>
-      <view><z-metric value="3" label="待订正" size="mini"></z-metric></view>
+      <view><z-metric value="2" label="课程记录" size="mini"></z-metric></view>
+      <view><z-metric value="3" label="反馈图片" size="mini"></z-metric></view>
+      <view><z-metric value="3" label="反馈语音" size="mini"></z-metric></view>
     </view>
   </z-card>
 
   <z-card mode="light">
-    <z-section-title title="初二数学强化 A 班" right="18:30 发布" theme="light"></z-section-title>
+    <z-section-title title="初二数学强化 A 班" right="课后记录" theme="light"></z-section-title>
     <view class="paper-line">
       <text class="paper-index">01</text>
-      <text class="paper-text">一次函数图像与坐标轴交点计算，完成第 1-6 题。</text>
+      <text class="paper-text">线下完成练习，老师在课后上传批改照片和文字反馈。</text>
     </view>
     <view class="paper-line">
       <text class="paper-index">02</text>
-      <text class="paper-text">整理课堂错题，拍照上传订正过程。</text>
+      <text class="paper-text">可选测验资料只做记录，不作为第一版核心入口。</text>
     </view>
     <view class="btn-row">
-      <navigator class="btn" url="/pages/wrongbook/wrongbook" open-type="switchTab">查看错题</navigator>
-      <view class="ghost-btn dark-ghost">完成 9/12</view>
+      <navigator class="btn" url="/pages/parent/exercises/exercises">查看反馈</navigator>
+      <view class="ghost-btn dark-ghost">已记录</view>
     </view>
   </z-card>
 
   <z-card>
-    <z-section-title title="历史习题" right="近 7 天"></z-section-title>
-    <z-list-item time="06-02" title="英语自然拼读" sub="8 题 · 已完成 · 1 道错题"></z-list-item>
-    <z-list-item time="06-01" title="初一数学同步" sub="10 题 · 已完成 · 2 道错题"></z-list-item>
+    <z-section-title title="历史记录" right="近 7 天"></z-section-title>
+    <z-list-item time="06-03" title="初三生物1班" sub="课后反馈已上传"></z-list-item>
+    <z-list-item time="06-02" title="初一英语提高班" sub="可选资料已记录"></z-list-item>
   </z-card>
 </view>

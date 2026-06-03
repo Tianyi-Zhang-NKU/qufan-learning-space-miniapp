@@ -23,9 +23,26 @@ function readJson(file) {
   return JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
 }
 
+function walkTextFiles(callback) {
+  const exts = new Set(['.js', '.json', '.wxml', '.wxss', '.md', '.txt']);
+  function walk(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (['node_modules', '.git', 'miniprogram_npm'].includes(entry.name)) continue;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+        continue;
+      }
+      if (!exts.has(path.extname(entry.name))) continue;
+      callback(full, fs.readFileSync(full, 'utf8'));
+    }
+  }
+  walk(root);
+}
+
 function assertPageFiles(appJson) {
   const requiredPages = [
-    'pages/identity-switch/identity-switch',
+    'pages/login/login',
     'pages/profile/profile',
     'pages/course-detail/course-detail',
     'pages/live-player/live-player',
@@ -57,290 +74,164 @@ function assertNoOldBrand() {
     ['z', 'e', 'r', 'r', 'o', 'r'].join(''),
     ['知', '芽'].join('')
   ];
-  const exts = new Set(['.js', '.json', '.wxml', '.wxss', '.md', '.txt']);
   const hits = [];
-  function walk(dir) {
-    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-      if (['node_modules', '.git', 'miniprogram_npm'].includes(entry.name)) continue;
-      const full = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        walk(full);
-        continue;
-      }
-      if (!exts.has(path.extname(entry.name))) continue;
-      const text = fs.readFileSync(full, 'utf8');
-      if (oldBrandWords.some((word) => text.includes(word))) hits.push(path.relative(root, full));
-    }
-  }
-  walk(root);
+  walkTextFiles((full, text) => {
+    if (oldBrandWords.some((word) => text.includes(word))) hits.push(path.relative(root, full));
+  });
   assert(hits.length === 0, `old brand strings found: ${hits.join(', ')}`);
 }
 
-function assertNoDeprecatedCopy() {
+function assertNoDeprecatedMainCopy() {
   const blockedWords = [
+    ['邀', '请', '码'].join(''),
+    ['b', 'i', 'n', 'd', 'I', 'n', 'v', 'i', 't', 'e'].join(''),
+    ['d', 'e', 'm', 'o', 'I', 'n', 'v', 'i', 't', 'e', 's'].join(''),
+    ['i', 'n', 'v', 'i', 't', 'e', 'C', 'o', 'd', 'e'].join(''),
+    ['生', '成', '邀', '请', '码'].join(''),
+    ['最', '近', '邀', '请', '码'].join(''),
+    ['多', '孩', '子'].join(''),
+    ['父', '亲'].join(''),
+    ['母', '亲'].join(''),
+    ['爷', '爷'].join(''),
+    ['奶', '奶'].join(''),
+    ['错', '题', '录', '入'].join(''),
+    ['错', '题', '本'].join(''),
     ['待', '批', '改'].join(''),
     ['批', '改', '中'].join(''),
-    ['批', '改', '进', '度'].join(''),
-    ['作', '业', '批', '改'].join(''),
-    ['手', '动', '批', '改'].join('')
+    ['作', '业', '批', '改'].join('')
   ];
-  const exts = new Set(['.js', '.json', '.wxml', '.wxss', '.md', '.txt']);
   const hits = [];
-  function walk(dir) {
-    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-      if (['node_modules', '.git', 'miniprogram_npm'].includes(entry.name)) continue;
-      const full = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        walk(full);
-        continue;
-      }
-      if (!exts.has(path.extname(entry.name))) continue;
-      const text = fs.readFileSync(full, 'utf8');
-      if (blockedWords.some((word) => text.includes(word))) hits.push(path.relative(root, full));
-    }
-  }
-  walk(root);
-  assert(hits.length === 0, `deprecated teacher copy found: ${hits.join(', ')}`);
+  walkTextFiles((full, text) => {
+    if (blockedWords.some((word) => text.includes(word))) hits.push(path.relative(root, full));
+  });
+  assert(hits.length === 0, `deprecated main-flow copy found: ${hits.join(', ')}`);
 }
 
 async function run() {
   const appJson = readJson('app.json');
   assertPageFiles(appJson);
-  assert(!appJson.tabBar, 'app.json should not keep the old native tabBar');
+  assert(!appJson.tabBar, 'app.json should not keep native tabBar');
   assert(appJson.usingComponents['qf-role-tabbar'], 'qf-role-tabbar should be registered');
   assertNoOldBrand();
-  assertNoDeprecatedCopy();
+  assertNoDeprecatedMainCopy();
 
+  const config = require('../services/config');
   const db = require('../services/mock-db');
-  assert(Array.isArray(db.wechatAccounts), 'wechatAccounts collection missing');
-  assert(Array.isArray(db.identities), 'identities collection missing');
-  assert(Array.isArray(db.inviteCodes), 'inviteCodes collection missing');
-  assert(Array.isArray(db.guardianBindings), 'guardianBindings collection missing');
+  const oldDemoAuthKey = ['d', 'e', 'm', 'o', 'I', 'n', 'v', 'i', 't', 'e', 's'].join('');
+  assert(config.authMode === 'mock', 'authMode should default to mock');
+  assert(!Object.prototype.hasOwnProperty.call(config, oldDemoAuthKey), 'demo phone login should not use old demo auth config');
+  assert(Array.isArray(db.phoneAccounts), 'phoneAccounts collection missing');
+  assert(db.phoneAccounts.some((item) => item.phone === '13800000002' && item.role === 'teacher'), 'teacher demo phone missing');
+  assert(db.phoneAccounts.some((item) => item.phone === '13800000001' && item.role === 'parent'), 'student demo phone missing');
+  assert(db.phoneAccounts.some((item) => item.phone === '13800000003' && item.role === 'admin'), 'admin demo phone missing');
   assert(db.classrooms.length === 15, 'should model 15 classrooms');
+  assert(db.liveRooms.length === 15, 'should keep 15 live room placeholders');
   assert(db.teachers.length >= 2, 'should model at least 2 teachers');
-  assert(db.teachers.every((item) => item.fullName && item.name.includes(item.fullName)), 'teachers should expose full names');
-  assert(db.students.length >= 3, 'should model at least 3 students');
-  assert(db.admins.length >= 1, 'should model at least 1 admin');
-  assert(db.classes.length >= 2, 'should model at least 2 classes');
-  assert(db.courses.length >= 3, 'should model several courses');
-  assert(db.courses.every((item) => item.teacherId && item.classroomId && Array.isArray(item.studentIds)), 'courses should be complete course classes');
-  assert(db.courseSessions.every((item) => item.courseId && item.sessionIndex && item.sessionTitle), 'course sessions should belong to course classes');
-  assert(db.courseSessions.some((item) => item.status === 'in_progress'), 'should include an in-progress course');
-  assert(db.assignments.some((item) => item.type === 'pre'), 'should include pre-class assignment');
-  assert(db.assignments.some((item) => item.type === 'post'), 'should include post-class assignment');
-  assert(db.wrongRecords.length >= 1, 'should include wrong-record samples');
-  assert(db.files.some((item) => item.ext === 'pdf'), 'should include PDF file metadata');
-  assert(db.files.some((item) => item.ext === 'docx'), 'should include Word file metadata');
-  assert(db.files.some((item) => ['jpg', 'png'].includes(item.ext)), 'should include wrong-record image metadata');
-  assert(db.liveRooms.length >= 3, 'should include live room placeholders');
-  assert(db.auditLogs.length >= 1, 'should include audit logs');
-
-  const inviteCodes = db.inviteCodes.map((item) => item.code);
-  assert(inviteCodes.includes('STUDENT-001'), 'missing STUDENT-001 invite');
-  assert(inviteCodes.includes('TEACHER-2026'), 'missing TEACHER-2026 invite');
-  assert(inviteCodes.includes('ADMIN-2026'), 'missing ADMIN-2026 invite');
+  assert(db.students.length >= 4, 'should model at least 4 students');
+  assert(db.courses.length >= 3, 'should model at least 3 courses');
+  assert(db.courses.every((course) => db.courseSessions.filter((item) => item.courseId === course.id).length >= 2), 'each course should have at least 2 lessons');
+  assert(db.lessonFeedbacks.length >= 3, 'should include lesson feedback samples');
+  assert(db.mediaFiles.some((item) => item.type === 'image' && item.downloadable === true), 'image media should be downloadable');
+  assert(db.mediaFiles.some((item) => item.type === 'voice' && item.downloadable === false), 'voice media should not be downloadable');
 
   const Api = require('../services/api');
-  const accountId = 'wx_test_smoke';
-  const bindingsBefore = db.guardianBindings.length;
+  assert(typeof Api.loginByPhone === 'function', 'loginByPhone missing');
+  assert(typeof Api.createLessonFeedback === 'function', 'createLessonFeedback missing');
+  assert(typeof Api.requestClassInLiveEntry === 'function', 'requestClassInLiveEntry missing');
+  assert(!Object.prototype.hasOwnProperty.call(Api, ['b', 'i', 'n', 'd', 'I', 'n', 'v', 'i', 't', 'e'].join('')), 'old auth API should not be exported');
 
-  const parentSession = await Api.bindInvite({
-    wechatAccountId: accountId,
-    inviteCode: 'STUDENT-001',
-    relation: '母亲'
-  });
-  Api.setSession(parentSession);
-  assert(parentSession.role === 'parent', 'student invite should create parent identity');
-  assert(parentSession.studentIds.includes('stu_001'), 'parent should bind target student');
-  assert(db.guardianBindings.length === bindingsBefore + 1, 'guardian binding should be created once');
-
-  const parentDashboard = await Api.getDashboard();
-  assert(parentDashboard.metrics.length >= 4, 'getDashboard should return parent metrics');
-  const children = await Api.getParentChildren();
-  assert(children.some((item) => item.id === 'stu_001'), 'getParentChildren should return bound child');
-  const listedChildren = await Api.listParentChildren();
-  assert(listedChildren.every((item) => item.displayLabel), 'listParentChildren should provide picker labels');
-  const childSwitch = await Api.switchActiveChild('stu_001');
-  assert(childSwitch.activeChildId === 'stu_001', 'switchActiveChild should update active child');
-
-  await expectReject(Api.bindInvite({
-    wechatAccountId: accountId,
-    inviteCode: 'STUDENT-001',
-    relation: '母亲'
-  }), 'DUPLICATE_BINDING');
-  assert(db.guardianBindings.length === bindingsBefore + 1, 'duplicate student binding should not duplicate records');
-
-  let identities = await Api.listIdentities({ wechatAccountId: accountId });
-  assert(identities.length === 1 && identities[0].role === 'parent', 'identity list should include parent identity');
-
-  const parentCourses = await Api.getParentCourses({ studentId: 'stu_001' });
-  assert(parentCourses.courseGroups.length >= 1, 'parent should see bound student course groups');
-  assert(parentCourses.courseGroups.every((item) => item.studentIds.includes('stu_001')), 'parent courses should be filtered by child');
-  assert(parentCourses.courseGroups.every((item) => Array.isArray(item.sessions)), 'parent course groups should include sessions');
-  await expectReject(Api.getParentCourses({ studentId: 'stu_003' }), 'NO_PERMISSION');
-
-  const parentExercises = await Api.getParentExercises({ studentId: 'stu_001' });
-  assert(parentExercises.assignments.every((item) => db.courses.find((course) => course.id === item.courseId).studentIds.includes('stu_001')), 'parent assignments should be child-course filtered');
-  assert(parentExercises.wrongRecords.every((item) => item.studentId === 'stu_001'), 'parent wrong records should be child filtered');
-
-  const liveTicket = await Api.requestLiveTicket('cs_001');
-  assert(liveTicket.status === 'placeholder' && !liveTicket.streamUrl, 'live without streamUrl should return placeholder status');
-  await expectReject(Api.requestLiveTicket('cs_003'), 'NO_PERMISSION');
-
-  const filePreview = await Api.getFilePreview('file_pdf_001');
-  assert(filePreview.placeholderStatus === 'not_connected', 'file without fileID should return placeholder status');
-
-  const teacherSession = await Api.bindInvite({
-    wechatAccountId: accountId,
-    inviteCode: 'TEACHER-2026'
-  });
+  const teacherSession = await Api.loginByPhone({ phone: '13800000002' });
+  assert(teacherSession.role === 'teacher' && teacherSession.teacherId === 'teacher_001', 'teacher phone should login as teacher');
   Api.setSession(teacherSession);
-  identities = await Api.listIdentities({ wechatAccountId: accountId });
-  assert(identities.length >= 2, 'multi-identity list should be available');
-  const parentIdentity = identities.find((item) => item.role === 'parent');
-  const teacherIdentity = identities.find((item) => item.role === 'teacher');
-  assert(parentIdentity && teacherIdentity, 'parent and teacher identities should both exist');
 
-  const switchedTeacher = await Api.switchIdentity(teacherIdentity.id);
-  assert(switchedTeacher.role === 'teacher', 'switchIdentity should activate teacher identity');
-  const teacherCourses = await Api.getTeacherCourseGroups({});
-  assert(teacherCourses.courseGroups.length >= 1, 'teacher should see own course groups');
-  assert(teacherCourses.courseGroups.every((item) => item.teacherId === 'teacher_001'), 'teacher data should be filtered by teacher');
-  assert(teacherCourses.courseGroups.every((item) => item.sessions.length >= 1), 'teacher course groups should include sessions');
-  const groupDetail = await Api.getCourseGroupDetail('course_001');
-  assert(groupDetail.mode === 'course' && groupDetail.course.sessions.length >= 1, 'course group detail should expose sessions');
-  const sessionDetail = await Api.getCourseSessionDetail('cs_001');
-  assert(sessionDetail.mode === 'session' && sessionDetail.students.length >= 1, 'course session detail should expose students');
-  const courseStudents = await Api.getStudentsByCourse('course_001');
-  assert(courseStudents.some((item) => item.id === 'stu_001'), 'getStudentsByCourse should return course students');
-  await expectReject(Api.getCourseDetail('cs_003'), 'NO_PERMISSION');
-  await expectReject(Api.uploadAssignmentFile({
-    courseSessionId: 'cs_001',
-    fileName: 'bad.txt',
-    size: 1000
-  }), 'UNSUPPORTED_FILE_TYPE');
-  await expectReject(Api.uploadWrongRecordImage({
-    fileName: 'too-large.png',
-    size: 11 * 1024 * 1024
-  }), 'FILE_TOO_LARGE');
-  const uploadedAssignment = await Api.publishAssignment({
-    courseId: 'course_001',
-    courseSessionId: 'cs_001',
-    title: 'Smoke PDF',
-    type: 'post',
-    fileName: 'smoke-test.pdf',
-    size: 2048
+  const teacherCourses = await Api.getTeacherCourses();
+  assert(teacherCourses.courseGroups.length >= 2, 'teacher should see own courses');
+  assert(teacherCourses.courseGroups.every((item) => item.teacherId === 'teacher_001'), 'teacher courses should be scoped');
+  const bioCourse = teacherCourses.courseGroups.find((item) => item.id === 'course_bio_001');
+  assert(bioCourse && bioCourse.sessions.length >= 2, 'teacher course should expand lessons');
+
+  const lessonDetail = await Api.getTeacherLessonDetail('lesson_bio_001_01');
+  assert(lessonDetail.students.length >= 2, 'teacher lesson should list students');
+  assert(lessonDetail.students.some((item) => item.id === 'stu_001'), 'lesson should include target student');
+
+  const uploadedImage = await Api.uploadFeedbackImage({
+    fileName: 'smoke-feedback.jpg',
+    size: 2048,
+    tempPath: ''
   });
-  assert(uploadedAssignment.file.placeholder, 'teacher upload should save placeholder file metadata');
-  const uploadedImage = await Api.uploadWrongRecordImage({
-    fileName: 'smoke-wrong.jpg',
-    size: 2048
+  assert(uploadedImage.type === 'image' && uploadedImage.downloadable === true, 'feedback image metadata should be downloadable');
+
+  const uploadedVoice = await Api.uploadFeedbackVoice({
+    fileName: 'smoke-feedback.m4a',
+    size: 4096,
+    duration: 12,
+    tempPath: ''
   });
-  assert(uploadedImage.id, 'teacher should upload wrong-record image metadata');
-  const createdWrong = await Api.createWrongRecord({
-    courseId: 'course_001',
+  assert(uploadedVoice.type === 'voice' && uploadedVoice.downloadable === false, 'feedback voice metadata should not be downloadable');
+
+  const createdFeedback = await Api.createLessonFeedback({
     studentId: 'stu_001',
-    courseSessionId: 'cs_001',
-    topic: 'Smoke 错题',
-    imageFileId: uploadedImage.id
-  });
-  assert(createdWrong.id && createdWrong.imageFile, 'teacher should create wrong record with image metadata');
-  assert(createdWrong.courseId === 'course_001' && createdWrong.teacherId === 'teacher_001', 'wrong record should auto-link course and teacher');
-
-  const adminSession = await Api.bindInvite({
-    wechatAccountId: accountId,
-    inviteCode: 'ADMIN-2026'
-  });
-  Api.setSession(adminSession);
-  identities = await Api.listIdentities({ wechatAccountId: accountId });
-  assert(identities.length >= 3, 'account should support multiple identities');
-  const adminIdentity = identities.find((item) => item.role === 'admin');
-  const switchedAdmin = await Api.switchIdentity(adminIdentity.id);
-  assert(switchedAdmin.role === 'admin', 'switchIdentity should activate admin identity');
-
-  const overview = await Api.getAdminOverview();
-  assert(overview.metrics.find((item) => item.label === '学生数').value >= 3, 'admin should see full student count');
-  assert(overview.relationOverview.length >= 3, 'admin overview should include course relation cards');
-  const adminRelations = await Api.getAdminRelationsOverview();
-  assert(adminRelations.every((item) => item.courseName && item.teacherName && item.classroomName), 'admin relation overview should connect courses, teachers and classrooms');
-  const classroomRelations = await Api.getAdminClassroomRelations();
-  assert(classroomRelations.length === 15, 'admin classroom relations should include 15 classrooms');
-  assert(classroomRelations.every((item) => item.cameraStatusText), 'classroom relation should expose camera status');
-  const teacherRelations = await Api.getAdminTeacherRelations();
-  assert(teacherRelations.every((item) => item.displayName && Array.isArray(item.courseNames)), 'teacher relation should expose full name and courses');
-  const studentGuardianRelations = await Api.getAdminStudentGuardianRelations();
-  assert(studentGuardianRelations.every((item) => Array.isArray(item.courseNames) && Array.isArray(item.guardians)), 'student relation should expose courses and guardians');
-  const courseTree = await Api.getAdminCourseTree();
-  assert(courseTree.every((item) => item.sessions.every((session) => Array.isArray(session.assignments))), 'course tree should expose sessions and assignments');
-
-  const newInvite = await Api.createInvite({
-    role: 'parent',
-    targetId: 'stu_002',
-    targetName: '许知远'
-  });
-  assert(newInvite.code.startsWith('STUDENT-'), 'admin should create student invite');
-
-  const newTeacher = await Api.createTeacher({
-    name: '测试老师',
-    phone: '13800008888',
-    subject: '化学'
-  });
-  assert(newTeacher.id, 'admin should create teacher');
-
-  const newStudent = await Api.createStudent({
-    name: '测试学生',
-    classId: 'class_001',
-    grade: '初二',
-    primaryGuardian: '测试家长',
-    guardianPhone: '13800007777'
-  });
-  assert(newStudent.id, 'admin should create student');
-
-  const newClassroom = await Api.createClassroom({
-    name: '测试教室',
-    capacity: 18
-  });
-  assert(newClassroom.id, 'admin should create classroom');
-
-  const newCourse = await Api.createCourse({
-    name: '测试课程',
-    subject: '数学',
-    grade: '初二'
-  });
-  assert(newCourse.id, 'admin should create course');
-
-  const conflict = await Api.checkScheduleConflicts({
-    courseId: 'course_001',
-    classId: 'class_001',
     teacherId: 'teacher_001',
-    classroomId: 'room_08',
-    date: '2026-06-03',
-    startTime: '18:40',
-    endTime: '19:20'
+    courseId: 'course_bio_001',
+    courseSessionId: 'lesson_bio_001_01',
+    text: 'Smoke 文字反馈',
+    imageFileIds: [uploadedImage.id],
+    voiceFileIds: [uploadedVoice.id]
   });
-  assert(conflict.hasConflict, 'conflict check should detect overlaps');
-  assert(conflict.conflicts.some((item) => item.type === 'teacher'), 'teacher conflict missing');
-  assert(conflict.conflicts.some((item) => item.type === 'classroom'), 'classroom conflict missing');
-  assert(conflict.conflicts.some((item) => item.type === 'class'), 'class conflict missing');
+  assert(createdFeedback.id, 'teacher should create lesson feedback');
+  assert(createdFeedback.text.includes('Smoke'), 'feedback should support text');
+  assert(createdFeedback.imageFiles.length === 1, 'feedback should support image media');
+  assert(createdFeedback.voiceFiles.length === 1, 'feedback should support voice media');
 
-  const newSession = await Api.createCourseSession({
-    courseId: newCourse.id,
-    title: '测试课次',
-    teacherId: newTeacher.id,
-    classroomId: 'room_01',
-    date: '2026-06-07',
-    startTime: '18:30',
-    endTime: '20:00'
+  await expectReject(Api.createLessonFeedback({
+    studentId: 'stu_004',
+    teacherId: 'teacher_001',
+    courseId: 'course_eng_001',
+    courseSessionId: 'lesson_eng_001_01',
+    text: 'not allowed'
+  }), 'NO_PERMISSION');
+
+  const studentSession = await Api.loginByPhone({ phone: '13800000001' });
+  assert(studentSession.role === 'parent' && studentSession.studentId === 'stu_001', 'student phone should login as parent role');
+  Api.setSession(studentSession);
+
+  const studentCourses = await Api.getStudentCourses();
+  assert(studentCourses.courseGroups.length >= 1, 'student should see own courses');
+  assert(studentCourses.courseGroups.every((item) => item.studentIds.includes('stu_001')), 'student courses should be scoped');
+  const studentFeedbacks = await Api.getStudentLessonFeedbacks({ courseId: 'course_bio_001' });
+  assert(studentFeedbacks.feedbacks.length >= 1, 'student should see own feedbacks');
+  assert(studentFeedbacks.feedbacks.every((item) => item.studentId === 'stu_001'), 'student should only see own feedbacks');
+  assert(studentFeedbacks.feedbacks.some((item) => item.id === createdFeedback.id), 'student should see newly created feedback');
+  await expectReject(Api.getFeedbackDetail('feedback_002'), 'NO_PERMISSION');
+
+  const imagePreview = await Api.getMediaPreview(uploadedImage.id);
+  assert(imagePreview.kind === 'image' && imagePreview.downloadable === true, 'image preview should allow download');
+  const imageDownload = await Api.downloadFeedbackImage(uploadedImage.id);
+  assert(imageDownload.file.downloadable === true, 'download image should preserve downloadable=true');
+  const voicePreview = await Api.getMediaPreview(uploadedVoice.id);
+  assert(voicePreview.kind === 'voice' && voicePreview.downloadable === false, 'voice preview should not allow download');
+  const voicePlay = await Api.playFeedbackVoice(uploadedVoice.id);
+  assert(voicePlay.downloadable === false, 'voice play response should not expose download');
+
+  const liveEntry = await Api.requestClassInLiveEntry({
+    courseId: 'course_bio_001',
+    courseSessionId: 'lesson_bio_001_01'
   });
-  assert(newSession.id, 'admin should create non-conflicting course session');
+  assert(liveEntry.status === 'pending' && liveEntry.provider === 'classin', 'ClassIn placeholder shape missing');
+  assert(Object.prototype.hasOwnProperty.call(liveEntry, 'classinEntryUrl'), 'ClassIn entry URL field missing');
 
-  await Api.switchIdentity(parentIdentity.id);
-  const sessionAfterSwitch = await Api.getCurrentSession();
-  assert(sessionAfterSwitch.role === 'parent', 'switchIdentity should return to parent identity');
-
-  await Api.logout();
-  const afterLogout = await Api.getCurrentSession();
-  assert(!afterLogout, 'logout should clear current session');
+  const adminSession = await Api.loginByPhone({ phone: '13800000003' });
+  assert(adminSession.role === 'admin', 'admin phone should login as admin');
+  Api.setSession(adminSession);
+  const overview = await Api.getAdminOverview();
+  assert(overview.metrics.find((item) => item.label === '学生数').value >= 4, 'admin should see student count');
+  const courseTree = await Api.getAdminCourseTree();
+  assert(courseTree.length >= 3, 'admin course tree should include courses');
+  assert(courseTree.every((course) => course.sessions.every((session) => typeof session.feedbackCount === 'number')), 'course tree should expose feedback counts');
+  const teacherRelations = await Api.getAdminTeacherRelations();
+  assert(teacherRelations.every((item) => item.phone && Array.isArray(item.courses)), 'teacher relation should expose phone and courses');
+  const studentRelations = await Api.getAdminStudentRelations();
+  assert(studentRelations.every((item) => item.loginPhone && Array.isArray(item.courses)), 'student relation should expose phone and courses');
 
   console.log('Smoke test passed.');
 }
