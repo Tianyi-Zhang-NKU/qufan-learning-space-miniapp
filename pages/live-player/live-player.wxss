@@ -1,0 +1,10 @@
+.live-panel {
+  min-height: 420rpx;
+}
+
+.live-placeholder {
+  min-height: 360rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

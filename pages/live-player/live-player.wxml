@@ -1,0 +1,26 @@
+<view class="qf-page">
+  <view class="qf-top">
+    <view class="qf-brand">
+      <text class="qf-brand-title">课堂直播</text>
+      <text class="qf-brand-sub">{{detail.courseSession.title || '直播状态'}}</text>
+    </view>
+  </view>
+
+  <view class="qf-card live-panel">
+    <view wx:if="{{ticket && ticket.streamUrl}}">
+      <live-player src="{{ticket.streamUrl}}" autoplay binderror="load"></live-player>
+    </view>
+    <view wx:elif="{{ticket}}" class="qf-empty live-placeholder">
+      {{ticket.message}}
+    </view>
+    <view wx:else class="qf-empty live-placeholder">
+      {{error || '正在申请观看凭证'}}
+    </view>
+  </view>
+
+  <view wx:if="{{detail}}" class="qf-card tight">
+    <text class="qf-h3">{{detail.courseSession.className}}</text>
+    <text class="qf-muted">{{detail.courseSession.date}} {{detail.courseSession.startTime}}-{{detail.courseSession.endTime}}</text>
+    <text class="qf-muted">{{detail.courseSession.teacherName}} · {{detail.courseSession.classroomName}}</text>
+  </view>
+</view>

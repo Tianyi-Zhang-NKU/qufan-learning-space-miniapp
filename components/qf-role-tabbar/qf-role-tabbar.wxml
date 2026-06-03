@@ -1,0 +1,12 @@
+<view class="qf-role-tabbar">
+  <view
+    wx:for="{{list}}"
+    wx:key="url"
+    class="qf-role-tab {{item.active ? 'active' : ''}}"
+    data-url="{{item.url}}"
+    bindtap="go"
+  >
+    <view class="qf-role-mark">{{item.mark}}</view>
+    <text class="qf-role-text">{{item.text}}</text>
+  </view>
+</view>

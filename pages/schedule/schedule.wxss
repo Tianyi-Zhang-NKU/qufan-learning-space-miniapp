@@ -1,0 +1,22 @@
+.schedule-screen {
+  padding-top: 52rpx;
+}
+
+.date-row {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 22rpx;
+}
+
+.metric.mini {
+  min-height: 132rpx;
+  padding: 20rpx 16rpx;
+}
+
+.metric.mini .metric-value {
+  font-size: 36rpx;
+}
+
+.compact-title {
+  margin-top: 0;
+}

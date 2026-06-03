@@ -1,0 +1,52 @@
+.wrongbook-screen {
+  padding-top: 52rpx;
+}
+
+.wrong-stats {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 22rpx;
+}
+
+.filter-row {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 22rpx;
+}
+
+.wrong-card {
+  padding: 28rpx;
+}
+
+.wrong-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.wrong-subject {
+  display: block;
+  color: #5b7a4f;
+  font-size: 22rpx;
+  margin-bottom: 12rpx;
+}
+
+.wrong-title {
+  display: block;
+  max-width: 430rpx;
+  color: #22372f;
+  font-size: 29rpx;
+  line-height: 1.42;
+  font-weight: 500;
+}
+
+.wrong-body {
+  margin-top: 22rpx;
+  color: rgba(35, 53, 45, 0.68);
+  font-size: 25rpx;
+  line-height: 1.58;
+}
+
+.compact-title {
+  margin-top: 0;
+}

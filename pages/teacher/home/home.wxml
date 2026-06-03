@@ -1,0 +1,40 @@
+<view class="qf-page">
+  <view class="qf-top">
+    <view class="qf-brand">
+      <text class="qf-brand-title">教师首页</text>
+      <text class="qf-brand-sub">{{session.displayName}}</text>
+    </view>
+    <button class="qf-btn ghost small" bindtap="goCourses">课程管理</button>
+  </view>
+
+  <view class="qf-grid">
+    <view wx:for="{{dashboard.metrics}}" wx:key="label" class="qf-metric">
+      <text class="qf-metric-value">{{item.value}}</text>
+      <text class="qf-metric-label">{{item.label}}</text>
+    </view>
+  </view>
+
+  <view class="qf-section">今日授课</view>
+  <view class="qf-card tight">
+    <view wx:if="{{dashboard.todayCourses.length}}" class="qf-list">
+      <view wx:for="{{dashboard.todayCourses}}" wx:key="id" class="qf-list-item">
+        <text class="qf-h3">{{item.title}}</text>
+        <text class="qf-muted">{{item.startTime}}-{{item.endTime}} · {{item.className}} · {{item.classroomName}}</text>
+      </view>
+    </view>
+    <view wx:else class="qf-empty">今天暂无授课</view>
+  </view>
+
+  <view class="qf-section">待处理</view>
+  <view class="qf-card tight">
+    <view wx:if="{{dashboard.pendingAssignments.length}}" class="qf-list">
+      <view wx:for="{{dashboard.pendingAssignments}}" wx:key="id" class="qf-list-item">
+        <text class="qf-h3">{{item.title}}</text>
+        <text class="qf-muted">{{item.typeText}} · {{item.statusText}} · 待批改 {{item.pendingCount}}</text>
+      </view>
+    </view>
+    <view wx:else class="qf-empty">暂无待上传或待批改测验</view>
+  </view>
+
+  <qf-role-tabbar role="teacher" current="/pages/teacher/home/home"></qf-role-tabbar>
+</view>

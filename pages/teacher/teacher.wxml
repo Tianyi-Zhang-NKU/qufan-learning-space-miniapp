@@ -1,0 +1,37 @@
+<view class="screen teacher-screen">
+  <z-bg></z-bg>
+  <view class="topbar">
+    <view class="brand-row">
+      <z-logo></z-logo>
+      <view>
+        <text class="brand-name">教师端</text>
+        <text class="brand-sub">王老师 · 数学组</text>
+      </view>
+    </view>
+    <button class="ghost-btn small-ghost" bindtap="logout">退出</button>
+  </view>
+
+  <z-card mode="hero">
+    <text class="page-kicker">TEACHER DESK</text>
+    <view class="page-title">发布习题、记录错题、同步家长</view>
+    <view class="page-desc">围绕一节课完成课前、课中、课后的轻量闭环。</view>
+    <view class="btn-row">
+      <navigator class="btn" url="/pages/exercises/exercises">发布今日习题</navigator>
+      <navigator class="ghost-btn" url="/pages/wrongbook/wrongbook" open-type="switchTab">查看错题</navigator>
+    </view>
+  </z-card>
+
+  <z-card>
+    <z-section-title title="当前班级" right="上课中" right-type-alias="status"></z-section-title>
+    <z-list-item time="18:30" title="初二数学强化 A 班" sub="16 人到课 · 教室 03 · 直播已开放"></z-list-item>
+  </z-card>
+
+  <z-card mode="light">
+    <z-section-title title="课后记录" right="家长可见" theme="light"></z-section-title>
+    <z-field label="课堂要点" placeholder="填写本节课重点、作业要求和错题提醒" type="textarea" theme="light"></z-field>
+    <view class="btn-row">
+      <view class="btn">保存记录</view>
+      <view class="ghost-btn dark-ghost">同步家长</view>
+    </view>
+  </z-card>
+</view>

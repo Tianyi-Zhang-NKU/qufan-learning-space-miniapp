@@ -1,0 +1,5 @@
+<view class="section-title {{theme}}">
+  <text>{{title}}</text>
+  <z-status wx:if="{{showStatus}}" text="{{right}}" tone="{{tone}}"></z-status>
+  <text wx:if="{{showText}}" class="right-text">{{right}}</text>
+</view>

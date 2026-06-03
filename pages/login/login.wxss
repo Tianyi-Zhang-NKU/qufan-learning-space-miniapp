@@ -1,0 +1,39 @@
+.login-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-bottom: 60rpx;
+}
+
+.login-brand {
+  margin: 20rpx 0 42rpx;
+  color: #FFF8EC;
+  text-align: center;
+}
+
+.login-title {
+  display: block;
+  font-size: 54rpx;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.login-sub {
+  display: block;
+  margin-top: 14rpx;
+  color: rgba(255, 248, 236, 0.78);
+  font-size: 25rpx;
+}
+
+.relation-row,
+.demo-row {
+  margin-top: 14rpx;
+}
+
+.identity-entry {
+  margin-top: 16rpx;
+}
+
+.demo-card {
+  background: rgba(255, 248, 236, 0.92);
+}

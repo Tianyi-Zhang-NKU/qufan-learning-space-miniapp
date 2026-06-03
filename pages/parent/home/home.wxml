@@ -1,0 +1,66 @@
+<view class="qf-page">
+  <view class="qf-top">
+    <view class="qf-brand">
+      <text class="qf-brand-title">家长首页</text>
+      <text class="qf-brand-sub">{{dashboard.currentChild.name || '孩子学习状态'}}</text>
+    </view>
+  </view>
+
+  <view class="qf-card qf-hero">
+    <view class="qf-row">
+      <view>
+        <text class="qf-h2">{{dashboard.currentChild.name || '未选择孩子'}}</text>
+        <text class="qf-muted">{{dashboard.currentChild.className}}</text>
+      </view>
+      <button class="qf-btn small" bindtap="goCourses">课程</button>
+    </view>
+    <view class="qf-wrap child-row">
+      <button
+        wx:for="{{dashboard.children}}"
+        wx:key="id"
+        class="qf-btn small {{session.activeChildId === item.id ? '' : 'ghost'}}"
+        data-id="{{item.id}}"
+        bindtap="switchChild"
+      >{{item.name}}</button>
+    </view>
+  </view>
+
+  <view class="qf-grid">
+    <view wx:for="{{dashboard.metrics}}" wx:key="label" class="qf-metric">
+      <text class="qf-metric-value">{{item.value}}</text>
+      <text class="qf-metric-label">{{item.label}}</text>
+    </view>
+  </view>
+
+  <view class="qf-section">今日课程</view>
+  <view class="qf-card tight">
+    <view wx:if="{{dashboard.todayCourses.length}}" class="qf-list">
+      <view wx:for="{{dashboard.todayCourses}}" wx:key="id" class="qf-list-item">
+        <view class="qf-row">
+          <view>
+            <text class="qf-h3">{{item.title}}</text>
+            <text class="qf-muted">{{item.startTime}}-{{item.endTime}} · {{item.teacherName}} · {{item.classroomName}}</text>
+          </view>
+          <text class="qf-tag {{item.status === 'in_progress' ? 'ok' : 'warn'}}">{{item.statusText}}</text>
+        </view>
+        <button wx:if="{{item.status === 'in_progress'}}" class="qf-btn small course-action" data-id="{{item.id}}" bindtap="goLive">进入直播</button>
+      </view>
+    </view>
+    <view wx:else class="qf-empty">今天暂无课程</view>
+  </view>
+
+  <view class="qf-section">待处理</view>
+  <view class="qf-card tight">
+    <view class="qf-row">
+      <text class="qf-muted">习题 {{dashboard.pendingAssignments.length}} 项</text>
+      <button class="qf-btn ghost small" bindtap="goExercises">查看</button>
+    </view>
+    <view class="qf-divider"></view>
+    <view class="qf-row">
+      <text class="qf-muted">错题 {{dashboard.pendingWrongRecords.length}} 项</text>
+      <button class="qf-btn ghost small" bindtap="goExercises">订正</button>
+    </view>
+  </view>
+
+  <qf-role-tabbar role="parent" current="/pages/parent/home/home"></qf-role-tabbar>
+</view>

@@ -1,0 +1,28 @@
+<view class="qf-page">
+  <view class="qf-top">
+    <view class="qf-brand">
+      <text class="qf-brand-title">身份切换</text>
+      <text class="qf-brand-sub">趣帆学习空间</text>
+    </view>
+    <button class="qf-btn ghost small" bindtap="goLogin">继续绑定</button>
+  </view>
+
+  <view class="qf-card">
+    <view wx:if="{{identities.length}}" class="qf-list">
+      <view
+        wx:for="{{identities}}"
+        wx:key="id"
+        class="qf-list-item qf-row"
+        data-id="{{item.id}}"
+        bindtap="switchIdentity"
+      >
+        <view>
+          <text class="qf-h3">{{item.label}}</text>
+          <text class="qf-muted">{{item.roleName}} · {{item.inviteCode}}</text>
+        </view>
+        <text class="qf-link">进入</text>
+      </view>
+    </view>
+    <view wx:else class="qf-empty">当前微信账号暂无已绑定身份</view>
+  </view>
+</view>

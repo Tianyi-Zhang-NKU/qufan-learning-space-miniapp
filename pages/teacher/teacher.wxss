@@ -1,0 +1,13 @@
+.teacher-screen {
+  padding-top: 54rpx;
+}
+
+.dark-ghost {
+  color: #253a32;
+  border-color: rgba(45, 63, 50, 0.2);
+  background: rgba(45, 63, 50, 0.06);
+}
+
+.compact-title {
+  margin-top: 0;
+}

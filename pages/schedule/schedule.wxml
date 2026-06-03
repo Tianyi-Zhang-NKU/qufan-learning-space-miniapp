@@ -1,0 +1,29 @@
+<view class="screen schedule-screen">
+  <z-bg></z-bg>
+  <z-page-head kicker="SCHEDULE" title="实时课表" desc="按当天课程、教室和老师状态实时更新。"></z-page-head>
+
+  <z-card mode="hero">
+    <view class="grid-3">
+      <view><z-metric value="8" label="今日课程" size="mini"></z-metric></view>
+      <view><z-metric value="3" label="正在上课" size="mini"></z-metric></view>
+      <view><z-metric value="1" label="调课提醒" size="mini"></z-metric></view>
+    </view>
+  </z-card>
+
+  <view class="chip-row date-row">
+    <z-chip text="周一"></z-chip>
+    <z-chip text="今天" active="{{true}}"></z-chip>
+    <z-chip text="周三"></z-chip>
+    <z-chip text="周四"></z-chip>
+    <z-chip text="周五"></z-chip>
+  </view>
+
+  <z-card>
+    <z-section-title title="今日课程" right="2026-06-03"></z-section-title>
+
+    <z-list-item time="16:00" title="小学英语自然拼读" sub="教室 01 · 李老师 · 12 人" status="上课中"></z-list-item>
+    <z-list-item time="17:20" title="初一数学同步提高" sub="教室 05 · 陈老师 · 16 人" status="待开始" tone="warn"></z-list-item>
+    <z-list-item time="18:30" title="初二数学强化 A 班" sub="教室 03 · 王老师 · 今日习题已发布" status="待开始" tone="warn"></z-list-item>
+    <z-list-item time="19:40" title="中考物理冲刺" sub="教室 09 · 赵老师 · 直播待开放" status="待开始" tone="warn"></z-list-item>
+  </z-card>
+</view>

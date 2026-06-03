@@ -1,0 +1,44 @@
+<view class="qf-page">
+  <view class="qf-top">
+    <view class="qf-brand">
+      <text class="qf-brand-title">课程中心</text>
+      <text class="qf-brand-sub">{{currentChild.name || '当前孩子'}}</text>
+    </view>
+  </view>
+
+  <view class="qf-card tight">
+    <view class="qf-wrap">
+      <button
+        wx:for="{{children}}"
+        wx:key="id"
+        class="qf-btn small {{session.activeChildId === item.id ? '' : 'ghost'}}"
+        data-id="{{item.id}}"
+        bindtap="switchChild"
+      >{{item.name}}</button>
+    </view>
+  </view>
+
+  <view class="qf-card tight">
+    <view wx:if="{{courses.length}}" class="qf-list">
+      <view wx:for="{{courses}}" wx:key="id" class="qf-list-item">
+        <view class="qf-row">
+          <view>
+            <text class="qf-h3">{{item.title}}</text>
+            <text class="qf-muted">{{item.date}} {{item.startTime}}-{{item.endTime}}</text>
+            <text class="qf-muted">{{item.teacherName}} · {{item.classroomName}}</text>
+          </view>
+          <text class="qf-tag {{item.status === 'in_progress' ? 'ok' : item.status === 'finished' ? '' : 'warn'}}">{{item.statusText}}</text>
+        </view>
+        <view class="qf-wrap course-actions">
+          <button class="qf-btn ghost small" data-id="{{item.id}}" bindtap="goDetail">详情</button>
+          <button wx:if="{{item.status === 'in_progress'}}" class="qf-btn small" data-id="{{item.id}}" bindtap="goLive">进入直播</button>
+          <text wx:elif="{{item.status === 'scheduled'}}" class="qf-muted qf-small">直播未开放</text>
+          <text wx:else class="qf-muted qf-small">课程已结束</text>
+        </view>
+      </view>
+    </view>
+    <view wx:else class="qf-empty">当前孩子暂无课程</view>
+  </view>
+
+  <qf-role-tabbar role="parent" current="/pages/parent/courses/courses"></qf-role-tabbar>
+</view>

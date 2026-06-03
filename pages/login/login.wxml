@@ -1,0 +1,42 @@
+<view class="qf-page login-page">
+  <view class="login-brand">
+    <text class="login-title">趣帆学习空间</text>
+    <text class="login-sub">邀请码绑定身份</text>
+  </view>
+
+  <view class="qf-card qf-hero">
+    <view class="qf-field">
+      <text class="qf-label">邀请码</text>
+      <input class="qf-input" value="{{inviteCode}}" placeholder="请输入机构提供的邀请码" bindinput="onInviteInput" />
+    </view>
+
+    <view wx:if="{{needRelation}}" class="qf-field">
+      <text class="qf-label">亲属关系</text>
+      <view class="qf-wrap relation-row">
+        <button
+          wx:for="{{relations}}"
+          wx:key="*this"
+          class="qf-btn small {{relation === item ? '' : 'ghost'}}"
+          data-value="{{item}}"
+          bindtap="chooseRelation"
+        >{{item}}</button>
+      </view>
+    </view>
+
+    <button class="qf-btn full" loading="{{binding}}" bindtap="bindInvite">模拟微信登录并绑定</button>
+    <button class="qf-btn ghost full identity-entry" bindtap="goIdentitySwitch">已有身份入口</button>
+  </view>
+
+  <view class="qf-card tight demo-card">
+    <text class="qf-muted qf-small">演示邀请码</text>
+    <view class="qf-wrap demo-row">
+      <button
+        wx:for="{{demoCodes}}"
+        wx:key="code"
+        class="qf-btn ghost small"
+        data-code="{{item.code}}"
+        bindtap="useDemoCode"
+      >{{item.label}} {{item.code}}</button>
+    </view>
+  </view>
+</view>

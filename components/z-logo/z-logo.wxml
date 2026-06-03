@@ -1,0 +1,5 @@
+<view class="logo-host {{mode}}">
+  <view class="logo-mark">
+    <text class="logo-text">趣帆</text>
+  </view>
+</view>

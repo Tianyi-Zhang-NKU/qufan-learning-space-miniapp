@@ -1,0 +1,44 @@
+<view class="screen wrongbook-screen">
+  <z-bg></z-bg>
+  <z-page-head kicker="WRONG BOOK" title="错题本" desc="按学生、科目和知识点沉淀错题，家长实时看到订正进度。"></z-page-head>
+
+  <view class="grid-3 wrong-stats">
+    <view><z-metric value="126" label="累计错题"></z-metric></view>
+    <view><z-metric value="18" label="待订正"></z-metric></view>
+    <view><z-metric value="74%" label="掌握率"></z-metric></view>
+  </view>
+
+  <view class="chip-row filter-row">
+    <z-chip text="全部" active="{{true}}"></z-chip>
+    <z-chip text="数学"></z-chip>
+    <z-chip text="英语"></z-chip>
+    <z-chip text="本周新增"></z-chip>
+  </view>
+
+  <z-card mode="light">
+    <view class="wrong-head">
+      <view>
+        <text class="wrong-subject">数学 · 一次函数</text>
+        <text class="wrong-title">函数图像经过第二、四象限时符号判断错误</text>
+      </view>
+      <z-status text="待订正" tone="warn"></z-status>
+    </view>
+    <view class="wrong-body">来源：06-03 每日习题第 4 题。建议重新画坐标轴，并标注 k、b 的正负关系。</view>
+  </z-card>
+
+  <z-card mode="light">
+    <view class="wrong-head">
+      <view>
+        <text class="wrong-subject">英语 · 语法</text>
+        <text class="wrong-title">一般过去时与现在完成时混用</text>
+      </view>
+      <z-status text="已掌握"></z-status>
+    </view>
+    <view class="wrong-body">来源：06-02 课后练习。老师已批注，家长可查看订正照片。</view>
+  </z-card>
+
+  <z-card>
+    <z-section-title title="订正节奏" right="本周"></z-section-title>
+    <view class="body-copy">建议每晚完成当天新增错题订正，周末统一复盘高频知识点。</view>
+  </z-card>
+</view>

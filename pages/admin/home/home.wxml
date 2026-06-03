@@ -1,0 +1,36 @@
+<view class="qf-page">
+  <view class="qf-top">
+    <view class="qf-brand">
+      <text class="qf-brand-title">管理员首页</text>
+      <text class="qf-brand-sub">校区运营总览</text>
+    </view>
+    <button class="qf-btn ghost small" bindtap="goManage">数据管理</button>
+  </view>
+
+  <view class="qf-grid">
+    <view wx:for="{{overview.metrics}}" wx:key="label" class="qf-metric">
+      <text class="qf-metric-value">{{item.value}}</text>
+      <text class="qf-metric-label">{{item.label}}</text>
+    </view>
+  </view>
+
+  <view class="qf-section">今日课次</view>
+  <view class="qf-card tight">
+    <view wx:if="{{overview.todaySessions.length}}" class="qf-list">
+      <view wx:for="{{overview.todaySessions}}" wx:key="id" class="qf-list-item">
+        <text class="qf-h3">{{item.title}}</text>
+        <text class="qf-muted">{{item.startTime}}-{{item.endTime}} · {{item.teacherName}} · {{item.classroomName}}</text>
+      </view>
+    </view>
+    <view wx:else class="qf-empty">今日暂无课次</view>
+  </view>
+
+  <view class="qf-section">直播房间状态</view>
+  <view class="qf-card tight">
+    <view class="qf-wrap">
+      <text wx:for="{{overview.liveRooms}}" wx:key="id" class="qf-tag {{item.status === 'open' ? 'ok' : item.status === 'offline' ? 'danger' : 'warn'}}">{{item.classroom.name}} {{item.statusText}}</text>
+    </view>
+  </view>
+
+  <qf-role-tabbar role="admin" current="/pages/admin/home/home"></qf-role-tabbar>
+</view>

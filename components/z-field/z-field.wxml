@@ -1,0 +1,19 @@
+<view class="field {{theme}}">
+  <text class="field-label">{{label}}</text>
+  <input
+    wx:if="{{isInput}}"
+    class="input"
+    value="{{value}}"
+    placeholder="{{placeholder}}"
+    placeholder-class="placeholder"
+    bindinput="onInput"
+  />
+  <textarea
+    wx:else
+    class="textarea"
+    value="{{value}}"
+    placeholder="{{placeholder}}"
+    placeholder-class="placeholder"
+    bindinput="onInput"
+  ></textarea>
+</view>

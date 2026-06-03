@@ -1,0 +1,32 @@
+<view class="screen live-screen">
+  <z-bg></z-bg>
+  <z-page-head kicker="LIVE CLASSROOM" title="教室直播" desc="仅在上课时段向已绑定家长开放，离线教室保持隐藏。"></z-page-head>
+
+  <z-card mode="hero">
+    <z-section-title title="直播权限" right="已绑定" right-type-alias="status"></z-section-title>
+    <view class="body-copy">当前可查看孩子所在班级的实时画面。直播流正式接入时建议走视频云，不建议学生项目自行维护转码服务器。</view>
+  </z-card>
+
+  <view class="grid-2 camera-grid">
+    <z-card mode="camera">
+      <z-camera label="教室 03 · 初二数学" title="正在上课" sub="18:30-20:00 · 王老师" live="{{true}}"></z-camera>
+    </z-card>
+
+    <z-card mode="camera">
+      <z-camera label="教室 05 · 待开放" title="课前准备" sub="17:20-18:50 · 陈老师"></z-camera>
+    </z-card>
+  </view>
+
+  <z-card>
+    <z-section-title title="15 间教室接入概览" right="按需开流"></z-section-title>
+    <view class="chip-row">
+      <z-chip text="03 上课中" active="{{true}}"></z-chip>
+      <z-chip text="07 上课中" active="{{true}}"></z-chip>
+      <z-chip text="11 上课中" active="{{true}}"></z-chip>
+      <z-chip text="01 待上课"></z-chip>
+      <z-chip text="05 待上课"></z-chip>
+      <z-chip text="09 待上课"></z-chip>
+      <z-chip text="12 离线"></z-chip>
+    </view>
+  </z-card>
+</view>

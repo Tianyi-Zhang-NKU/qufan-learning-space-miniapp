@@ -1,0 +1,5 @@
+.form-actions,
+.conflict-list,
+.time-grid {
+  margin-top: 16rpx;
+}

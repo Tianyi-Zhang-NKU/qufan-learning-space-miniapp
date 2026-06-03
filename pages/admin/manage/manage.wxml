@@ -1,0 +1,62 @@
+<view class="qf-page">
+  <view class="qf-top">
+    <view class="qf-brand">
+      <text class="qf-brand-title">数据管理</text>
+      <text class="qf-brand-sub">教师 / 学生 / 教室 / 课程 / 邀请码</text>
+    </view>
+  </view>
+
+  <view class="qf-card">
+    <text class="qf-h2">录入教师</text>
+    <input class="qf-input" value="{{teacherForm.name}}" data-group="teacherForm" data-field="name" bindinput="input" />
+    <input class="qf-input" value="{{teacherForm.phone}}" data-group="teacherForm" data-field="phone" bindinput="input" />
+    <input class="qf-input" value="{{teacherForm.subject}}" data-group="teacherForm" data-field="subject" bindinput="input" />
+    <button class="qf-btn full form-btn" bindtap="createTeacher">保存教师</button>
+  </view>
+
+  <view class="qf-card">
+    <text class="qf-h2">录入学生</text>
+    <input class="qf-input" value="{{studentForm.name}}" data-group="studentForm" data-field="name" bindinput="input" />
+    <input class="qf-input" value="{{studentForm.classId}}" data-group="studentForm" data-field="classId" bindinput="input" />
+    <input class="qf-input" value="{{studentForm.primaryGuardian}}" data-group="studentForm" data-field="primaryGuardian" bindinput="input" />
+    <input class="qf-input" value="{{studentForm.guardianPhone}}" data-group="studentForm" data-field="guardianPhone" bindinput="input" />
+    <button class="qf-btn full form-btn" bindtap="createStudent">保存学生</button>
+  </view>
+
+  <view class="qf-card">
+    <text class="qf-h2">录入教室</text>
+    <input class="qf-input" value="{{classroomForm.name}}" data-group="classroomForm" data-field="name" bindinput="input" />
+    <input class="qf-input" value="{{classroomForm.capacity}}" data-group="classroomForm" data-field="capacity" bindinput="input" />
+    <button class="qf-btn full form-btn" bindtap="createClassroom">保存教室</button>
+  </view>
+
+  <view class="qf-card">
+    <text class="qf-h2">录入课程</text>
+    <input class="qf-input" value="{{courseForm.name}}" data-group="courseForm" data-field="name" bindinput="input" />
+    <input class="qf-input" value="{{courseForm.subject}}" data-group="courseForm" data-field="subject" bindinput="input" />
+    <input class="qf-input" value="{{courseForm.grade}}" data-group="courseForm" data-field="grade" bindinput="input" />
+    <button class="qf-btn full form-btn" bindtap="createCourse">保存课程</button>
+  </view>
+
+  <view class="qf-card">
+    <text class="qf-h2">生成邀请码</text>
+    <view class="qf-wrap role-row">
+      <button class="qf-btn small {{inviteForm.role === 'parent' ? '' : 'ghost'}}" data-role="parent" bindtap="setInviteRole">家长</button>
+      <button class="qf-btn small {{inviteForm.role === 'teacher' ? '' : 'ghost'}}" data-role="teacher" bindtap="setInviteRole">教师</button>
+      <button class="qf-btn small {{inviteForm.role === 'admin' ? '' : 'ghost'}}" data-role="admin" bindtap="setInviteRole">管理员</button>
+    </view>
+    <input class="qf-input" value="{{inviteForm.targetId}}" data-group="inviteForm" data-field="targetId" bindinput="input" />
+    <input class="qf-input" value="{{inviteForm.targetName}}" data-group="inviteForm" data-field="targetName" bindinput="input" />
+    <button class="qf-btn full form-btn" bindtap="createInvite">生成邀请码</button>
+    <view wx:if="{{latestInvite}}" class="qf-empty invite-result">{{latestInvite.code}}</view>
+  </view>
+
+  <view class="qf-section">最近邀请码</view>
+  <view class="qf-card tight">
+    <view class="qf-wrap">
+      <text wx:for="{{bootstrap.inviteCodes}}" wx:key="id" class="qf-tag">{{item.code}}</text>
+    </view>
+  </view>
+
+  <qf-role-tabbar role="admin" current="/pages/admin/manage/manage"></qf-role-tabbar>
+</view>

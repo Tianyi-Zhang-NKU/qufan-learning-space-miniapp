@@ -1,0 +1,55 @@
+<view class="qf-page">
+  <view class="qf-top">
+    <view class="qf-brand">
+      <text class="qf-brand-title">课程管理</text>
+      <text class="qf-brand-sub">授课课表 / 测验 / 错题</text>
+    </view>
+    <button class="qf-btn ghost small" bindtap="addWrong">错题录入</button>
+  </view>
+
+  <view class="qf-card">
+    <text class="qf-h2">上传测验文件元信息</text>
+    <view class="qf-field">
+      <text class="qf-label">课次ID</text>
+      <input class="qf-input" value="{{uploadDraft.courseSessionId}}" data-field="courseSessionId" bindinput="input" />
+    </view>
+    <view class="qf-field">
+      <text class="qf-label">标题</text>
+      <input class="qf-input" value="{{uploadDraft.title}}" data-field="title" bindinput="input" />
+    </view>
+    <view class="qf-field">
+      <text class="qf-label">文件名</text>
+      <input class="qf-input" value="{{uploadDraft.fileName}}" data-field="fileName" bindinput="input" />
+    </view>
+    <button class="qf-btn full" bindtap="uploadFile">保存 PDF/Word 文件</button>
+  </view>
+
+  <view class="qf-card tight">
+    <view wx:if="{{courses.length}}" class="qf-list">
+      <view wx:for="{{courses}}" wx:key="id" class="qf-list-item">
+        <view class="qf-row">
+          <view>
+            <text class="qf-h3">{{item.title}}</text>
+            <text class="qf-muted">{{item.date}} {{item.startTime}}-{{item.endTime}} · {{item.className}}</text>
+          </view>
+          <button class="qf-btn ghost small" data-id="{{item.id}}" bindtap="goDetail">详情</button>
+        </view>
+        <view class="qf-divider"></view>
+        <text class="qf-muted">学生 {{item.students.length}} 人 · 测验 {{item.assignments.length}} 项 · 错题 {{item.wrongRecords.length}} 条</text>
+        <view wx:if="{{item.assignments.length}}" class="qf-wrap course-files">
+          <block wx:for="{{item.assignments}}" wx:for-item="assignment" wx:key="id">
+            <button
+              wx:if="{{assignment.file}}"
+              class="qf-btn ghost small"
+              data-id="{{assignment.file.id}}"
+              bindtap="previewFile"
+            >{{assignment.title}}</button>
+          </block>
+        </view>
+      </view>
+    </view>
+    <view wx:else class="qf-empty">暂无授课安排</view>
+  </view>
+
+  <qf-role-tabbar role="teacher" current="/pages/teacher/courses/courses"></qf-role-tabbar>
+</view>

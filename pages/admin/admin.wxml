@@ -1,0 +1,36 @@
+<view class="screen admin-screen">
+  <z-bg></z-bg>
+  <view class="topbar">
+    <view class="brand-row">
+      <z-logo></z-logo>
+      <view>
+        <text class="brand-name">机构端</text>
+        <text class="brand-sub">运营、教室、成员和直播接入</text>
+      </view>
+    </view>
+    <button class="ghost-btn small-ghost" bindtap="logout">退出</button>
+  </view>
+
+  <view class="grid-3 admin-stats">
+    <view><z-metric value="15" label="教室"></z-metric></view>
+    <view><z-metric value="286" label="学生"></z-metric></view>
+    <view><z-metric value="24" label="老师"></z-metric></view>
+  </view>
+
+  <z-card mode="hero">
+    <text class="page-kicker">ADMIN OPS</text>
+    <view class="page-title">机构配置中心</view>
+    <view class="page-desc">管理邀请码、班级课表、摄像头映射和家长可见权限。</view>
+  </z-card>
+
+  <z-card>
+    <z-section-title title="直播接入状态" right="15 间教室"></z-section-title>
+    <z-list-item time="03" title="初二数学强化 A 班" sub="摄像头在线 · 仅上课时开放" status="在线"></z-list-item>
+    <z-list-item time="12" title="空教室" sub="摄像头离线 · 不对家长展示" status="离线" tone="warn"></z-list-item>
+  </z-card>
+
+  <view class="grid-2">
+    <view><z-tile icon="码" title="邀请码" desc="家长通过邀请码绑定学生"></z-tile></view>
+    <view><z-tile icon="表" title="排课管理" desc="班级、老师、教室统一维护"></z-tile></view>
+  </view>
+</view>

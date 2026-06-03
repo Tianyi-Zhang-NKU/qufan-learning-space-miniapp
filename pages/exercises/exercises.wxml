@@ -1,0 +1,35 @@
+<view class="screen exercises-screen">
+  <z-bg></z-bg>
+  <z-page-head kicker="EXERCISES" title="每日习题" desc="记录老师每天发布的练习、完成状态和家长可见反馈。"></z-page-head>
+
+  <z-card mode="hero">
+    <z-section-title title="今天" right="已发布" right-type-alias="status"></z-section-title>
+    <view class="grid-3">
+      <view><z-metric value="12" label="数学题" size="mini"></z-metric></view>
+      <view><z-metric value="8" label="英语题" size="mini"></z-metric></view>
+      <view><z-metric value="3" label="待订正" size="mini"></z-metric></view>
+    </view>
+  </z-card>
+
+  <z-card mode="light">
+    <z-section-title title="初二数学强化 A 班" right="18:30 发布" theme="light"></z-section-title>
+    <view class="paper-line">
+      <text class="paper-index">01</text>
+      <text class="paper-text">一次函数图像与坐标轴交点计算，完成第 1-6 题。</text>
+    </view>
+    <view class="paper-line">
+      <text class="paper-index">02</text>
+      <text class="paper-text">整理课堂错题，拍照上传订正过程。</text>
+    </view>
+    <view class="btn-row">
+      <navigator class="btn" url="/pages/wrongbook/wrongbook" open-type="switchTab">查看错题</navigator>
+      <view class="ghost-btn dark-ghost">完成 9/12</view>
+    </view>
+  </z-card>
+
+  <z-card>
+    <z-section-title title="历史习题" right="近 7 天"></z-section-title>
+    <z-list-item time="06-02" title="英语自然拼读" sub="8 题 · 已完成 · 1 道错题"></z-list-item>
+    <z-list-item time="06-01" title="初一数学同步" sub="10 题 · 已完成 · 2 道错题"></z-list-item>
+  </z-card>
+</view>

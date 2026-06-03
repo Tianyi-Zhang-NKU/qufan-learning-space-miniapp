@@ -1,0 +1,33 @@
+<view class="qf-page">
+  <view class="qf-top">
+    <view class="qf-brand">
+      <text class="qf-brand-title">错题录入</text>
+      <text class="qf-brand-sub">教师端</text>
+    </view>
+  </view>
+
+  <view class="qf-card">
+    <view class="qf-field">
+      <text class="qf-label">学生ID</text>
+      <input class="qf-input" value="{{draft.studentId}}" data-field="studentId" bindinput="input" />
+    </view>
+    <view class="qf-field">
+      <text class="qf-label">课次ID</text>
+      <input class="qf-input" value="{{draft.courseSessionId}}" data-field="courseSessionId" bindinput="input" />
+    </view>
+    <view class="qf-field">
+      <text class="qf-label">知识点</text>
+      <input class="qf-input" value="{{draft.topic}}" data-field="topic" bindinput="input" />
+    </view>
+    <view class="qf-field">
+      <text class="qf-label">错因</text>
+      <textarea class="qf-textarea" value="{{draft.mistakeReason}}" data-field="mistakeReason" bindinput="input"></textarea>
+    </view>
+    <view class="qf-field">
+      <text class="qf-label">订正建议</text>
+      <textarea class="qf-textarea" value="{{draft.correction}}" data-field="correction" bindinput="input"></textarea>
+    </view>
+    <button class="qf-btn ghost full" bindtap="mockImage">{{imageFile ? imageFile.name : '上传错题图片元信息'}}</button>
+    <button class="qf-btn full editor-save" bindtap="save">保存错题</button>
+  </view>
+</view>

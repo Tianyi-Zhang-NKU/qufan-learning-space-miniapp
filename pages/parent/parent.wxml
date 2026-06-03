@@ -1,0 +1,30 @@
+<view class="screen parent-screen">
+  <z-bg></z-bg>
+  <view class="topbar">
+    <view class="brand-row">
+      <z-logo></z-logo>
+      <view>
+        <text class="brand-name">家长端</text>
+        <text class="brand-sub">学生：林同学 · 初二</text>
+      </view>
+    </view>
+    <button class="ghost-btn small-ghost" bindtap="logout">退出</button>
+  </view>
+
+  <z-card mode="hero">
+    <text class="page-kicker">PARENT VIEW</text>
+    <view class="page-title">今天需要关注 3 件事</view>
+    <view class="page-desc">一节课程正在进行，一组习题待完成，三道错题需要订正。</view>
+  </z-card>
+
+  <view class="grid-2">
+    <view><z-tile icon="看" title="课堂画面" desc="18:30 后可查看教室 03" url="/pages/live/live" open-type-alias="switchTab"></z-tile></view>
+    <view><z-tile icon="错" title="错题订正" desc="本周新增 6 道" url="/pages/wrongbook/wrongbook" open-type-alias="switchTab"></z-tile></view>
+  </view>
+
+  <z-card>
+    <z-section-title title="孩子课表" right="今日"></z-section-title>
+    <z-list-item time="18:30" title="初二数学强化 A 班" sub="教室 03 · 王老师 · 上课中"></z-list-item>
+    <z-list-item time="20:10" title="英语阅读提升" sub="教室 07 · 刘老师 · 待开始"></z-list-item>
+  </z-card>
+</view>

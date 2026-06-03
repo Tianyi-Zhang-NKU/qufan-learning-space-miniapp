@@ -1,0 +1,12 @@
+<view class="tile-host">
+  <navigator wx:if="{{url}}" class="nav-tile" url="{{url}}" open-type="{{resolvedOpenType}}">
+    <view class="tile-icon">{{icon}}</view>
+    <text class="tile-title">{{title}}</text>
+    <text class="tile-desc">{{desc}}</text>
+  </navigator>
+  <view wx:else class="nav-tile">
+    <view class="tile-icon">{{icon}}</view>
+    <text class="tile-title">{{title}}</text>
+    <text class="tile-desc">{{desc}}</text>
+  </view>
+</view>

@@ -1,0 +1,1 @@
+<text class="{{className}}" bindtap="onTap">{{text}}</text>

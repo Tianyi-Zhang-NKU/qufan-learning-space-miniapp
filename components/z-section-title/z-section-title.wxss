@@ -1,0 +1,26 @@
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+  margin: 8rpx 0 18rpx;
+  color: #fff8ea;
+  font-size: 30rpx;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.section-title.light {
+  color: #21362e;
+}
+
+.right-text {
+  flex-shrink: 0;
+  color: rgba(248, 243, 234, 0.56);
+  font-size: 22rpx;
+  font-weight: 400;
+}
+
+.section-title.light .right-text {
+  color: rgba(35, 53, 45, 0.58);
+}

@@ -1,0 +1,25 @@
+.home-screen {
+  padding-top: 54rpx;
+}
+
+.small-ghost {
+  min-height: 58rpx;
+  padding: 0 22rpx;
+  font-size: 22rpx;
+}
+
+.home-metrics {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 30rpx;
+}
+
+.role-actions {
+  margin-bottom: 14rpx;
+}
+
+.empty-copy {
+  color: rgba(248, 243, 234, 0.62);
+  font-size: 25rpx;
+  line-height: 1.6;
+}

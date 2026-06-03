@@ -1,0 +1,14 @@
+<view class="tab-shell">
+  <view
+    wx:for="{{list}}"
+    wx:key="pagePath"
+    class="{{item.className}}"
+    data-index="{{index}}"
+    bindtap="switchTab"
+  >
+    <view class="tab-mark">
+      <text>{{item.mark}}</text>
+    </view>
+    <text class="tab-text">{{item.text}}</text>
+  </view>
+</view>

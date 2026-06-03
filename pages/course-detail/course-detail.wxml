@@ -1,0 +1,41 @@
+<view class="qf-page">
+  <view class="qf-top">
+    <view class="qf-brand">
+      <text class="qf-brand-title">课程详情</text>
+      <text class="qf-brand-sub">{{detail.courseSession.date}} {{detail.courseSession.startTime}}-{{detail.courseSession.endTime}}</text>
+    </view>
+  </view>
+
+  <view wx:if="{{detail}}" class="qf-card">
+    <view class="qf-row">
+      <view>
+        <text class="qf-h2">{{detail.courseSession.title}}</text>
+        <text class="qf-muted">{{detail.courseSession.className}} · {{detail.courseSession.teacherName}} · {{detail.courseSession.classroomName}}</text>
+      </view>
+      <text class="qf-tag {{detail.courseSession.status === 'in_progress' ? 'ok' : 'warn'}}">{{detail.courseSession.statusText}}</text>
+    </view>
+    <button wx:if="{{detail.courseSession.status === 'in_progress'}}" class="qf-btn full detail-live" bindtap="goLive">进入直播</button>
+  </view>
+
+  <view class="qf-section">测验文件</view>
+  <view class="qf-card tight">
+    <view wx:if="{{detail.assignments.length}}" class="qf-list">
+      <view wx:for="{{detail.assignments}}" wx:key="id" class="qf-list-item qf-row">
+        <view>
+          <text class="qf-h3">{{item.title}}</text>
+          <text class="qf-muted">{{item.typeText}} · {{item.statusText}}</text>
+        </view>
+        <button wx:if="{{item.file}}" class="qf-btn ghost small" data-id="{{item.file.id}}" bindtap="previewFile">预览</button>
+      </view>
+    </view>
+    <view wx:else class="qf-empty">暂无测验文件</view>
+  </view>
+
+  <view class="qf-section">学生名单</view>
+  <view class="qf-card tight">
+    <view wx:if="{{detail.students.length}}" class="qf-wrap">
+      <text wx:for="{{detail.students}}" wx:key="id" class="qf-tag">{{item.name}}</text>
+    </view>
+    <view wx:else class="qf-empty">暂无学生</view>
+  </view>
+</view>

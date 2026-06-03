@@ -1,0 +1,5 @@
+.form-btn,
+.role-row,
+.invite-result {
+  margin-top: 16rpx;
+}

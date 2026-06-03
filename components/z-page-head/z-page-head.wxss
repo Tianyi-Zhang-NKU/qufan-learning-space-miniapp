@@ -1,0 +1,44 @@
+.topbar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30rpx;
+}
+
+.brand-row {
+  display: flex;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.head-copy {
+  flex: 1;
+  min-width: 0;
+  padding-top: 2rpx;
+}
+
+.page-kicker {
+  display: block;
+  color: #bfd3a7;
+  font-size: 21rpx;
+  line-height: 1;
+}
+
+.page-title {
+  margin-top: 10rpx;
+  color: #fff8ea;
+  font-size: 42rpx;
+  line-height: 1.16;
+  font-weight: 500;
+}
+
+.page-desc {
+  max-width: 560rpx;
+  margin-top: 14rpx;
+  color: rgba(248, 243, 234, 0.68);
+  font-size: 24rpx;
+  line-height: 1.52;
+  word-break: break-all;
+}

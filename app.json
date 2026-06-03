@@ -1,0 +1,52 @@
+{
+  "entryPagePath": "pages/login/login",
+  "pages": [
+    "pages/login/login",
+    "pages/identity-switch/identity-switch",
+    "pages/profile/profile",
+    "pages/course-detail/course-detail",
+    "pages/live-player/live-player",
+    "pages/file-preview/file-preview",
+    "pages/wrong-record-editor/wrong-record-editor",
+    "pages/parent/home/home",
+    "pages/parent/courses/courses",
+    "pages/parent/exercises/exercises",
+    "pages/teacher/home/home",
+    "pages/teacher/courses/courses",
+    "pages/admin/home/home",
+    "pages/admin/manage/manage",
+    "pages/admin/schedule-board/schedule-board",
+    "pages/home/home",
+    "pages/schedule/schedule",
+    "pages/live/live",
+    "pages/exercises/exercises",
+    "pages/wrongbook/wrongbook",
+    "pages/parent/parent",
+    "pages/teacher/teacher",
+    "pages/admin/admin"
+  ],
+  "window": {
+    "navigationBarTitleText": "趣帆学习空间",
+    "navigationBarBackgroundColor": "#173A32",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F7FAF6",
+    "backgroundTextStyle": "dark"
+  },
+  "usingComponents": {
+    "qf-role-tabbar": "/components/qf-role-tabbar/qf-role-tabbar",
+    "z-bg": "/components/z-bg/z-bg",
+    "z-logo": "/components/z-logo/z-logo",
+    "z-page-head": "/components/z-page-head/z-page-head",
+    "z-tile": "/components/z-tile/z-tile",
+    "z-metric": "/components/z-metric/z-metric",
+    "z-status": "/components/z-status/z-status",
+    "z-list-item": "/components/z-list-item/z-list-item",
+    "z-card": "/components/z-card/z-card",
+    "z-section-title": "/components/z-section-title/z-section-title",
+    "z-chip": "/components/z-chip/z-chip",
+    "z-field": "/components/z-field/z-field",
+    "z-camera": "/components/z-camera/z-camera"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}
