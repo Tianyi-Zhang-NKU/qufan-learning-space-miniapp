@@ -1,4 +1,5 @@
 <view class="qf-page">
+  <z-bg mode="dark"></z-bg>
   <view class="qf-top">
     <view class="qf-brand">
       <text class="qf-brand-title">家长首页</text>
@@ -14,15 +15,12 @@
       </view>
       <button class="qf-btn small" bindtap="goCourses">课程</button>
     </view>
-    <view class="qf-wrap child-row">
-      <button
-        wx:for="{{dashboard.children}}"
-        wx:key="id"
-        class="qf-btn small {{session.activeChildId === item.id ? '' : 'ghost'}}"
-        data-id="{{item.id}}"
-        bindtap="switchChild"
-      >{{item.name}}</button>
-    </view>
+    <picker wx:if="{{dashboard.children.length}}" range="{{childOptions}}" value="{{childIndex}}" bindchange="switchChild">
+      <view class="qf-picker child-picker">
+        <text class="qf-picker-label">当前孩子</text>
+        <text class="qf-picker-value">{{currentChildLabel}}</text>
+      </view>
+    </picker>
   </view>
 
   <view class="qf-grid">
@@ -38,8 +36,8 @@
       <view wx:for="{{dashboard.todayCourses}}" wx:key="id" class="qf-list-item">
         <view class="qf-row">
           <view>
-            <text class="qf-h3">{{item.title}}</text>
-            <text class="qf-muted">{{item.startTime}}-{{item.endTime}} · {{item.teacherName}} · {{item.classroomName}}</text>
+            <text class="qf-h3">{{item.displayTitle}}</text>
+            <text class="qf-muted">{{item.courseName}} · {{item.startTime}}-{{item.endTime}} · {{item.teacherName}} · {{item.classroomName}}</text>
           </view>
           <text class="qf-tag {{item.status === 'in_progress' ? 'ok' : 'warn'}}">{{item.statusText}}</text>
         </view>

@@ -1,4 +1,5 @@
 <view class="qf-page login-page">
+  <z-bg mode="auth"></z-bg>
   <view class="login-brand">
     <text class="login-title">趣帆学习空间</text>
     <text class="login-sub">邀请码绑定身份</text>
@@ -12,15 +13,12 @@
 
     <view wx:if="{{needRelation}}" class="qf-field">
       <text class="qf-label">亲属关系</text>
-      <view class="qf-wrap relation-row">
-        <button
-          wx:for="{{relations}}"
-          wx:key="*this"
-          class="qf-btn small {{relation === item ? '' : 'ghost'}}"
-          data-value="{{item}}"
-          bindtap="chooseRelation"
-        >{{item}}</button>
-      </view>
+      <picker range="{{relations}}" value="{{relationIndex}}" bindchange="chooseRelation">
+        <view class="qf-picker">
+          <text class="qf-picker-label">选择关系</text>
+          <text class="qf-picker-value">{{relation}}</text>
+        </view>
+      </picker>
     </view>
 
     <button class="qf-btn full" loading="{{binding}}" bindtap="bindInvite">模拟微信登录并绑定</button>

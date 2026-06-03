@@ -1,4 +1,5 @@
 <view class="qf-page">
+  <z-bg mode="dark"></z-bg>
   <view class="qf-top">
     <view class="qf-brand">
       <text class="qf-brand-title">个人中心</text>
@@ -10,7 +11,12 @@
     <text class="qf-h2">{{session.displayName}}</text>
     <text class="qf-muted">微信账号：{{session.accountName}}</text>
     <text class="qf-muted">当前身份：{{session.roleName}}</text>
-    <text wx:if="{{session.activeChildId}}" class="qf-muted">当前孩子：{{session.activeChildId}}</text>
+    <picker wx:if="{{session.role === 'parent' && children.length}}" range="{{childOptions}}" value="{{childIndex}}" bindchange="switchChild">
+      <view class="qf-picker profile-child-picker">
+        <text class="qf-picker-label">当前孩子</text>
+        <text class="qf-picker-value">{{currentChildLabel}}</text>
+      </view>
+    </picker>
     <view class="qf-divider"></view>
     <button class="qf-btn full" bindtap="goIdentitySwitch">切换身份</button>
     <button class="qf-btn ghost full profile-logout" bindtap="logout">退出登录</button>

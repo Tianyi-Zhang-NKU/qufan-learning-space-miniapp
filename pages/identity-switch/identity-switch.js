@@ -4,7 +4,10 @@ const Notice = require('../../utils/notice');
 
 Page({
   data: {
-    identities: []
+    identities: [],
+    identityOptions: [],
+    identityIndex: 0,
+    selectedIdentity: null
   },
 
   onShow() {
@@ -13,12 +16,29 @@ Page({
 
   load() {
     Api.listIdentities().then((identities) => {
-      this.setData({ identities });
+      this.setData({
+        identities,
+        identityOptions: identities.map((item) => `${item.label} · ${item.roleName}`),
+        identityIndex: 0,
+        selectedIdentity: identities[0] || null
+      });
     });
   },
 
-  switchIdentity(event) {
-    const identityId = event.currentTarget.dataset.id;
+  chooseIdentity(event) {
+    const identityIndex = Number(event.detail.value || 0);
+    this.setData({
+      identityIndex,
+      selectedIdentity: this.data.identities[identityIndex] || null
+    });
+  },
+
+  enterSelected() {
+    const identityId = this.data.selectedIdentity ? this.data.selectedIdentity.id : '';
+    if (!identityId) {
+      Notice.toast('请选择身份');
+      return;
+    }
     Api.switchIdentity(identityId)
       .then((session) => {
         getApp().setSession(session);

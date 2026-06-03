@@ -1,3 +1,7 @@
 .profile-logout {
   margin-top: 16rpx;
 }
+
+.profile-child-picker {
+  margin-top: 18rpx;
+}

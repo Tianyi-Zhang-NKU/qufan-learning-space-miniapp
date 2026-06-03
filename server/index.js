@@ -101,7 +101,7 @@ function dashboard(session) {
     session,
     metrics: [
       { label: '今日课程', value: todaySchedule.length },
-      { label: '待批改', value: tests.reduce((sum, item) => sum + item.pendingCount, 0) },
+      { label: '已发布测验', value: tests.filter((item) => item.status !== '未发布').length },
       { label: '错题记录', value: wrongRecords.length },
       { label: '可看直播', value: liveRooms.length }
     ],
@@ -224,7 +224,7 @@ async function handle(req, res) {
       fileName: body.fileName || 'demo.pdf',
       fileType: body.fileType || 'pdf',
       uploadedAt: nowLabel(),
-      status: '待批改',
+      status: '已发布',
       pendingCount: body.totalCount || 18,
       gradedCount: 0,
       totalCount: body.totalCount || 18,
@@ -245,7 +245,7 @@ async function handle(req, res) {
     if (test.pendingCount > 0) {
       test.pendingCount -= 1;
       test.gradedCount += 1;
-      test.status = test.pendingCount === 0 ? '已完成' : '批改中';
+      test.status = test.pendingCount === 0 ? '已完成' : '已发布';
     }
     send(res, 200, clone(test));
     return;
@@ -268,7 +268,7 @@ async function handle(req, res) {
       source: body.source || '老师手动导入',
       className: student.className,
       teacherName: '周老师',
-      mistakeReason: body.mistakeReason || '老师批改后补充错因',
+      mistakeReason: body.mistakeReason || '老师录入后补充错因',
       correction: body.correction || '待学生订正后复盘。',
       imageUrl: body.imageUrl || '',
       createdAt: '2026-06-03',

@@ -1,4 +1,5 @@
 <view class="qf-page">
+  <z-bg mode="dark"></z-bg>
   <view class="qf-top">
     <view class="qf-brand">
       <text class="qf-brand-title">习题中心</text>
@@ -7,15 +8,12 @@
   </view>
 
   <view class="qf-card tight">
-    <view class="qf-wrap">
-      <button
-        wx:for="{{children}}"
-        wx:key="id"
-        class="qf-btn small {{session.activeChildId === item.id ? '' : 'ghost'}}"
-        data-id="{{item.id}}"
-        bindtap="switchChild"
-      >{{item.name}}</button>
-    </view>
+    <picker wx:if="{{children.length}}" range="{{childOptions}}" value="{{childIndex}}" bindchange="switchChild">
+      <view class="qf-picker">
+        <text class="qf-picker-label">当前孩子</text>
+        <text class="qf-picker-value">{{currentChildLabel}}</text>
+      </view>
+    </picker>
     <view class="qf-wrap filter-row">
       <button class="qf-btn small {{filter === 'all' ? '' : 'ghost'}}" data-filter="all" bindtap="setFilter">全部</button>
       <button class="qf-btn small {{filter === 'assignment' ? '' : 'ghost'}}" data-filter="assignment" bindtap="setFilter">测验</button>
@@ -30,7 +28,7 @@
         <view>
           <text class="qf-h3">{{item.title}}</text>
           <text class="qf-muted">{{item.typeText}} · {{item.statusText}}</text>
-          <text class="qf-muted">{{item.courseSession.title}}</text>
+          <text class="qf-muted">{{item.courseSession.courseName}} · {{item.courseSession.displayTitle}}</text>
         </view>
         <button wx:if="{{item.file}}" class="qf-btn ghost small" data-id="{{item.file.id}}" bindtap="previewFile">文件</button>
         <text wx:else class="qf-tag warn">文件未上传</text>

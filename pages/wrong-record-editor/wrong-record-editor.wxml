@@ -1,20 +1,19 @@
 <view class="qf-page">
+  <z-bg mode="dark"></z-bg>
   <view class="qf-top">
     <view class="qf-brand">
-      <text class="qf-brand-title">错题录入</text>
-      <text class="qf-brand-sub">教师端</text>
+      <text class="qf-brand-title">录入错题</text>
+      <text class="qf-brand-sub">{{session.displayName}}</text>
     </view>
   </view>
 
+  <view class="qf-card qf-hero">
+    <text class="qf-h2">{{context.student.name || '学生'}}</text>
+    <text class="qf-muted">{{context.course.name}} · {{context.courseSession.displayTitle}}</text>
+    <text class="qf-muted">{{context.courseSession.date}} {{context.courseSession.startTime}}-{{context.courseSession.endTime}}</text>
+  </view>
+
   <view class="qf-card">
-    <view class="qf-field">
-      <text class="qf-label">学生ID</text>
-      <input class="qf-input" value="{{draft.studentId}}" data-field="studentId" bindinput="input" />
-    </view>
-    <view class="qf-field">
-      <text class="qf-label">课次ID</text>
-      <input class="qf-input" value="{{draft.courseSessionId}}" data-field="courseSessionId" bindinput="input" />
-    </view>
     <view class="qf-field">
       <text class="qf-label">知识点</text>
       <input class="qf-input" value="{{draft.topic}}" data-field="topic" bindinput="input" />
@@ -27,7 +26,7 @@
       <text class="qf-label">订正建议</text>
       <textarea class="qf-textarea" value="{{draft.correction}}" data-field="correction" bindinput="input"></textarea>
     </view>
-    <button class="qf-btn ghost full" bindtap="mockImage">{{imageFile ? imageFile.name : '上传错题图片元信息'}}</button>
+    <button class="qf-btn ghost full" bindtap="mockImage">{{imageFile ? imageFile.name : '选择错题图片（演示保存元信息）'}}</button>
     <button class="qf-btn full editor-save" bindtap="save">保存错题</button>
   </view>
 </view>

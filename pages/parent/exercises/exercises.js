@@ -9,7 +9,10 @@ Page({
     currentChild: {},
     assignments: [],
     wrongRecords: [],
-    filter: 'all'
+    filter: 'all',
+    childOptions: [],
+    childIndex: 0,
+    currentChildLabel: ''
   },
 
   onShow() {
@@ -20,20 +23,27 @@ Page({
   },
 
   load() {
-    Promise.all([Api.getParentChildren(), Api.getParentExercises({})])
+    Promise.all([Api.listParentChildren(), Api.getParentExercises({})])
       .then(([children, result]) => {
+        const activeId = result.currentChild ? result.currentChild.id : '';
+        const childIndex = Math.max(0, children.findIndex((item) => item.id === activeId));
         this.setData({
           children,
           currentChild: result.currentChild,
           assignments: result.assignments,
-          wrongRecords: result.wrongRecords
+          wrongRecords: result.wrongRecords,
+          childOptions: children.map((item) => item.displayLabel || item.name),
+          childIndex,
+          currentChildLabel: children[childIndex] ? (children[childIndex].displayLabel || children[childIndex].name) : ''
         });
       })
       .catch((error) => Notice.alert(error.message || '习题加载失败'));
   },
 
   switchChild(event) {
-    Api.switchActiveChild(event.currentTarget.dataset.id).then((session) => {
+    const child = this.data.children[Number(event.detail.value || 0)];
+    if (!child) return;
+    Api.switchActiveChild(child.id).then((session) => {
       getApp().setSession(session);
       this.setData({ session });
       this.load();

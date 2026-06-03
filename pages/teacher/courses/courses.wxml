@@ -1,41 +1,38 @@
 <view class="qf-page">
+  <z-bg mode="dark"></z-bg>
   <view class="qf-top">
     <view class="qf-brand">
       <text class="qf-brand-title">课程管理</text>
-      <text class="qf-brand-sub">授课课表 / 测验 / 错题</text>
+      <text class="qf-brand-sub">{{teacher.name || session.displayName}} · 课程班 / 课次 / 学生</text>
     </view>
-    <button class="qf-btn ghost small" bindtap="addWrong">错题录入</button>
   </view>
 
-  <view class="qf-card">
-    <text class="qf-h2">上传测验文件元信息</text>
-    <view class="qf-field">
-      <text class="qf-label">课次ID</text>
-      <input class="qf-input" value="{{uploadDraft.courseSessionId}}" data-field="courseSessionId" bindinput="input" />
-    </view>
-    <view class="qf-field">
-      <text class="qf-label">标题</text>
-      <input class="qf-input" value="{{uploadDraft.title}}" data-field="title" bindinput="input" />
-    </view>
-    <view class="qf-field">
-      <text class="qf-label">文件名</text>
-      <input class="qf-input" value="{{uploadDraft.fileName}}" data-field="fileName" bindinput="input" />
-    </view>
-    <button class="qf-btn full" bindtap="uploadFile">保存 PDF/Word 文件</button>
+  <view class="qf-card qf-hero">
+    <text class="qf-h2">{{teacher.name || session.displayName}}</text>
+    <text class="qf-muted">从课程班进入课次，再在学生名单中录入错题。</text>
   </view>
 
   <view class="qf-card tight">
-    <view wx:if="{{courses.length}}" class="qf-list">
-      <view wx:for="{{courses}}" wx:key="id" class="qf-list-item">
+    <view wx:if="{{courseGroups.length}}" class="qf-list">
+      <view wx:for="{{courseGroups}}" wx:key="id" class="qf-list-item">
         <view class="qf-row">
           <view>
-            <text class="qf-h3">{{item.title}}</text>
-            <text class="qf-muted">{{item.date}} {{item.startTime}}-{{item.endTime}} · {{item.className}}</text>
+            <text class="qf-h3">{{item.name}}</text>
+            <text class="qf-muted">{{item.subject}} · {{item.classroomName}} · 学生 {{item.studentCount}} 人</text>
           </view>
-          <button class="qf-btn ghost small" data-id="{{item.id}}" bindtap="goDetail">详情</button>
+          <button class="qf-btn ghost small" data-id="{{item.id}}" bindtap="goCourse">进入课程</button>
         </view>
         <view class="qf-divider"></view>
-        <text class="qf-muted">学生 {{item.students.length}} 人 · 测验 {{item.assignments.length}} 项 · 错题 {{item.wrongRecords.length}} 条</text>
+        <view wx:for="{{item.sessions}}" wx:for-item="session" wx:key="id" class="course-session-row">
+          <view class="qf-row">
+            <view>
+              <text class="qf-h3">{{session.sessionTitle}}</text>
+              <text class="qf-muted">{{session.displayTitle}} · {{session.date}} {{session.startTime}}-{{session.endTime}}</text>
+            </view>
+            <text class="qf-tag {{session.statusTone}}">{{session.statusText}}</text>
+          </view>
+          <button class="qf-btn ghost small session-entry" data-id="{{session.id}}" bindtap="goSession">进入课次</button>
+        </view>
         <view wx:if="{{item.assignments.length}}" class="qf-wrap course-files">
           <block wx:for="{{item.assignments}}" wx:for-item="assignment" wx:key="id">
             <button

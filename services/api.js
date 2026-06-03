@@ -8,6 +8,7 @@ const DOC_EXTS = ['pdf', 'doc', 'docx'];
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'heic'];
 const DOC_MAX_SIZE = 20 * 1024 * 1024;
 const IMAGE_MAX_SIZE = 10 * 1024 * 1024;
+const TODAY = '2026-06-03';
 
 function hasWx() {
   return typeof wx !== 'undefined';
@@ -122,7 +123,7 @@ function findClass(classId) {
 }
 
 function findCourse(courseId) {
-  return db.courses.find((item) => item.id === courseId);
+  return db.courses.find((item) => item.id === courseId || item.courseId === courseId);
 }
 
 function findClassroom(classroomId) {
@@ -137,6 +138,35 @@ function findLiveRoomBySession(courseSessionId) {
   return db.liveRooms.find((item) => item.courseSessionId === courseSessionId);
 }
 
+function teacherName(teacher) {
+  if (!teacher) return '';
+  return teacher.name || (teacher.fullName ? `${teacher.fullName}老师` : '');
+}
+
+function cameraStatusText(status) {
+  const map = {
+    ready: '摄像头可用',
+    testing: '联调中',
+    pending: '待接入',
+    offline: '离线'
+  };
+  return map[status] || '待确认';
+}
+
+function liveStatusTone(status) {
+  if (status === 'open') return 'ok';
+  if (status === 'offline') return 'danger';
+  if (status === 'closed') return 'muted';
+  return 'warn';
+}
+
+function statusTone(status) {
+  if (status === 'in_progress' || status === 'published' || status === 'open') return 'ok';
+  if (status === 'finished' || status === 'closed' || status === 'corrected') return 'muted';
+  if (status === 'offline') return 'danger';
+  return 'warn';
+}
+
 function pushAudit(actorId, action, targetType, targetId, message) {
   db.auditLogs.unshift({
     id: nextId('audit', db.auditLogs),
@@ -149,22 +179,140 @@ function pushAudit(actorId, action, targetType, targetId, message) {
   });
 }
 
+function sortSessions(sessions) {
+  return sessions.slice().sort((a, b) => {
+    const aKey = `${a.date} ${a.startTime}`;
+    const bKey = `${b.date} ${b.startTime}`;
+    if (aKey === bKey) return Number(a.sessionIndex || 0) - Number(b.sessionIndex || 0);
+    return aKey.localeCompare(bKey);
+  });
+}
+
+function getCourseStudents(course) {
+  if (!course) return [];
+  return db.students.filter((student) => (course.studentIds || []).includes(student.id));
+}
+
+function getCourseSessions(courseId) {
+  return sortSessions(db.courseSessions.filter((item) => item.courseId === courseId));
+}
+
+function getCourseAssignments(courseId, courseSessionId) {
+  return db.assignments
+    .filter((item) => item.courseId === courseId && (!courseSessionId || item.courseSessionId === courseSessionId))
+    .map(assignmentWithFile);
+}
+
+function getCourseWrongRecords(courseId, studentId) {
+  return db.wrongRecords
+    .filter((item) => item.courseId === courseId && (!studentId || item.studentId === studentId))
+    .map(wrongRecordWithFile);
+}
+
 function decorateCourseSession(item) {
+  if (!item || !item.id) return item || {};
   const course = findCourse(item.courseId) || {};
-  const classItem = findClass(item.classId) || {};
-  const teacher = findTeacher(item.teacherId) || {};
-  const classroom = findClassroom(item.classroomId) || {};
+  const classItem = findClass(item.classId || course.classId) || {};
+  const teacher = findTeacher(item.teacherId || course.teacherId) || {};
+  const classroom = findClassroom(item.classroomId || course.classroomId) || {};
   const liveRoom = findLiveRoomBySession(item.id) || null;
+  const displayTitle = item.displayTitle || item.title || item.sessionTitle || '';
   return {
     ...item,
+    displayTitle,
     course,
-    courseName: course.name || item.title,
+    courseName: course.name || classItem.name || '',
+    className: classItem.name || course.name || '',
     subject: course.subject || classItem.subject || '',
-    className: classItem.name || '',
-    teacherName: teacher.name || '',
+    teacherName: teacherName(teacher),
+    teacherFullName: teacher.fullName || teacherName(teacher),
     classroomName: classroom.name || '',
     liveStatus: liveRoom ? liveRoom.status : 'none',
-    liveStatusText: liveRoom ? liveRoom.statusText : '未配置直播'
+    liveStatusText: liveRoom ? liveRoom.statusText : '未配置直播',
+    liveTone: liveStatusTone(liveRoom ? liveRoom.status : 'none'),
+    statusTone: statusTone(item.status)
+  };
+}
+
+function assignmentStatusText(status) {
+  const map = {
+    not_uploaded: '未发布',
+    pending: '待发布',
+    pending_grading: '已发布',
+    grading: '已发布',
+    published: '已发布',
+    closed: '已完成'
+  };
+  return map[status] || status || '待确认';
+}
+
+function assignmentWithFile(item) {
+  const file = item.fileId ? db.files.find((entry) => entry.id === item.fileId) : null;
+  const session = findCourseSession(item.courseSessionId);
+  return {
+    ...item,
+    file: file || null,
+    courseSession: session ? decorateCourseSession(session) : null,
+    typeText: item.type === 'pre' ? '课前测' : '课后测',
+    statusText: assignmentStatusText(item.status),
+    statusTone: statusTone(item.status)
+  };
+}
+
+function wrongRecordWithFile(item) {
+  const file = item.imageFileId ? db.files.find((entry) => entry.id === item.imageFileId) : null;
+  const course = findCourse(item.courseId) || {};
+  const session = findCourseSession(item.courseSessionId);
+  return {
+    ...item,
+    courseName: course.name || '',
+    courseSession: session ? decorateCourseSession(session) : null,
+    imageFile: file || null,
+    statusText: item.status === 'corrected' ? '已订正' : '待订正',
+    statusTone: item.status === 'corrected' ? 'muted' : 'warn'
+  };
+}
+
+function guardianBindingsForStudentIds(studentIds) {
+  return db.guardianBindings.filter((binding) => studentIds.includes(binding.studentId));
+}
+
+function uniqueCount(values) {
+  return new Set(values.filter(Boolean)).size;
+}
+
+function decorateCourseGroup(course, options = {}) {
+  const teacher = findTeacher(course.teacherId || course.mainTeacherId);
+  const classroom = findClassroom(course.classroomId || course.defaultClassroomId);
+  const sessions = getCourseSessions(course.id).map(decorateCourseSession);
+  const students = getCourseStudents(course);
+  const assignments = getCourseAssignments(course.id);
+  const wrongRecords = getCourseWrongRecords(course.id, options.studentId || '');
+  const upcoming = sessions.find((item) => item.status === 'in_progress')
+    || sessions.find((item) => item.status === 'scheduled')
+    || sessions[sessions.length - 1]
+    || null;
+  const liveRoom = upcoming ? findLiveRoomBySession(upcoming.id) : null;
+  return {
+    ...course,
+    id: course.id,
+    courseId: course.id,
+    teacher,
+    teacherName: teacherName(teacher),
+    classroom,
+    classroomName: classroom ? classroom.name : '',
+    sessions,
+    courseSessions: sessions,
+    students,
+    assignments,
+    wrongRecords,
+    studentCount: students.length,
+    guardianCount: uniqueCount(guardianBindingsForStudentIds(course.studentIds || []).map((item) => item.wechatAccountId)),
+    nextSession: upcoming,
+    recentOrNextSession: upcoming,
+    liveStatus: liveRoom ? liveRoom.status : 'none',
+    liveStatusText: liveRoom ? liveRoom.statusText : '待接入直播流',
+    liveTone: liveStatusTone(liveRoom ? liveRoom.status : 'none')
   };
 }
 
@@ -184,14 +332,121 @@ function activeChildId(session) {
   return ids[0];
 }
 
+function parentChildrenForSession(session) {
+  const bindings = db.guardianBindings.filter((item) => item.wechatAccountId === session.wechatAccountId);
+  return bindings
+    .map((binding) => {
+      const student = findStudent(binding.studentId);
+      if (!student) return null;
+      return {
+        ...student,
+        relation: binding.relation || '',
+        bindingId: binding.id,
+        boundAt: binding.createdAt,
+        displayLabel: `${student.name}${binding.relation ? `（${binding.relation}）` : ''}`
+      };
+    })
+    .filter(Boolean);
+}
+
+function parentCanAccessStudent(session, studentId) {
+  return parentStudentIds(session).includes(studentId);
+}
+
+function canAccessCourse(session, course) {
+  if (!session || !course) return false;
+  if (session.role === 'admin') return true;
+  if (session.role === 'teacher') return course.teacherId === session.teacherId;
+  if (session.role === 'parent') {
+    const ids = parentStudentIds(session);
+    return (course.studentIds || []).some((studentId) => ids.includes(studentId));
+  }
+  return false;
+}
+
+function canAccessCourseSession(session, courseSession) {
+  if (!session || !courseSession) return false;
+  if (session.role === 'admin') return true;
+  if (session.role === 'teacher') return courseSession.teacherId === session.teacherId;
+  if (session.role === 'parent') {
+    return courseSession.studentIds.some((studentId) => parentCanAccessStudent(session, studentId));
+  }
+  return false;
+}
+
+function teacherCanAccessCourse(session, courseId) {
+  if (!session || session.role !== 'teacher') return false;
+  const course = findCourse(courseId);
+  return Boolean(course && course.teacherId === session.teacherId);
+}
+
+function teacherCanAccessClass(session, classId) {
+  if (!session || session.role !== 'teacher') return false;
+  return db.courses.some((course) => course.teacherId === session.teacherId && course.classId === classId);
+}
+
+function filterCourseGroupsForSession(session) {
+  if (!session) return [];
+  if (session.role === 'admin') return db.courses;
+  if (session.role === 'teacher') return db.courses.filter((course) => course.teacherId === session.teacherId);
+  if (session.role === 'parent') {
+    const ids = parentStudentIds(session);
+    return db.courses.filter((course) => (course.studentIds || []).some((studentId) => ids.includes(studentId)));
+  }
+  return [];
+}
+
+function filterCourseSessionsForSession(session) {
+  if (!session) return [];
+  if (session.role === 'admin') return db.courseSessions;
+  if (session.role === 'teacher') {
+    return db.courseSessions.filter((item) => item.teacherId === session.teacherId);
+  }
+  if (session.role === 'parent') {
+    const ids = parentStudentIds(session);
+    return db.courseSessions.filter((item) => item.studentIds.some((studentId) => ids.includes(studentId)));
+  }
+  return [];
+}
+
+function filterAssignmentsForSession(session) {
+  if (!session) return [];
+  if (session.role === 'admin') return db.assignments;
+  if (session.role === 'teacher') {
+    return db.assignments.filter((item) => item.teacherId === session.teacherId);
+  }
+  if (session.role === 'parent') {
+    const childId = activeChildId(session);
+    return db.assignments.filter((item) => {
+      const course = findCourse(item.courseId);
+      return course && (course.studentIds || []).includes(childId);
+    });
+  }
+  return [];
+}
+
+function filterWrongRecordsForSession(session) {
+  if (!session) return [];
+  if (session.role === 'admin') return db.wrongRecords;
+  if (session.role === 'teacher') {
+    return db.wrongRecords.filter((item) => item.teacherId === session.teacherId);
+  }
+  if (session.role === 'parent') {
+    const ids = parentStudentIds(session);
+    return db.wrongRecords.filter((item) => ids.includes(item.studentId));
+  }
+  return [];
+}
+
 function buildIdentityLabel(identity) {
   if (identity.role === 'parent') {
     const student = findStudent(identity.targetId);
-    return student ? `${student.name}家长` : '学生家长';
+    const relation = identity.relation ? `（${identity.relation}）` : '';
+    return student ? `${student.name}${relation}` : '学生家长';
   }
   if (identity.role === 'teacher') {
     const teacher = findTeacher(identity.targetId);
-    return teacher ? teacher.name : '老师';
+    return teacher ? teacherName(teacher) : '老师';
   }
   const admin = findAdmin(identity.targetId);
   return admin ? admin.name : '教务管理员';
@@ -218,6 +473,7 @@ function buildSession(identity) {
     activeChildId: '',
     studentIds: [],
     teacherId: '',
+    teacherName: '',
     adminId: '',
     targetId: identity.targetId
   };
@@ -235,7 +491,10 @@ function buildSession(identity) {
   }
 
   if (identity.role === 'teacher') {
+    const teacher = findTeacher(identity.targetId);
     base.teacherId = identity.targetId;
+    base.teacherName = teacherName(teacher);
+    base.displayName = teacherName(teacher);
   }
 
   if (identity.role === 'admin') {
@@ -249,8 +508,13 @@ function activateIdentity(identity) {
   const account = findWechatAccount(identity.wechatAccountId);
   if (account) {
     account.activeIdentityId = identity.id;
-    if (identity.role === 'parent' && !account.activeChildId) {
-      account.activeChildId = identity.targetId;
+    if (identity.role === 'parent') {
+      const ids = db.guardianBindings
+        .filter((item) => item.wechatAccountId === identity.wechatAccountId)
+        .map((item) => item.studentId);
+      if (!account.activeChildId || !ids.includes(account.activeChildId)) {
+        account.activeChildId = identity.targetId;
+      }
     }
   }
   activeSession = buildSession(identity);
@@ -266,6 +530,44 @@ function listAccountIdentities(accountId) {
       label: buildIdentityLabel(item),
       roleName: roleName(item.role)
     }));
+}
+
+function ensureParentBinding(accountId, studentId, relation, inviteCode) {
+  const existingBinding = db.guardianBindings.find((item) => item.wechatAccountId === accountId && item.studentId === studentId);
+  if (!existingBinding) {
+    db.guardianBindings.push({
+      id: nextId('guardian', db.guardianBindings),
+      wechatAccountId: accountId,
+      studentId,
+      relation,
+      createdAt: nowLabel()
+    });
+  }
+
+  let identity = db.identities.find((item) => (
+    item.wechatAccountId === accountId && item.role === 'parent' && item.targetId === studentId
+  ));
+  if (!identity) {
+    identity = {
+      id: nextId('identity_parent', db.identities),
+      wechatAccountId: accountId,
+      role: 'parent',
+      targetId: studentId,
+      relation,
+      inviteCode,
+      createdAt: nowLabel()
+    };
+    db.identities.push(identity);
+  }
+  return identity;
+}
+
+function seedDemoChildren(accountId, firstRelation) {
+  if (accountId !== 'wx_demo_001') return;
+  ensureParentBinding(accountId, 'stu_002', '父亲', 'DEMO-AUTO');
+  ensureParentBinding(accountId, 'stu_003', '爷爷', 'DEMO-AUTO');
+  const first = db.identities.find((item) => item.wechatAccountId === accountId && item.role === 'parent' && item.targetId === 'stu_001');
+  if (first && firstRelation) first.relation = firstRelation;
 }
 
 function requireSession() {
@@ -285,121 +587,35 @@ function requireRole(roles) {
   return session;
 }
 
-function parentCanAccessStudent(session, studentId) {
-  return parentStudentIds(session).includes(studentId);
-}
-
-function teacherCanAccessClass(session, classId) {
-  if (!session || session.role !== 'teacher') return false;
-  return db.courseSessions.some((item) => item.teacherId === session.teacherId && item.classId === classId);
-}
-
-function canAccessCourseSession(session, courseSession) {
-  if (!session || !courseSession) return false;
-  if (session.role === 'admin') return true;
-  if (session.role === 'teacher') return courseSession.teacherId === session.teacherId;
-  if (session.role === 'parent') {
-    return courseSession.studentIds.some((studentId) => parentCanAccessStudent(session, studentId));
-  }
-  return false;
-}
-
-function filterCourseSessionsForSession(session) {
-  if (!session) return [];
-  if (session.role === 'admin') return db.courseSessions;
-  if (session.role === 'teacher') {
-    return db.courseSessions.filter((item) => item.teacherId === session.teacherId);
-  }
-  if (session.role === 'parent') {
-    const ids = parentStudentIds(session);
-    return db.courseSessions.filter((item) => item.studentIds.some((studentId) => ids.includes(studentId)));
-  }
-  return [];
-}
-
-function filterAssignmentsForSession(session) {
-  if (!session) return [];
-  if (session.role === 'admin') return db.assignments;
-  if (session.role === 'teacher') {
-    return db.assignments.filter((item) => item.teacherId === session.teacherId);
-  }
-  if (session.role === 'parent') {
-    const activeId = activeChildId(session);
-    const student = findStudent(activeId);
-    return db.assignments.filter((item) => student && item.classId === student.classId);
-  }
-  return [];
-}
-
-function filterWrongRecordsForSession(session) {
-  if (!session) return [];
-  if (session.role === 'admin') return db.wrongRecords;
-  if (session.role === 'teacher') {
-    return db.wrongRecords.filter((item) => item.teacherId === session.teacherId);
-  }
-  if (session.role === 'parent') {
-    const ids = parentStudentIds(session);
-    return db.wrongRecords.filter((item) => ids.includes(item.studentId));
-  }
-  return [];
-}
-
-function assignmentWithFile(item) {
-  const file = item.fileId ? db.files.find((entry) => entry.id === item.fileId) : null;
-  const session = findCourseSession(item.courseSessionId);
-  return {
-    ...item,
-    file,
-    courseSession: session ? decorateCourseSession(session) : null,
-    typeText: item.type === 'pre' ? '课前测' : '课后测',
-    statusText: assignmentStatusText(item.status)
-  };
-}
-
-function assignmentStatusText(status) {
-  const map = {
-    not_uploaded: '文件未上传',
-    pending: '待完成',
-    pending_grading: '待批改',
-    grading: '批改中',
-    closed: '已完成'
-  };
-  return map[status] || status || '待确认';
-}
-
-function wrongRecordWithFile(item) {
-  const file = item.imageFileId ? db.files.find((entry) => entry.id === item.imageFileId) : null;
-  return {
-    ...item,
-    imageFile: file || null,
-    statusText: item.status === 'corrected' ? '已订正' : '待订正'
-  };
-}
-
 function checkScheduleConflictsRaw(payload) {
+  const course = findCourse(payload.courseId) || {};
+  const normalized = {
+    ...payload,
+    classId: payload.classId || course.classId,
+    teacherId: payload.teacherId || course.teacherId,
+    classroomId: payload.classroomId || course.classroomId
+  };
   const conflicts = [];
-  const date = payload.date;
-  const startTime = payload.startTime;
-  const endTime = payload.endTime;
+  const { date, startTime, endTime } = normalized;
   if (!date || !startTime || !endTime) {
     return { hasConflict: false, conflicts };
   }
 
   db.courseSessions.forEach((item) => {
-    if (payload.excludeId && item.id === payload.excludeId) return;
+    if (normalized.excludeId && item.id === normalized.excludeId) return;
     if (item.date !== date) return;
     const overlap = startTime < item.endTime && endTime > item.startTime;
     if (!overlap) return;
     const decorated = decorateCourseSession(item);
-    if (payload.teacherId && item.teacherId === payload.teacherId) {
+    if (normalized.teacherId && item.teacherId === normalized.teacherId) {
       conflicts.push({
         type: 'teacher',
-        label: '老师时间冲突',
-        message: `${decorated.teacherName} 在 ${item.startTime}-${item.endTime} 已有 ${item.title}`,
+        label: '教师时间冲突',
+        message: `${decorated.teacherName} 在 ${item.startTime}-${item.endTime} 已有 ${decorated.courseName} ${item.sessionTitle || ''}`,
         courseSessionId: item.id
       });
     }
-    if (payload.classroomId && item.classroomId === payload.classroomId) {
+    if (normalized.classroomId && item.classroomId === normalized.classroomId) {
       conflicts.push({
         type: 'classroom',
         label: '教室时间冲突',
@@ -407,10 +623,10 @@ function checkScheduleConflictsRaw(payload) {
         courseSessionId: item.id
       });
     }
-    if (payload.classId && item.classId === payload.classId) {
+    if (normalized.classId && item.classId === normalized.classId) {
       conflicts.push({
         type: 'class',
-        label: '班级时间冲突',
+        label: '课程班时间冲突',
         message: `${decorated.className} 在 ${item.startTime}-${item.endTime} 已有课次`,
         courseSessionId: item.id
       });
@@ -443,11 +659,9 @@ function canAccessFile(session, file) {
   if (file.ownerType === 'assignment') {
     const assignment = db.assignments.find((item) => item.id === file.ownerId);
     if (!assignment) return false;
+    const course = findCourse(assignment.courseId);
     if (session.role === 'teacher') return assignment.teacherId === session.teacherId;
-    if (session.role === 'parent') {
-      const student = findStudent(activeChildId(session));
-      return Boolean(student && student.classId === assignment.classId);
-    }
+    if (session.role === 'parent') return Boolean(course && (course.studentIds || []).includes(activeChildId(session)));
   }
 
   if (file.ownerType === 'wrongRecord') {
@@ -460,9 +674,119 @@ function canAccessFile(session, file) {
   return false;
 }
 
+function adminRelationsOverview() {
+  return db.courses.map((course) => {
+    const group = decorateCourseGroup(course);
+    return {
+      courseId: course.id,
+      courseName: course.name,
+      subject: course.subject,
+      grade: course.grade,
+      teacherName: group.teacherName,
+      classroomName: group.classroomName,
+      studentCount: group.studentCount,
+      guardianCount: group.guardianCount,
+      recentOrNextSession: group.recentOrNextSession,
+      liveStatus: group.liveStatus,
+      liveStatusText: group.liveStatusText,
+      liveTone: group.liveTone
+    };
+  });
+}
+
+function adminClassroomRelations() {
+  return db.classrooms.map((classroom) => {
+    const roomSessions = sortSessions(db.courseSessions.filter((item) => item.classroomId === classroom.id));
+    const current = roomSessions.find((item) => item.status === 'in_progress') || null;
+    const next = roomSessions.find((item) => item.status === 'scheduled') || null;
+    const session = current || next || null;
+    const decorated = session ? decorateCourseSession(session) : null;
+    return {
+      ...classroom,
+      cameraStatusText: cameraStatusText(classroom.cameraStatus),
+      currentSession: current ? decorateCourseSession(current) : null,
+      nextSession: next ? decorateCourseSession(next) : null,
+      courseName: decorated ? decorated.courseName : '暂无排课',
+      teacherName: decorated ? decorated.teacherName : '',
+      sessionLabel: decorated ? `${decorated.sessionTitle} ${decorated.date} ${decorated.startTime}-${decorated.endTime}` : '暂无下一节课'
+    };
+  });
+}
+
+function adminTeacherRelations() {
+  return db.teachers.map((teacher) => {
+    const courses = db.courses.filter((course) => course.teacherId === teacher.id);
+    const sessions = db.courseSessions.filter((item) => item.teacherId === teacher.id);
+    const studentIds = courses.flatMap((course) => course.studentIds || []);
+    return {
+      ...teacher,
+      displayName: teacherName(teacher),
+      courseNames: courses.map((course) => course.name),
+      studentCount: uniqueCount(studentIds),
+      todaySessionCount: sessions.filter((item) => item.date === TODAY).length,
+      weekSessionCount: sessions.length
+    };
+  });
+}
+
+function adminStudentGuardianRelations() {
+  return db.students.map((student) => {
+    const courses = db.courses.filter((course) => (course.studentIds || []).includes(student.id));
+    const bindings = db.guardianBindings.filter((binding) => binding.studentId === student.id);
+    return {
+      ...student,
+      courseNames: courses.map((course) => course.name),
+      courseNamesText: courses.map((course) => course.name).join('、'),
+      guardians: bindings.map((binding) => {
+        const account = findWechatAccount(binding.wechatAccountId) || {};
+        return {
+          name: student.primaryGuardian || account.nickname || '家长',
+          nickname: account.nickname || '',
+          phone: account.phone || student.guardianPhone || '',
+          relation: binding.relation,
+          wechatAccountId: binding.wechatAccountId,
+          inviteStatus: '已绑定',
+          boundAt: binding.createdAt
+        };
+      }),
+      guardianCount: bindings.length
+    };
+  });
+}
+
+function adminParentRelations() {
+  return db.guardianBindings.map((binding) => {
+    const student = findStudent(binding.studentId) || {};
+    const account = findWechatAccount(binding.wechatAccountId) || {};
+    return {
+      id: binding.id,
+      parentName: student.primaryGuardian || account.nickname || '家长',
+      nickname: account.nickname || '',
+      phone: account.phone || student.guardianPhone || '',
+      studentName: student.name || '',
+      relation: binding.relation,
+      inviteCode: 'STUDENT-001',
+      boundAt: binding.createdAt
+    };
+  });
+}
+
+function adminCourseTree() {
+  return db.courses.map((course) => {
+    const group = decorateCourseGroup(course);
+    return {
+      ...group,
+      sessions: group.sessions.map((session) => ({
+        ...session,
+        assignments: db.assignments.filter((item) => item.courseSessionId === session.id).map(assignmentWithFile),
+        wrongRecordCount: db.wrongRecords.filter((item) => item.courseSessionId === session.id).length
+      }))
+    };
+  });
+}
+
 function adminOverview() {
-  const today = '2026-06-03';
-  const todaySessions = db.courseSessions.filter((item) => item.date === today);
+  const todaySessions = db.courseSessions.filter((item) => item.date === TODAY);
   const conflictCount = db.courseSessions.reduce((sum, item) => {
     const result = checkScheduleConflictsRaw({
       ...item,
@@ -472,13 +796,14 @@ function adminOverview() {
   }, 0);
   return {
     metrics: [
-      { label: '老师数', value: db.teachers.length },
+      { label: '教师数', value: db.teachers.length },
       { label: '学生数', value: db.students.length },
+      { label: '课程班', value: db.courses.length },
       { label: '教室数', value: db.classrooms.length },
       { label: '今日课次', value: todaySessions.length },
-      { label: '冲突数', value: conflictCount },
-      { label: '直播房间', value: db.liveRooms.length }
+      { label: '冲突数', value: conflictCount }
     ],
+    relationOverview: adminRelationsOverview(),
     liveRooms: db.liveRooms.map((item) => ({
       ...item,
       classroom: findClassroom(item.classroomId),
@@ -492,19 +817,24 @@ function adminOverview() {
 function parentDashboard(session) {
   const childId = activeChildId(session);
   const child = findStudent(childId);
+  const children = parentChildrenForSession(session);
   const sessions = filterCourseSessionsForSession(session).filter((item) => item.studentIds.includes(childId));
-  const todayCourses = sessions.filter((item) => item.date === '2026-06-03').map(decorateCourseSession);
+  const todayCourses = sessions.filter((item) => item.date === TODAY).map(decorateCourseSession);
   const assignments = filterAssignmentsForSession(session).map(assignmentWithFile);
   const wrongRecords = filterWrongRecordsForSession(session)
     .filter((item) => item.studentId === childId)
     .map(wrongRecordWithFile);
   return {
     session,
-    currentChild: child || null,
-    children: db.students.filter((item) => parentStudentIds(session).includes(item.id)),
+    currentChild: child ? {
+      ...child,
+      relation: (children.find((item) => item.id === child.id) || {}).relation || '',
+      displayLabel: (children.find((item) => item.id === child.id) || {}).displayLabel || child.name
+    } : null,
+    children,
     metrics: [
       { label: '今日课程', value: todayCourses.length },
-      { label: '待完成习题', value: assignments.filter((item) => item.status !== 'closed').length },
+      { label: '已发布测验', value: assignments.filter((item) => item.status === 'published').length },
       { label: '待订正错题', value: wrongRecords.filter((item) => item.status !== 'corrected').length },
       { label: '可看直播', value: todayCourses.filter((item) => item.status === 'in_progress').length }
     ],
@@ -515,20 +845,25 @@ function parentDashboard(session) {
 }
 
 function teacherDashboard(session) {
+  const teacher = findTeacher(session.teacherId) || {};
   const sessions = filterCourseSessionsForSession(session).map(decorateCourseSession);
   const assignments = filterAssignmentsForSession(session).map(assignmentWithFile);
   const wrongRecords = filterWrongRecordsForSession(session).map(wrongRecordWithFile);
+  const courseGroups = filterCourseGroupsForSession(session).map((course) => decorateCourseGroup(course));
   return {
     session,
+    teacher,
+    teacherName: teacherName(teacher),
     metrics: [
-      { label: '今日授课', value: sessions.filter((item) => item.date === '2026-06-03').length },
-      { label: '待上传测验', value: assignments.filter((item) => item.status === 'not_uploaded').length },
-      { label: '待批改', value: assignments.reduce((sum, item) => sum + Number(item.pendingCount || 0), 0) },
+      { label: '今日授课', value: sessions.filter((item) => item.date === TODAY).length },
+      { label: '待发布测验', value: assignments.filter((item) => item.status === 'not_uploaded').length },
+      { label: '负责课程班', value: courseGroups.length },
       { label: '近期错题', value: wrongRecords.length }
     ],
-    todayCourses: sessions.filter((item) => item.date === '2026-06-03'),
-    pendingAssignments: assignments.filter((item) => item.status !== 'closed').slice(0, 5),
-    recentWrongRecords: wrongRecords.slice(0, 5)
+    todayCourses: sessions.filter((item) => item.date === TODAY),
+    pendingAssignments: assignments.filter((item) => item.status === 'not_uploaded').slice(0, 5),
+    recentWrongRecords: wrongRecords.slice(0, 5),
+    courseGroups
   };
 }
 
@@ -561,24 +896,9 @@ function mockBindInvite(payload) {
       throw makeError('NEED_RELATION', '学生邀请码首次绑定需要选择亲属关系。', { relations: RELATIONS });
     }
 
-    const identity = {
-      id: nextId('identity_parent', db.identities),
-      wechatAccountId: accountId,
-      role: 'parent',
-      targetId: student.id,
-      relation: payload.relation,
-      inviteCode: invite.code,
-      createdAt: nowLabel()
-    };
-    db.identities.push(identity);
-    db.guardianBindings.push({
-      id: nextId('guardian', db.guardianBindings),
-      wechatAccountId: accountId,
-      studentId: student.id,
-      relation: payload.relation,
-      createdAt: nowLabel()
-    });
+    const identity = ensureParentBinding(accountId, student.id, payload.relation, invite.code);
     account.activeChildId = student.id;
+    seedDemoChildren(accountId, payload.relation);
     invite.useCount += 1;
     pushAudit(accountId, 'bind_invite', 'student', student.id, `绑定学生邀请码 ${invite.code}`);
     return activateIdentity(identity);
@@ -667,8 +987,11 @@ const mockApi = {
 
   getParentChildren() {
     const session = requireRole('parent');
-    const ids = parentStudentIds(session);
-    return delay(db.students.filter((item) => ids.includes(item.id)));
+    return delay(parentChildrenForSession(session));
+  },
+
+  listParentChildren() {
+    return this.getParentChildren();
   },
 
   switchActiveChild(studentId) {
@@ -680,6 +1003,7 @@ const mockApi = {
     if (account) account.activeChildId = studentId;
     activeSession = { ...session, activeChildId: studentId };
     db.sessions[session.wechatAccountId] = activeSession;
+    writeStoredSession(activeSession);
     return delay(activeSession);
   },
 
@@ -689,12 +1013,14 @@ const mockApi = {
     if (!parentCanAccessStudent(session, childId)) {
       return Promise.reject(makeError('NO_PERMISSION', '当前账号没有权限。'));
     }
-    const courses = filterCourseSessionsForSession(session)
-      .filter((item) => item.studentIds.includes(childId))
-      .map(decorateCourseSession);
+    const courseGroups = db.courses
+      .filter((course) => (course.studentIds || []).includes(childId))
+      .map((course) => decorateCourseGroup(course, { studentId: childId }));
     return delay({
       currentChild: findStudent(childId),
-      courses
+      children: parentChildrenForSession(session),
+      courseGroups,
+      courses: courseGroups
     });
   },
 
@@ -704,9 +1030,11 @@ const mockApi = {
     if (!parentCanAccessStudent(session, childId)) {
       return Promise.reject(makeError('NO_PERMISSION', '当前账号没有权限。'));
     }
-    const student = findStudent(childId);
     let assignments = db.assignments
-      .filter((item) => student && item.classId === student.classId)
+      .filter((item) => {
+        const course = findCourse(item.courseId);
+        return course && (course.studentIds || []).includes(childId);
+      })
       .map(assignmentWithFile);
     let wrongRecords = db.wrongRecords
       .filter((item) => item.studentId === childId)
@@ -722,75 +1050,136 @@ const mockApi = {
     }
 
     return delay({
-      currentChild: student,
+      currentChild: findStudent(childId),
+      children: parentChildrenForSession(session),
       assignments,
       wrongRecords
     });
   },
 
-  getTeacherCourses() {
+  getTeacherCourseGroups() {
     const session = requireRole('teacher');
-    const courses = filterCourseSessionsForSession(session).map((item) => {
-      const classItem = findClass(item.classId);
-      return {
-        ...decorateCourseSession(item),
-        students: db.students.filter((student) => classItem && classItem.studentIds.includes(student.id)),
-        assignments: db.assignments.filter((assignment) => assignment.courseSessionId === item.id).map(assignmentWithFile),
-        wrongRecords: db.wrongRecords.filter((record) => record.courseSessionId === item.id).map(wrongRecordWithFile)
-      };
+    const courseGroups = filterCourseGroupsForSession(session).map((course) => decorateCourseGroup(course));
+    return delay({
+      teacher: findTeacher(session.teacherId),
+      courseGroups,
+      courses: courseGroups
     });
-    return delay({ courses });
   },
 
-  uploadAssignmentFile(payload = {}) {
+  getTeacherCoursesGrouped() {
+    return this.getTeacherCourseGroups();
+  },
+
+  getTeacherCourses() {
+    return this.getTeacherCourseGroups();
+  },
+
+  getCourseGroupDetail(courseId) {
+    const session = requireSession();
+    const course = findCourse(courseId);
+    if (!course) return Promise.reject(makeError('NOT_FOUND', '课程班不存在。'));
+    if (!canAccessCourse(session, course)) {
+      return Promise.reject(makeError('NO_PERMISSION', '当前账号没有权限。'));
+    }
+    return delay({
+      mode: 'course',
+      course: decorateCourseGroup(course, { studentId: session.role === 'parent' ? activeChildId(session) : '' })
+    });
+  },
+
+  getCourseSessionDetail(courseSessionId) {
+    const session = requireSession();
+    const courseSession = findCourseSession(courseSessionId);
+    if (!courseSession) return Promise.reject(makeError('NOT_FOUND', '课次不存在。'));
+    if (!canAccessCourseSession(session, courseSession)) {
+      return Promise.reject(makeError('NO_PERMISSION', '当前账号没有权限。'));
+    }
+    const course = findCourse(courseSession.courseId);
+    const students = session.role === 'parent'
+      ? db.students.filter((item) => parentCanAccessStudent(session, item.id) && courseSession.studentIds.includes(item.id))
+      : db.students.filter((item) => courseSession.studentIds.includes(item.id));
+    return delay({
+      mode: 'session',
+      courseSession: decorateCourseSession(courseSession),
+      course: course ? decorateCourseGroup(course) : null,
+      classInfo: findClass(courseSession.classId),
+      teacher: findTeacher(courseSession.teacherId),
+      classroom: findClassroom(courseSession.classroomId),
+      liveRoom: findLiveRoomBySession(courseSession.id),
+      assignments: db.assignments.filter((item) => item.courseSessionId === courseSession.id).map(assignmentWithFile),
+      wrongRecords: db.wrongRecords.filter((item) => item.courseSessionId === courseSession.id).map(wrongRecordWithFile),
+      students
+    });
+  },
+
+  getStudentsByCourse(courseId) {
+    const session = requireSession();
+    const course = findCourse(courseId);
+    if (!course) return Promise.reject(makeError('NOT_FOUND', '课程班不存在。'));
+    if (!canAccessCourse(session, course)) return Promise.reject(makeError('NO_PERMISSION', '当前账号没有权限。'));
+    return delay(getCourseStudents(course));
+  },
+
+  publishAssignment(payload = {}) {
     const session = requireRole(['teacher', 'admin']);
     const courseSession = findCourseSession(payload.courseSessionId);
     if (!courseSession || !canAccessCourseSession(session, courseSession)) {
       return Promise.reject(makeError('NO_PERMISSION', '当前账号没有权限。'));
     }
-    const fileInfo = validateFile(payload, DOC_EXTS, DOC_MAX_SIZE);
-    const assignmentId = payload.assignmentId || nextId('assignment', db.assignments);
-    const file = {
-      id: nextId('file', db.files),
-      name: fileInfo.fileName,
-      ext: fileInfo.ext,
-      mimeType: fileInfo.ext === 'pdf' ? 'application/pdf' : 'application/msword',
-      size: fileInfo.size,
-      ownerType: 'assignment',
-      ownerId: assignmentId,
-      uploadedBy: session.teacherId || session.adminId,
-      uploadedAt: nowLabel(),
-      fileID: payload.fileID || '',
-      downloadUrl: payload.downloadUrl || '',
-      placeholder: !payload.fileID && !payload.downloadUrl
-    };
-    db.files.unshift(file);
-
-    let assignment = db.assignments.find((item) => item.id === payload.assignmentId);
-    if (assignment) {
-      assignment.fileId = file.id;
-      assignment.status = payload.status || 'pending_grading';
-    } else {
-      assignment = {
-        id: assignmentId,
-        courseSessionId: courseSession.id,
-        courseId: courseSession.courseId,
-        classId: courseSession.classId,
-        teacherId: courseSession.teacherId,
-        type: payload.type || 'pre',
-        title: payload.title || '未命名测验',
-        status: payload.status || 'pending_grading',
-        fileId: file.id,
-        dueAt: payload.dueAt || '',
-        pendingCount: payload.pendingCount || 0,
-        gradedCount: 0,
-        totalCount: payload.totalCount || 0
+    const course = findCourse(payload.courseId || courseSession.courseId);
+    if (!course) return Promise.reject(makeError('NOT_FOUND', '课程班不存在。'));
+    const type = payload.type === 'post' ? 'post' : 'pre';
+    let file = null;
+    if (payload.fileName || payload.name) {
+      const fileInfo = validateFile(payload, DOC_EXTS, DOC_MAX_SIZE);
+      file = {
+        id: nextId('file', db.files),
+        name: fileInfo.fileName,
+        ext: fileInfo.ext,
+        mimeType: fileInfo.ext === 'pdf' ? 'application/pdf' : 'application/msword',
+        size: fileInfo.size,
+        ownerType: 'assignment',
+        ownerId: '',
+        uploadedBy: session.teacherId || session.adminId,
+        uploadedAt: nowLabel(),
+        fileID: payload.fileID || '',
+        downloadUrl: payload.downloadUrl || '',
+        placeholder: !payload.fileID && !payload.downloadUrl
       };
+      db.files.unshift(file);
+    }
+    const assignment = {
+      id: payload.assignmentId || nextId('assignment', db.assignments),
+      courseSessionId: courseSession.id,
+      courseId: course.id,
+      classId: course.classId,
+      teacherId: courseSession.teacherId,
+      type,
+      title: payload.title || (type === 'pre' ? `${courseSession.sessionTitle}课前测` : `${courseSession.sessionTitle}课后测`),
+      status: 'published',
+      fileId: file ? file.id : '',
+      dueAt: payload.dueAt || '',
+      pendingCount: 0,
+      gradedCount: 0,
+      totalCount: payload.totalCount || courseSession.studentIds.length
+    };
+    if (file) file.ownerId = assignment.id;
+    const index = db.assignments.findIndex((item) => item.id === assignment.id);
+    if (index >= 0) {
+      db.assignments.splice(index, 1, assignment);
+    } else {
       db.assignments.unshift(assignment);
     }
-
-    pushAudit(session.identityId, 'upload_assignment_file', 'assignment', assignment.id, `上传测验文件 ${file.name}`);
+    pushAudit(session.identityId, 'publish_assignment', 'assignment', assignment.id, `发布${assignment.type === 'pre' ? '课前测' : '课后测'} ${assignment.title}`);
     return delay({ file, assignment: assignmentWithFile(assignment) });
+  },
+
+  uploadAssignmentFile(payload = {}) {
+    return this.publishAssignment({
+      ...payload,
+      status: 'published'
+    });
   },
 
   uploadWrongRecordImage(payload = {}) {
@@ -818,32 +1207,38 @@ const mockApi = {
     const session = requireRole(['teacher', 'admin']);
     const student = findStudent(payload.studentId);
     if (!student) return Promise.reject(makeError('NOT_FOUND', '学生不存在。'));
-    if (session.role === 'teacher' && !teacherCanAccessClass(session, student.classId)) {
+    const courseSession = findCourseSession(payload.courseSessionId);
+    if (!courseSession) return Promise.reject(makeError('NOT_FOUND', '课次不存在。'));
+    const course = findCourse(payload.courseId || courseSession.courseId);
+    if (!course) return Promise.reject(makeError('NOT_FOUND', '课程班不存在。'));
+    if (!courseSession.studentIds.includes(student.id) || !course.studentIds.includes(student.id)) {
+      return Promise.reject(makeError('NO_PERMISSION', '该学生不在当前课程班或课次中。'));
+    }
+    if (session.role === 'teacher' && (!teacherCanAccessCourse(session, course.id) || courseSession.teacherId !== session.teacherId)) {
       return Promise.reject(makeError('NO_PERMISSION', '当前账号没有权限。'));
     }
-    const courseSession = payload.courseSessionId ? findCourseSession(payload.courseSessionId) : null;
     const record = {
       id: nextId('wrong', db.wrongRecords),
       studentId: student.id,
       studentName: student.name,
-      courseSessionId: courseSession ? courseSession.id : '',
-      courseId: courseSession ? courseSession.courseId : payload.courseId || '',
-      classId: student.classId,
-      teacherId: session.teacherId || payload.teacherId || '',
-      subject: payload.subject || (courseSession ? (findCourse(courseSession.courseId) || {}).subject : ''),
+      courseSessionId: courseSession.id,
+      courseId: course.id,
+      classId: course.classId,
+      teacherId: session.teacherId || payload.teacherId || courseSession.teacherId,
+      subject: payload.subject || course.subject || '',
       topic: payload.topic || '待补充知识点',
-      source: payload.source || '老师手动导入',
+      source: payload.source || '教师录入',
       mistakeReason: payload.mistakeReason || '待补充错因',
       correction: payload.correction || '待学生订正后复盘。',
       imageFileId: payload.imageFileId || '',
       status: 'todo',
-      tags: payload.tags || ['老师导入'],
+      tags: payload.tags || ['教师录入'],
       createdAt: nowLabel()
     };
     db.wrongRecords.unshift(record);
     const file = payload.imageFileId ? db.files.find((item) => item.id === payload.imageFileId) : null;
     if (file) file.ownerId = record.id;
-    pushAudit(session.identityId, 'create_wrong_record', 'wrongRecord', record.id, `创建错题记录 ${student.name}`);
+    pushAudit(session.identityId, 'create_wrong_record', 'wrongRecord', record.id, `为 ${student.name} 创建错题记录`);
     return delay(wrongRecordWithFile(record));
   },
 
@@ -852,16 +1247,50 @@ const mockApi = {
     return delay(adminOverview());
   },
 
+  getAdminRelationsOverview() {
+    requireRole('admin');
+    return delay(adminRelationsOverview());
+  },
+
+  getAdminClassroomRelations() {
+    requireRole('admin');
+    return delay(adminClassroomRelations());
+  },
+
+  getAdminTeacherRelations() {
+    requireRole('admin');
+    return delay(adminTeacherRelations());
+  },
+
+  getAdminStudentGuardianRelations() {
+    requireRole('admin');
+    return delay(adminStudentGuardianRelations());
+  },
+
+  getAdminParentRelations() {
+    requireRole('admin');
+    return delay(adminParentRelations());
+  },
+
+  getAdminCourseTree() {
+    requireRole('admin');
+    return delay(adminCourseTree());
+  },
+
   createTeacher(payload = {}) {
     const session = requireRole('admin');
     if (!payload.name || !payload.phone) {
       return Promise.reject(makeError('VALIDATION_ERROR', '请填写老师姓名和手机号。'));
     }
+    const fullName = String(payload.name || '').replace(/老师$/, '');
     const teacher = {
       id: nextId('teacher', db.teachers),
-      name: payload.name,
+      fullName,
+      name: `${fullName}老师`,
       phone: payload.phone,
+      subject: payload.subject || '',
       subjects: payload.subjects || (payload.subject ? [payload.subject] : []),
+      courseIds: [],
       title: payload.title || '任课老师',
       status: 'active'
     };
@@ -873,22 +1302,25 @@ const mockApi = {
   createStudent(payload = {}) {
     const session = requireRole('admin');
     if (!payload.name || !payload.classId) {
-      return Promise.reject(makeError('VALIDATION_ERROR', '请填写学生姓名和班级。'));
+      return Promise.reject(makeError('VALIDATION_ERROR', '请填写学生姓名和课程班。'));
     }
     const classItem = findClass(payload.classId);
-    if (!classItem) return Promise.reject(makeError('NOT_FOUND', '班级不存在。'));
+    if (!classItem) return Promise.reject(makeError('NOT_FOUND', '课程班不存在。'));
+    const course = findCourse(classItem.courseId);
     const student = {
       id: nextId('stu', db.students),
       name: payload.name,
       grade: payload.grade || classItem.grade,
       classId: classItem.id,
       className: classItem.name,
+      courseIds: course ? [course.id] : [],
       status: 'active',
       primaryGuardian: payload.primaryGuardian || '',
       guardianPhone: payload.guardianPhone || ''
     };
     db.students.push(student);
     classItem.studentIds.push(student.id);
+    if (course) course.studentIds.push(student.id);
     pushAudit(session.identityId, 'create_student', 'student', student.id, `录入学生 ${student.name}`);
     return delay(student);
   },
@@ -912,18 +1344,43 @@ const mockApi = {
   createCourse(payload = {}) {
     const session = requireRole('admin');
     if (!payload.name || !payload.subject) {
-      return Promise.reject(makeError('VALIDATION_ERROR', '请填写课程名称和科目。'));
+      return Promise.reject(makeError('VALIDATION_ERROR', '请填写课程班名称和科目。'));
     }
-    const course = {
-      id: nextId('course', db.courses),
+    const teacher = findTeacher(payload.teacherId) || db.teachers[0];
+    const classroom = findClassroom(payload.classroomId) || db.classrooms[0];
+    const classItem = {
+      id: nextId('class', db.classes),
+      courseId: '',
       name: payload.name,
       subject: payload.subject,
       grade: payload.grade || '',
-      defaultDurationMinutes: Number(payload.defaultDurationMinutes || 90),
+      mainTeacherId: teacher.id,
+      studentIds: [],
+      defaultClassroomId: classroom.id,
       status: 'active'
     };
+    const course = {
+      id: nextId('course', db.courses),
+      courseId: '',
+      classId: classItem.id,
+      name: payload.name,
+      subject: payload.subject,
+      grade: payload.grade || '',
+      teacherId: teacher.id,
+      mainTeacherId: teacher.id,
+      classroomId: classroom.id,
+      defaultClassroomId: classroom.id,
+      studentIds: [],
+      defaultDurationMinutes: Number(payload.defaultDurationMinutes || 90),
+      status: 'active',
+      description: payload.description || ''
+    };
+    course.courseId = course.id;
+    classItem.courseId = course.id;
+    db.classes.push(classItem);
     db.courses.push(course);
-    pushAudit(session.identityId, 'create_course', 'course', course.id, `录入课程 ${course.name}`);
+    teacher.courseIds = Array.from(new Set([...(teacher.courseIds || []), course.id]));
+    pushAudit(session.identityId, 'create_course', 'course', course.id, `录入课程班 ${course.name}`);
     return delay(course);
   },
 
@@ -934,37 +1391,51 @@ const mockApi = {
 
   createCourseSession(payload = {}) {
     const session = requireRole('admin');
-    const required = ['courseId', 'classId', 'teacherId', 'classroomId', 'date', 'startTime', 'endTime'];
-    const missing = required.filter((key) => !payload[key]);
+    const course = findCourse(payload.courseId);
+    if (!course) return Promise.reject(makeError('NOT_FOUND', '课程班不存在。'));
+    const normalized = {
+      ...payload,
+      classId: payload.classId || course.classId,
+      teacherId: payload.teacherId || course.teacherId,
+      classroomId: payload.classroomId || course.classroomId
+    };
+    const required = ['courseId', 'teacherId', 'classroomId', 'date', 'startTime', 'endTime'];
+    const missing = required.filter((key) => !normalized[key]);
     if (missing.length) {
       return Promise.reject(makeError('VALIDATION_ERROR', '请完整填写排课信息。', { missing }));
     }
-    const conflict = checkScheduleConflictsRaw(payload);
+    const conflict = checkScheduleConflictsRaw(normalized);
     if (conflict.hasConflict) {
       return Promise.reject(makeError('SCHEDULE_CONFLICT', '排课冲突。', conflict));
     }
-    const course = findCourse(payload.courseId);
-    const classItem = findClass(payload.classId);
-    const teacher = findTeacher(payload.teacherId);
-    const classroom = findClassroom(payload.classroomId);
-    if (!course || !classItem || !teacher || !classroom) {
-      return Promise.reject(makeError('NOT_FOUND', '课程、班级、老师或教室不存在。'));
+    const teacher = findTeacher(normalized.teacherId);
+    const classroom = findClassroom(normalized.classroomId);
+    const classItem = findClass(normalized.classId);
+    if (!classItem || !teacher || !classroom) {
+      return Promise.reject(makeError('NOT_FOUND', '课程班、教师或教室不存在。'));
     }
+    const existingSessions = getCourseSessions(course.id);
+    const index = Number(normalized.sessionIndex || existingSessions.length + 1);
+    const sessionTitle = normalized.sessionTitle || `第${index}次课`;
+    const displayTitle = normalized.displayTitle || `${sessionTitle}：${normalized.title || course.subject}`;
     const courseSession = {
       id: nextId('cs', db.courseSessions),
       courseId: course.id,
-      title: payload.title || course.name,
-      date: payload.date,
-      startTime: payload.startTime,
-      endTime: payload.endTime,
+      classId: classItem.id,
+      sessionIndex: index,
+      sessionTitle,
+      displayTitle,
+      title: displayTitle,
+      date: normalized.date,
+      startTime: normalized.startTime,
+      endTime: normalized.endTime,
       teacherId: teacher.id,
       classroomId: classroom.id,
-      classId: classItem.id,
-      studentIds: classItem.studentIds.slice(),
-      status: payload.status || 'scheduled',
-      statusText: payload.statusText || '未开始',
+      studentIds: course.studentIds.slice(),
+      status: normalized.status || 'scheduled',
+      statusText: normalized.statusText || '未开始',
       liveRoomId: '',
-      note: payload.note || ''
+      note: normalized.note || ''
     };
     db.courseSessions.push(courseSession);
     const liveRoom = {
@@ -980,7 +1451,7 @@ const mockApi = {
     };
     db.liveRooms.push(liveRoom);
     courseSession.liveRoomId = liveRoom.id;
-    pushAudit(session.identityId, 'create_course_session', 'courseSession', courseSession.id, `创建课次 ${courseSession.title}`);
+    pushAudit(session.identityId, 'create_course_session', 'courseSession', courseSession.id, `创建课次 ${course.name} ${sessionTitle}`);
     return delay(decorateCourseSession(courseSession));
   },
 
@@ -996,6 +1467,7 @@ const mockApi = {
     const prefix = role === 'parent' ? 'STUDENT' : role.toUpperCase();
     const code = normalizeCode(payload.code) || `${prefix}-${Math.floor(Math.random() * 9000 + 1000)}`;
     if (findInvite(code)) return Promise.reject(makeError('VALIDATION_ERROR', '邀请码已存在。'));
+    const target = role === 'parent' ? findStudent(targetId) : role === 'teacher' ? findTeacher(targetId) : findAdmin(targetId);
 
     const invite = {
       id: nextId('invite', db.inviteCodes),
@@ -1003,7 +1475,7 @@ const mockApi = {
       role,
       targetType: role === 'parent' ? 'student' : role,
       targetId,
-      targetName: payload.targetName || '',
+      targetName: payload.targetName || (target ? target.name : ''),
       reusable: payload.reusable !== false,
       maxUses: Number(payload.maxUses || 0),
       useCount: 0,
@@ -1017,28 +1489,9 @@ const mockApi = {
     return delay(invite);
   },
 
-  getCourseDetail(courseSessionId) {
-    const session = requireSession();
-    const courseSession = findCourseSession(courseSessionId);
-    if (!courseSession) return Promise.reject(makeError('NOT_FOUND', '课次不存在。'));
-    if (!canAccessCourseSession(session, courseSession)) {
-      return Promise.reject(makeError('NO_PERMISSION', '当前账号没有权限。'));
-    }
-    const classItem = findClass(courseSession.classId);
-    const detail = {
-      courseSession: decorateCourseSession(courseSession),
-      course: findCourse(courseSession.courseId),
-      classInfo: classItem,
-      teacher: findTeacher(courseSession.teacherId),
-      classroom: findClassroom(courseSession.classroomId),
-      liveRoom: findLiveRoomBySession(courseSession.id),
-      assignments: db.assignments.filter((item) => item.courseSessionId === courseSession.id).map(assignmentWithFile),
-      wrongRecords: db.wrongRecords.filter((item) => item.courseSessionId === courseSession.id).map(wrongRecordWithFile),
-      students: session.role === 'parent'
-        ? db.students.filter((item) => parentCanAccessStudent(session, item.id) && courseSession.studentIds.includes(item.id))
-        : db.students.filter((item) => classItem && classItem.studentIds.includes(item.id))
-    };
-    return delay(detail);
+  getCourseDetail(id) {
+    if (findCourse(id)) return this.getCourseGroupDetail(id);
+    return this.getCourseSessionDetail(id);
   },
 
   requestLiveTicket(courseSessionId) {
@@ -1083,7 +1536,7 @@ const mockApi = {
       canPreview: Boolean(file.fileID || file.downloadUrl),
       canDownload: Boolean(file.fileID || file.downloadUrl),
       placeholderStatus: file.fileID || file.downloadUrl ? 'ready' : 'not_connected',
-      message: file.fileID || file.downloadUrl ? '文件可预览。' : '文件预览待接入：暂无真实 fileID 或下载地址。'
+      message: file.fileID || file.downloadUrl ? '文件可预览。' : '正式版接入云存储后可预览/下载。'
     });
   },
 
@@ -1127,7 +1580,7 @@ const mockApi = {
   },
 
   importTest(payload = {}) {
-    return this.uploadAssignmentFile({
+    return this.publishAssignment({
       ...payload,
       courseSessionId: payload.courseSessionId || 'cs_001',
       fileName: payload.fileName || payload.name || 'demo.pdf',
@@ -1142,11 +1595,7 @@ const mockApi = {
     if (session.role === 'teacher' && assignment.teacherId !== session.teacherId) {
       return Promise.reject(makeError('NO_PERMISSION', '当前账号没有权限。'));
     }
-    if (assignment.pendingCount > 0) {
-      assignment.pendingCount -= 1;
-      assignment.gradedCount += 1;
-      assignment.status = assignment.pendingCount === 0 ? 'closed' : 'grading';
-    }
+    assignment.status = 'closed';
     return delay(assignmentWithFile(assignment));
   },
 
@@ -1177,8 +1626,7 @@ const mockApi = {
     return this.createCourseSession({
       courseId: payload.courseId || 'course_001',
       title: payload.title,
-      classId: payload.classId,
-      teacherId: payload.teacherId || 'teacher_001',
+      teacherId: payload.teacherId,
       classroomId: payload.classroomId,
       date: payload.date,
       startTime: payload.startTime,

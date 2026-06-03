@@ -7,6 +7,7 @@ Page({
   data: {
     inviteCode: config.demoInvites.student,
     relation: '母亲',
+    relationIndex: 1,
     needRelation: true,
     binding: false,
     relations: ['父亲', '母亲', '爷爷', '奶奶', '外公', '外婆', '其他'],
@@ -33,7 +34,11 @@ Page({
   },
 
   chooseRelation(event) {
-    this.setData({ relation: event.currentTarget.dataset.value });
+    const relationIndex = Number(event.detail.value || 0);
+    this.setData({
+      relationIndex,
+      relation: this.data.relations[relationIndex] || this.data.relations[0]
+    });
   },
 
   useDemoCode(event) {

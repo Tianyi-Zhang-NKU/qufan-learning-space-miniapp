@@ -18,17 +18,17 @@
 |---|---|
 | `campuses` | 校区信息 |
 | `classrooms` | 教室、摄像头状态、推流标识 |
-| `classes` | 班级、老师、学生数量 |
-| `courses` | 课程定义 |
-| `schedules` | 每节课的日期、时间、教室、老师、班级 |
+| `courses/classes` | 完整课程班，如“初三生物1班”，绑定老师、教室、学生 |
+| `course_sessions` | 课程班下的第一次课、第二次课，绑定日期、时间、教室、老师 |
+| `schedules` | 对外排课视图，可由 `course_sessions` 派生 |
 
 ## 测试习题
 
 | 集合/表 | 用途 |
 |---|---|
-| `tests` | 课前测/课后测、文件名、云存储 fileID、批改进度 |
+| `tests` | 课前测/课后测、文件名、云存储 fileID、发布状态 |
 | `test_submissions` | 学生提交或线下完成记录 |
-| `grading_records` | 老师手动批改状态、分数、点评 |
+| `teacher_notes` | 教师针对课次或学生补充的讲评、提醒 |
 
 ## 错题本
 

@@ -1,52 +1,159 @@
 <view class="qf-page">
+  <z-bg mode="dark"></z-bg>
   <view class="qf-top">
     <view class="qf-brand">
       <text class="qf-brand-title">数据管理</text>
-      <text class="qf-brand-sub">教师 / 学生 / 教室 / 课程 / 邀请码</text>
+      <text class="qf-brand-sub">教室 / 课程 / 教师 / 学生 / 家长</text>
     </view>
   </view>
 
+  <view class="qf-section">关系总览</view>
+  <view class="qf-card tight">
+    <view wx:if="{{relations.overview.length}}" class="qf-list">
+      <view wx:for="{{relations.overview}}" wx:key="courseId" class="qf-list-item">
+        <view class="qf-row">
+          <view>
+            <text class="qf-h3">{{item.courseName}}</text>
+            <text class="qf-muted">{{item.teacherName}} · {{item.classroomName}}</text>
+          </view>
+          <text class="qf-tag {{item.liveTone}}">{{item.liveStatusText}}</text>
+        </view>
+        <text class="qf-muted">学生 {{item.studentCount}} 人 · 家长 {{item.guardianCount}} 人</text>
+        <text wx:if="{{item.recentOrNextSession}}" class="qf-muted">{{item.recentOrNextSession.sessionTitle}} · {{item.recentOrNextSession.date}} {{item.recentOrNextSession.startTime}}-{{item.recentOrNextSession.endTime}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="qf-section">教室视图</view>
+  <view class="qf-card tight">
+    <view class="qf-list">
+      <view wx:for="{{relations.classrooms}}" wx:key="id" class="qf-list-item">
+        <view class="qf-row">
+          <view>
+            <text class="qf-h3">{{item.name}} · {{item.capacity}}人</text>
+            <text class="qf-muted">{{item.cameraStatusText}} · {{item.courseName}}</text>
+          </view>
+          <text class="qf-tag">{{item.teacherName || '未排课'}}</text>
+        </view>
+        <text class="qf-muted">{{item.sessionLabel}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="qf-section">教师视图</view>
+  <view class="qf-card tight">
+    <view class="qf-list">
+      <view wx:for="{{relations.teachers}}" wx:key="id" class="qf-list-item">
+        <text class="qf-h3">{{item.displayName}}</text>
+        <text class="qf-muted">{{item.subject}} · 学生 {{item.studentCount}} 人 · 今日 {{item.todaySessionCount}} 次课 · 本周 {{item.weekSessionCount}} 次课</text>
+        <view class="qf-wrap relation-tags">
+          <text wx:for="{{item.courseNames}}" wx:key="*this" class="qf-tag">{{item}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="qf-section">学生 / 家长视图</view>
+  <view class="qf-card tight">
+    <view class="qf-list">
+      <view wx:for="{{relations.students}}" wx:key="id" class="qf-list-item">
+        <text class="qf-h3">{{item.name}}</text>
+        <text class="qf-muted">课程班：{{item.courseNamesText}}</text>
+        <view wx:if="{{item.guardians.length}}" class="qf-wrap relation-tags">
+          <text wx:for="{{item.guardians}}" wx:for-item="guardian" wx:key="wechatAccountId" class="qf-tag">{{guardian.nickname}} · {{guardian.relation}} · {{guardian.inviteStatus}}</text>
+        </view>
+        <text wx:else class="qf-muted">暂无已绑定家长</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="qf-section">家长绑定视图</view>
+  <view class="qf-card tight">
+    <view wx:if="{{relations.parents.length}}" class="qf-list">
+      <view wx:for="{{relations.parents}}" wx:key="id" class="qf-list-item">
+        <text class="qf-h3">{{item.nickname || item.parentName}}</text>
+        <text class="qf-muted">{{item.studentName}} · {{item.relation}} · {{item.phone}}</text>
+        <text class="qf-muted">邀请码 {{item.inviteCode}} · {{item.boundAt}}</text>
+      </view>
+    </view>
+    <view wx:else class="qf-empty">暂无家长绑定</view>
+  </view>
+
+  <view class="qf-section">课程树</view>
+  <view class="qf-card tight">
+    <view class="qf-list">
+      <view wx:for="{{relations.courseTree}}" wx:key="id" class="qf-list-item">
+        <text class="qf-h3">{{item.name}}</text>
+        <text class="qf-muted">{{item.teacherName}} · {{item.classroomName}} · 学生 {{item.studentCount}} 人</text>
+        <view wx:for="{{item.sessions}}" wx:for-item="session" wx:key="id" class="course-tree-session">
+          <text class="qf-muted">{{session.sessionTitle}} · {{session.date}} {{session.startTime}}-{{session.endTime}} · {{session.assignments.length}} 个测验 · {{session.wrongRecordCount}} 条错题</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="qf-section">录入教师</view>
   <view class="qf-card">
-    <text class="qf-h2">录入教师</text>
     <input class="qf-input" value="{{teacherForm.name}}" data-group="teacherForm" data-field="name" bindinput="input" />
     <input class="qf-input" value="{{teacherForm.phone}}" data-group="teacherForm" data-field="phone" bindinput="input" />
     <input class="qf-input" value="{{teacherForm.subject}}" data-group="teacherForm" data-field="subject" bindinput="input" />
     <button class="qf-btn full form-btn" bindtap="createTeacher">保存教师</button>
   </view>
 
+  <view class="qf-section">录入学生</view>
   <view class="qf-card">
-    <text class="qf-h2">录入学生</text>
     <input class="qf-input" value="{{studentForm.name}}" data-group="studentForm" data-field="name" bindinput="input" />
-    <input class="qf-input" value="{{studentForm.classId}}" data-group="studentForm" data-field="classId" bindinput="input" />
+    <picker range="{{classOptions}}" value="{{studentClassIndex}}" bindchange="pickStudentClass">
+      <view class="qf-picker">
+        <text class="qf-picker-label">课程班</text>
+        <text class="qf-picker-value">{{classOptions[studentClassIndex]}}</text>
+      </view>
+    </picker>
     <input class="qf-input" value="{{studentForm.primaryGuardian}}" data-group="studentForm" data-field="primaryGuardian" bindinput="input" />
     <input class="qf-input" value="{{studentForm.guardianPhone}}" data-group="studentForm" data-field="guardianPhone" bindinput="input" />
     <button class="qf-btn full form-btn" bindtap="createStudent">保存学生</button>
   </view>
 
+  <view class="qf-section">录入教室</view>
   <view class="qf-card">
-    <text class="qf-h2">录入教室</text>
     <input class="qf-input" value="{{classroomForm.name}}" data-group="classroomForm" data-field="name" bindinput="input" />
     <input class="qf-input" value="{{classroomForm.capacity}}" data-group="classroomForm" data-field="capacity" bindinput="input" />
     <button class="qf-btn full form-btn" bindtap="createClassroom">保存教室</button>
   </view>
 
+  <view class="qf-section">录入课程班</view>
   <view class="qf-card">
-    <text class="qf-h2">录入课程</text>
     <input class="qf-input" value="{{courseForm.name}}" data-group="courseForm" data-field="name" bindinput="input" />
     <input class="qf-input" value="{{courseForm.subject}}" data-group="courseForm" data-field="subject" bindinput="input" />
     <input class="qf-input" value="{{courseForm.grade}}" data-group="courseForm" data-field="grade" bindinput="input" />
-    <button class="qf-btn full form-btn" bindtap="createCourse">保存课程</button>
+    <picker range="{{teacherOptions}}" value="{{courseTeacherIndex}}" bindchange="pickCourseTeacher">
+      <view class="qf-picker">
+        <text class="qf-picker-label">授课教师</text>
+        <text class="qf-picker-value">{{teacherOptions[courseTeacherIndex]}}</text>
+      </view>
+    </picker>
+    <picker range="{{classroomOptions}}" value="{{courseClassroomIndex}}" bindchange="pickCourseClassroom">
+      <view class="qf-picker">
+        <text class="qf-picker-label">默认教室</text>
+        <text class="qf-picker-value">{{classroomOptions[courseClassroomIndex]}}</text>
+      </view>
+    </picker>
+    <button class="qf-btn full form-btn" bindtap="createCourse">保存课程班</button>
   </view>
 
+  <view class="qf-section">生成邀请码</view>
   <view class="qf-card">
-    <text class="qf-h2">生成邀请码</text>
     <view class="qf-wrap role-row">
       <button class="qf-btn small {{inviteForm.role === 'parent' ? '' : 'ghost'}}" data-role="parent" bindtap="setInviteRole">家长</button>
       <button class="qf-btn small {{inviteForm.role === 'teacher' ? '' : 'ghost'}}" data-role="teacher" bindtap="setInviteRole">教师</button>
       <button class="qf-btn small {{inviteForm.role === 'admin' ? '' : 'ghost'}}" data-role="admin" bindtap="setInviteRole">管理员</button>
     </view>
-    <input class="qf-input" value="{{inviteForm.targetId}}" data-group="inviteForm" data-field="targetId" bindinput="input" />
-    <input class="qf-input" value="{{inviteForm.targetName}}" data-group="inviteForm" data-field="targetName" bindinput="input" />
+    <picker range="{{inviteTargetOptions}}" value="{{inviteTargetIndex}}" bindchange="pickInviteTarget">
+      <view class="qf-picker">
+        <text class="qf-picker-label">绑定目标</text>
+        <text class="qf-picker-value">{{inviteTargetOptions[inviteTargetIndex]}}</text>
+      </view>
+    </picker>
     <button class="qf-btn full form-btn" bindtap="createInvite">生成邀请码</button>
     <view wx:if="{{latestInvite}}" class="qf-empty invite-result">{{latestInvite.code}}</view>
   </view>

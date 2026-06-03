@@ -5,14 +5,8 @@ const Notice = require('../../../utils/notice');
 Page({
   data: {
     session: {},
-    courses: [],
-    uploadDraft: {
-      courseSessionId: 'cs_001',
-      title: '课堂统一测验',
-      type: 'post',
-      fileName: '课堂统一测验.pdf',
-      size: 1024000
-    }
+    teacher: {},
+    courseGroups: []
   },
 
   onShow() {
@@ -23,34 +17,25 @@ Page({
   },
 
   load() {
-    Api.getTeacherCourses()
-      .then((result) => this.setData({ courses: result.courses }))
+    Api.getTeacherCourseGroups()
+      .then((result) => {
+        this.setData({
+          teacher: result.teacher || {},
+          courseGroups: result.courseGroups || result.courses || []
+        });
+      })
       .catch((error) => Notice.alert(error.message || '课程加载失败'));
   },
 
-  input(event) {
-    const field = event.currentTarget.dataset.field;
-    this.setData({ [`uploadDraft.${field}`]: event.detail.value });
+  goCourse(event) {
+    wx.navigateTo({ url: `/pages/course-detail/course-detail?courseId=${event.currentTarget.dataset.id}` });
   },
 
-  uploadFile() {
-    Api.uploadAssignmentFile(this.data.uploadDraft)
-      .then(() => {
-        Notice.toast('已保存文件元信息', 'success');
-        this.load();
-      })
-      .catch((error) => Notice.alert(error.message || '上传失败'));
-  },
-
-  goDetail(event) {
+  goSession(event) {
     wx.navigateTo({ url: `/pages/course-detail/course-detail?id=${event.currentTarget.dataset.id}` });
   },
 
   previewFile(event) {
     wx.navigateTo({ url: `/pages/file-preview/file-preview?id=${event.currentTarget.dataset.id}` });
-  },
-
-  addWrong() {
-    wx.navigateTo({ url: '/pages/wrong-record-editor/wrong-record-editor' });
   }
 });

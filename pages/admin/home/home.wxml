@@ -1,4 +1,5 @@
 <view class="qf-page">
+  <z-bg mode="dark"></z-bg>
   <view class="qf-top">
     <view class="qf-brand">
       <text class="qf-brand-title">管理员首页</text>
@@ -14,12 +15,31 @@
     </view>
   </view>
 
+  <view class="qf-section">课程关系总览</view>
+  <view class="qf-card tight">
+    <view wx:if="{{overview.relationOverview.length}}" class="qf-list">
+      <view wx:for="{{overview.relationOverview}}" wx:key="courseId" class="qf-list-item">
+        <view class="qf-row">
+          <view>
+            <text class="qf-h3">{{item.courseName}}</text>
+            <text class="qf-muted">{{item.teacherName}} · {{item.classroomName}}</text>
+          </view>
+          <text class="qf-tag {{item.liveTone}}">{{item.liveStatusText}}</text>
+        </view>
+        <view class="qf-divider"></view>
+        <text class="qf-muted">学生 {{item.studentCount}} 人 · 已绑定家长 {{item.guardianCount}} 人</text>
+        <text wx:if="{{item.recentOrNextSession}}" class="qf-muted">{{item.recentOrNextSession.sessionTitle}} · {{item.recentOrNextSession.date}} {{item.recentOrNextSession.startTime}}-{{item.recentOrNextSession.endTime}}</text>
+      </view>
+    </view>
+    <view wx:else class="qf-empty">暂无课程关系</view>
+  </view>
+
   <view class="qf-section">今日课次</view>
   <view class="qf-card tight">
     <view wx:if="{{overview.todaySessions.length}}" class="qf-list">
       <view wx:for="{{overview.todaySessions}}" wx:key="id" class="qf-list-item">
-        <text class="qf-h3">{{item.title}}</text>
-        <text class="qf-muted">{{item.startTime}}-{{item.endTime}} · {{item.teacherName}} · {{item.classroomName}}</text>
+        <text class="qf-h3">{{item.displayTitle}}</text>
+        <text class="qf-muted">{{item.courseName}} · {{item.startTime}}-{{item.endTime}} · {{item.teacherName}} · {{item.classroomName}}</text>
       </view>
     </view>
     <view wx:else class="qf-empty">今日暂无课次</view>

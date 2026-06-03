@@ -3,3 +3,8 @@
 .invite-result {
   margin-top: 16rpx;
 }
+
+.relation-tags,
+.course-tree-session {
+  margin-top: 12rpx;
+}
