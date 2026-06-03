@@ -7,6 +7,7 @@ Page({
   data: {
     phone: config.demoPhones.student,
     logging: false,
+    showDemo: false,
     demoPhones: [
       { label: '学生/家长', phone: config.demoPhones.student },
       { label: '老师', phone: config.demoPhones.teacher },
@@ -26,7 +27,11 @@ Page({
   },
 
   useDemoPhone(event) {
-    this.setData({ phone: event.currentTarget.dataset.phone });
+    this.setData({ phone: event.currentTarget.dataset.phone, showDemo: false });
+  },
+
+  toggleDemo() {
+    this.setData({ showDemo: !this.data.showDemo });
   },
 
   login() {

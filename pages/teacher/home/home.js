@@ -10,7 +10,8 @@ Page({
       todayCourses: [],
       pendingFeedbackSessions: [],
       recentFeedbacks: []
-    }
+    },
+    activePanel: 'pending'
   },
 
   onShow() {
@@ -28,5 +29,9 @@ Page({
 
   goSession(event) {
     wx.navigateTo({ url: `/pages/course-detail/course-detail?id=${event.currentTarget.dataset.id}` });
+  },
+
+  setPanel(event) {
+    this.setData({ activePanel: event.currentTarget.dataset.panel });
   }
 });

@@ -1,80 +1,140 @@
-<view class="qf-page">
+<view class="qf-page admin-manage">
   <z-bg mode="dark"></z-bg>
   <view class="qf-top">
     <view class="qf-brand">
       <text class="qf-brand-title">数据管理</text>
-      <text class="qf-brand-sub">课程维护 / 课次维护 / 手机号映射 / 反馈记录</text>
+      <text class="qf-brand-sub">教室、课程、学生与反馈分层查看</text>
     </view>
   </view>
 
-  <view class="qf-section">老师手机号 -> 课程 -> 学生</view>
-  <view class="qf-card tight">
-    <view wx:if="{{relations.teachers.length}}" class="qf-list">
-      <view wx:for="{{relations.teachers}}" wx:key="id" class="qf-list-item">
-        <text class="qf-h3">{{item.name}} · {{item.phone}}</text>
-        <view class="qf-wrap">
-          <text wx:for="{{item.courseNames}}" wx:for-item="name" wx:key="*this" class="qf-tag">{{name}}</text>
-        </view>
-        <view wx:for="{{item.courses}}" wx:for-item="course" wx:key="id" class="relation-course">
-          <text class="qf-text">{{course.name}} · 学生 {{course.studentCount}} 人</text>
+  <view class="qf-card qf-hero admin-hero">
+    <text class="qf-h2">课程与教室关系优先</text>
+    <text class="qf-muted">先看教室承载，再进入课程、学生和反馈详情。</text>
+  </view>
+
+  <view class="qf-entry-grid admin-entry-grid">
+    <button class="qf-entry-card {{activePanel === 'classrooms' ? 'active' : ''}}" data-panel="classrooms" bindtap="setPanel">
+      <text class="qf-entry-title">教室关系</text>
+      <text class="qf-entry-sub">教室 -> 课次 -> 课程</text>
+    </button>
+    <button class="qf-entry-card {{activePanel === 'teachers' ? 'active' : ''}}" data-panel="teachers" bindtap="setPanel">
+      <text class="qf-entry-title">老师关系</text>
+      <text class="qf-entry-sub">手机号 -> 课程 -> 学生</text>
+    </button>
+    <button class="qf-entry-card {{activePanel === 'students' ? 'active' : ''}}" data-panel="students" bindtap="setPanel">
+      <text class="qf-entry-title">学生关系</text>
+      <text class="qf-entry-sub">点击学生看反馈</text>
+    </button>
+    <button class="qf-entry-card {{activePanel === 'courses' ? 'active' : ''}}" data-panel="courses" bindtap="setPanel">
+      <text class="qf-entry-title">课程课次</text>
+      <text class="qf-entry-sub">点击课程看详情</text>
+    </button>
+    <button class="qf-entry-card {{activePanel === 'phones' ? 'active' : ''}}" data-panel="phones" bindtap="setPanel">
+      <text class="qf-entry-title">手机号映射</text>
+      <text class="qf-entry-sub">登录身份维护</text>
+    </button>
+    <button class="qf-entry-card {{activePanel === 'live' ? 'active' : ''}}" data-panel="live" bindtap="setPanel">
+      <text class="qf-entry-title">直播配置</text>
+      <text class="qf-entry-sub">数据流接入占位</text>
+    </button>
+  </view>
+
+  <view wx:if="{{activePanel === 'classrooms'}}" class="qf-panel">
+    <view class="qf-section">教室 -> 课次 -> 课程</view>
+    <view class="qf-card tight admin-loose-card">
+      <view wx:if="{{relations.classrooms.length}}" class="qf-list">
+        <view wx:for="{{relations.classrooms}}" wx:key="id" class="qf-list-item">
+          <text class="qf-h3">{{item.name}} · {{item.cameraStatusText}}</text>
+          <text class="qf-muted">{{item.campus}} · 容量 {{item.capacity}} 人</text>
+          <view wx:for="{{item.sessions}}" wx:for-item="session" wx:key="id" class="relation-course">
+            <text class="qf-text">{{session.date}} {{session.startTime}} · {{session.courseName}} · {{session.displayTitle}}</text>
+          </view>
         </view>
       </view>
+      <view wx:else class="qf-empty">暂无教室关系</view>
     </view>
-    <view wx:else class="qf-empty">暂无老师关系</view>
   </view>
 
-  <view class="qf-section">学生手机号 -> 课程 -> 反馈</view>
-  <view class="qf-card tight">
-    <view wx:if="{{relations.students.length}}" class="qf-list">
-      <view wx:for="{{relations.students}}" wx:key="id" class="qf-list-item">
-        <text class="qf-h3">{{item.name}} · {{item.loginPhone}}</text>
-        <text class="qf-muted">反馈 {{item.feedbackCount}} 条</text>
-        <view class="qf-wrap">
-          <text wx:for="{{item.courseNames}}" wx:for-item="name" wx:key="*this" class="qf-tag">{{name}}</text>
+  <view wx:if="{{activePanel === 'teachers'}}" class="qf-panel">
+    <view class="qf-section">老师手机号 -> 课程 -> 学生</view>
+    <view class="qf-card tight admin-loose-card">
+      <view wx:if="{{relations.teachers.length}}" class="qf-list">
+        <view wx:for="{{relations.teachers}}" wx:key="id" class="qf-list-item">
+          <text class="qf-h3">{{item.name}}</text>
+          <text class="qf-muted">{{item.phone}} · {{item.subject}}</text>
+          <view wx:for="{{item.courses}}" wx:for-item="course" wx:key="id" class="relation-course">
+            <text class="qf-text">{{course.name}} · 学生 {{course.studentCount}} 人</text>
+          </view>
         </view>
       </view>
+      <view wx:else class="qf-empty">暂无老师关系</view>
     </view>
-    <view wx:else class="qf-empty">暂无学生关系</view>
   </view>
 
-  <view class="qf-section">课程 -> 课次 -> 反馈数量</view>
-  <view class="qf-card tight">
-    <view wx:if="{{relations.courseTree.length}}" class="qf-list">
-      <view wx:for="{{relations.courseTree}}" wx:key="id" class="qf-list-item">
-        <text class="qf-h3">{{item.name}}</text>
-        <text class="qf-muted">{{item.teacherName}} · 学生 {{item.studentCount}} 人</text>
-        <view wx:for="{{item.sessions}}" wx:for-item="session" wx:key="id" class="relation-course">
-          <text class="qf-text">{{session.displayTitle}} · 反馈 {{session.feedbackCount}} 条</text>
-        </view>
+  <view wx:if="{{activePanel === 'students'}}" class="qf-panel">
+    <view class="qf-section">学生详情与反馈</view>
+    <view class="qf-card tight admin-loose-card">
+      <view class="qf-wrap centered-wrap">
+        <button wx:for="{{relations.students}}" wx:key="id" class="qf-btn small {{selectedStudentId === item.id ? '' : 'ghost'}}" data-id="{{item.id}}" bindtap="selectStudent">{{item.name}}</button>
+      </view>
+      <view class="qf-list detail-list">
+        <block wx:for="{{relations.students}}" wx:key="id">
+          <view wx:if="{{selectedStudentId === item.id}}" class="qf-list-item">
+            <text class="qf-h3">{{item.name}} · {{item.loginPhone}}</text>
+            <text class="qf-muted">{{item.grade}} · 反馈 {{item.feedbackCount}} 条</text>
+            <view wx:for="{{item.courses}}" wx:for-item="course" wx:key="id" class="relation-course">
+              <text class="qf-text">{{course.name}} · {{course.teacherName}} · {{course.classroomName}} · 反馈 {{course.feedbackCount}} 条</text>
+              <view wx:for="{{course.feedbacks}}" wx:for-item="feedback" wx:key="id" class="feedback-mini">
+                <text class="qf-muted">{{feedback.courseSessionTitle}} · {{feedback.createdAt}}</text>
+                <text class="qf-text">{{feedback.text}}</text>
+              </view>
+            </view>
+          </view>
+        </block>
       </view>
     </view>
-    <view wx:else class="qf-empty">暂无课程树</view>
   </view>
 
-  <view class="qf-section">登录手机号映射</view>
-  <view class="qf-card tight">
-    <view class="qf-wrap">
-      <text wx:for="{{bootstrap.phoneAccounts}}" wx:key="id" class="qf-tag">{{item.phone}} · {{item.nickname}}</text>
-    </view>
-  </view>
-
-  <view class="qf-section">反馈记录查看</view>
-  <view class="qf-card tight">
-    <view wx:if="{{overview.recentFeedbacks.length}}" class="qf-list">
-      <view wx:for="{{overview.recentFeedbacks}}" wx:key="id" class="qf-list-item">
-        <text class="qf-h3">{{item.studentName}} · {{item.courseName}}</text>
-        <text class="qf-muted">{{item.courseSessionTitle}} · 图片 {{item.imageCount}} · 语音 {{item.voiceCount}}</text>
-        <text class="qf-text">{{item.text}}</text>
+  <view wx:if="{{activePanel === 'courses'}}" class="qf-panel">
+    <view class="qf-section">课程课次详情</view>
+    <view class="qf-card tight admin-loose-card">
+      <view class="qf-wrap centered-wrap">
+        <button wx:for="{{relations.courseTree}}" wx:key="id" class="qf-btn small {{selectedCourseId === item.id ? '' : 'ghost'}}" data-id="{{item.id}}" bindtap="selectCourse">{{item.name}}</button>
+      </view>
+      <view class="qf-list detail-list">
+        <block wx:for="{{relations.courseTree}}" wx:key="id">
+          <view wx:if="{{selectedCourseId === item.id}}" class="qf-list-item">
+            <text class="qf-h3">{{item.name}}</text>
+            <text class="qf-muted">{{item.teacherName}} · {{item.classroomName}} · 共 {{item.sessions.length}} 次课 · 学生 {{item.studentCount}} 人</text>
+            <view wx:for="{{item.sessions}}" wx:for-item="session" wx:key="id" class="relation-course course-session-detail">
+              <text class="qf-text">{{session.displayTitle}} · {{session.date}} {{session.startTime}}-{{session.endTime}} · 反馈 {{session.feedbackCount}} 条</text>
+              <view wx:for="{{session.students}}" wx:for-item="student" wx:key="id" class="feedback-mini">
+                <text class="qf-muted">{{student.name}} · 反馈 {{student.feedbackCount}} 条</text>
+                <text wx:for="{{student.feedbacks}}" wx:for-item="feedback" wx:key="id" class="qf-text">{{feedback.text}}</text>
+              </view>
+            </view>
+          </view>
+        </block>
       </view>
     </view>
-    <view wx:else class="qf-empty">暂无反馈记录</view>
   </view>
 
-  <view class="qf-section">直播接口配置占位</view>
-  <view class="qf-card tight">
-    <text class="qf-text">ClassIn 入口由后端或云函数签发，小程序前端不保存 secret。</text>
-    <view class="qf-wrap">
-      <text wx:for="{{overview.liveRooms}}" wx:key="id" class="qf-tag warn">{{item.classroom.name}} 待接入</text>
+  <view wx:if="{{activePanel === 'phones'}}" class="qf-panel">
+    <view class="qf-section">登录手机号映射</view>
+    <view class="qf-card tight admin-loose-card">
+      <view class="qf-wrap centered-wrap">
+        <text wx:for="{{bootstrap.phoneAccounts}}" wx:key="id" class="qf-tag">{{item.phone}} · {{item.nickname}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{activePanel === 'live'}}" class="qf-panel">
+    <view class="qf-section">直播接口配置占位</view>
+    <view class="qf-card tight admin-loose-card">
+      <text class="qf-text center-text">ClassIn 入口由后端或云函数签发。接入真实 `classinEntryUrl` 或播放流后，本界面可直接展示可用状态。</text>
+      <view class="qf-wrap centered-wrap">
+        <text wx:for="{{overview.liveRooms}}" wx:key="id" class="qf-tag warn">{{item.classroom.name}} 待接入</text>
+      </view>
     </view>
   </view>
 

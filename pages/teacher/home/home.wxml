@@ -3,9 +3,14 @@
   <view class="qf-top">
     <view class="qf-brand">
       <text class="qf-brand-title">{{dashboard.teacherName || session.displayName}}</text>
-      <text class="qf-brand-sub">教师首页 · 趣帆学习空间</text>
+      <text class="qf-brand-sub">教师首页 · 先看入口，再进详情</text>
     </view>
     <button class="qf-btn ghost small" bindtap="goCourses">我的课程</button>
+  </view>
+
+  <view class="qf-card qf-hero">
+    <text class="qf-h2">课后反馈工作台</text>
+    <text class="qf-muted">课程、课次和学生信息收进入口里，首页只保留最关键路径。</text>
   </view>
 
   <view class="qf-grid">
@@ -15,48 +20,73 @@
     </view>
   </view>
 
-  <view class="qf-section">今日课程</view>
-  <view class="qf-card tight">
-    <view wx:if="{{dashboard.todayCourses.length}}" class="qf-list">
-      <view wx:for="{{dashboard.todayCourses}}" wx:key="id" class="qf-list-item">
-        <view class="qf-row">
-          <view>
-            <text class="qf-h3">{{item.displayTitle}}</text>
-            <text class="qf-muted">{{item.courseName}} · {{item.startTime}}-{{item.endTime}} · {{item.classroomName}}</text>
-          </view>
-          <button class="qf-btn ghost small" data-id="{{item.id}}" bindtap="goSession">进入课次</button>
-        </view>
-      </view>
-    </view>
-    <view wx:else class="qf-empty">今天暂无课程</view>
+  <view class="qf-entry-grid">
+    <button class="qf-entry-card {{activePanel === 'pending' ? 'active' : ''}}" data-panel="pending" bindtap="setPanel">
+      <text class="qf-entry-title">待反馈课次</text>
+      <text class="qf-entry-sub">进入学生名单上传</text>
+    </button>
+    <button class="qf-entry-card {{activePanel === 'today' ? 'active' : ''}}" data-panel="today" bindtap="setPanel">
+      <text class="qf-entry-title">今日课程</text>
+      <text class="qf-entry-sub">查看今天安排</text>
+    </button>
+    <button class="qf-entry-card {{activePanel === 'recent' ? 'active' : ''}}" data-panel="recent" bindtap="setPanel">
+      <text class="qf-entry-title">最近反馈</text>
+      <text class="qf-entry-sub">回看已上传内容</text>
+    </button>
+    <button class="qf-entry-card" bindtap="goCourses">
+      <text class="qf-entry-title">我的课程</text>
+      <text class="qf-entry-sub">课程 / 课次 / 学生</text>
+    </button>
   </view>
 
-  <view class="qf-section">近期需要反馈的课次</view>
-  <view class="qf-card tight">
-    <view wx:if="{{dashboard.pendingFeedbackSessions.length}}" class="qf-list">
-      <view wx:for="{{dashboard.pendingFeedbackSessions}}" wx:key="id" class="qf-list-item">
-        <view class="qf-row">
-          <view>
-            <text class="qf-h3">{{item.displayTitle}}</text>
-            <text class="qf-muted">{{item.courseName}} · 已反馈 {{item.feedbackCount}} / {{item.expectedFeedbackCount}}</text>
+  <view wx:if="{{activePanel === 'pending'}}" class="qf-panel">
+    <view class="qf-section">近期需要反馈的课次</view>
+    <view class="qf-card tight">
+      <view wx:if="{{dashboard.pendingFeedbackSessions.length}}" class="qf-list">
+        <view wx:for="{{dashboard.pendingFeedbackSessions}}" wx:key="id" class="qf-list-item">
+          <view class="qf-row">
+            <view>
+              <text class="qf-h3">{{item.displayTitle}}</text>
+              <text class="qf-muted">{{item.courseName}} · 已反馈 {{item.feedbackCount}} / {{item.expectedFeedbackCount}}</text>
+            </view>
+            <button class="qf-btn small" data-id="{{item.id}}" bindtap="goSession">进入</button>
           </view>
-          <button class="qf-btn small" data-id="{{item.id}}" bindtap="goSession">上传反馈</button>
         </view>
       </view>
+      <view wx:else class="qf-empty">近期课次反馈已处理</view>
     </view>
-    <view wx:else class="qf-empty">近期课次反馈已处理</view>
   </view>
 
-  <view class="qf-section">最近上传的反馈</view>
-  <view class="qf-card tight">
-    <view wx:if="{{dashboard.recentFeedbacks.length}}" class="qf-list">
-      <view wx:for="{{dashboard.recentFeedbacks}}" wx:key="id" class="qf-list-item">
-        <text class="qf-h3">{{item.studentName}} · {{item.courseSessionTitle}}</text>
-        <text class="qf-muted">{{item.courseName}} · {{item.createdAt}}</text>
-        <text class="qf-text">{{item.text}}</text>
+  <view wx:if="{{activePanel === 'today'}}" class="qf-panel">
+    <view class="qf-section">今日课程</view>
+    <view class="qf-card tight">
+      <view wx:if="{{dashboard.todayCourses.length}}" class="qf-list">
+        <view wx:for="{{dashboard.todayCourses}}" wx:key="id" class="qf-list-item">
+          <view class="qf-row">
+            <view>
+              <text class="qf-h3">{{item.displayTitle}}</text>
+              <text class="qf-muted">{{item.courseName}} · {{item.startTime}}-{{item.endTime}}</text>
+            </view>
+            <button class="qf-btn ghost small" data-id="{{item.id}}" bindtap="goSession">课次</button>
+          </view>
+        </view>
       </view>
+      <view wx:else class="qf-empty">今天暂无课程</view>
     </view>
-    <view wx:else class="qf-empty">暂无课后反馈</view>
+  </view>
+
+  <view wx:if="{{activePanel === 'recent'}}" class="qf-panel">
+    <view class="qf-section">最近上传的反馈</view>
+    <view class="qf-card tight">
+      <view wx:if="{{dashboard.recentFeedbacks.length}}" class="qf-list">
+        <view wx:for="{{dashboard.recentFeedbacks}}" wx:key="id" class="qf-list-item">
+          <text class="qf-h3">{{item.studentName}} · {{item.courseSessionTitle}}</text>
+          <text class="qf-muted">{{item.courseName}} · {{item.createdAt}}</text>
+          <text class="qf-text">{{item.text}}</text>
+        </view>
+      </view>
+      <view wx:else class="qf-empty">暂无课后反馈</view>
+    </view>
   </view>
 
   <qf-role-tabbar role="teacher" current="/pages/teacher/home/home"></qf-role-tabbar>

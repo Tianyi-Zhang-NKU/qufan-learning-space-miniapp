@@ -2,11 +2,25 @@ const Api = require('../../../services/api');
 const Guard = require('../../../utils/page-guard');
 const Notice = require('../../../utils/notice');
 
+function buildTimetableRows(courses) {
+  return courses
+    .flatMap((course) => (course.sessions || []).map((session) => ({
+      id: session.id,
+      time: `${session.date}\n${session.startTime}-${session.endTime}`,
+      courseName: course.name,
+      lesson: session.sessionTitle,
+      classroom: session.classroomName || course.classroomName || '待定教室',
+      feedbackCount: session.feedbackCount || 0
+    })))
+    .sort((a, b) => `${a.time}${a.courseName}`.localeCompare(`${b.time}${b.courseName}`));
+}
+
 Page({
   data: {
     session: {},
     currentStudent: {},
-    courseGroups: []
+    courseGroups: [],
+    timetableRows: []
   },
 
   onShow() {
@@ -19,9 +33,11 @@ Page({
   load() {
     Api.getStudentCourses()
       .then((result) => {
+        const courseGroups = result.courseGroups || result.courses || [];
         this.setData({
           currentStudent: result.currentStudent || {},
-          courseGroups: result.courseGroups || result.courses || []
+          courseGroups,
+          timetableRows: buildTimetableRows(courseGroups)
         });
       })
       .catch((error) => Notice.alert(error.message || '课程加载失败'));

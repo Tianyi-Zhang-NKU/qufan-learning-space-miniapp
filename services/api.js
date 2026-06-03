@@ -412,11 +412,24 @@ function mediaPlaceholder(type, payload, session) {
 }
 
 function classInEntryForSession(courseId, courseSessionId) {
+  const course = findCourse(courseId) || {};
+  const courseSession = findCourseSession(courseSessionId) || {};
+  const classroom = findClassroom(courseSession.classroomId || course.classroomId) || {};
   return {
     status: 'pending',
     provider: 'classin',
     message: 'ClassIn 直播接口待接入',
     classinEntryUrl: '',
+    streamUrl: '',
+    playerType: 'classin-webview-or-live-player',
+    signedAt: '',
+    expiresAt: '',
+    roomName: classroom.name || '',
+    courseName: course.name || '',
+    lessonTitle: courseSession.displayTitle || courseSession.title || '',
+    startTime: courseSession.startTime || '',
+    endTime: courseSession.endTime || '',
+    requiredServerFields: ['classinEntryUrl', 'streamUrl', 'signedAt', 'expiresAt'],
     courseId,
     courseSessionId
   };
@@ -791,7 +804,8 @@ const mockApi = {
         feedbackCount: getFeedbacks({ courseSessionId: session.id }).length,
         students: getCourseStudents(course.id).map((student) => ({
           ...student,
-          feedbackCount: getFeedbacks({ courseSessionId: session.id, studentId: student.id }).length
+          feedbackCount: getFeedbacks({ courseSessionId: session.id, studentId: student.id }).length,
+          feedbacks: getFeedbacks({ courseSessionId: session.id, studentId: student.id }).map(feedbackWithMedia)
         })),
         assignments: getCourseAssignments(course.id, session.id)
       }))
@@ -829,9 +843,12 @@ const mockApi = {
           id: course.id,
           name: course.name,
           teacherName: (findTeacher(course.teacherId) || {}).name || '',
-          feedbackCount: getFeedbacks({ studentId: student.id, courseId: course.id }).length
+          classroomName: (findClassroom(course.classroomId) || {}).name || '',
+          feedbackCount: getFeedbacks({ studentId: student.id, courseId: course.id }).length,
+          feedbacks: getFeedbacks({ studentId: student.id, courseId: course.id }).map(feedbackWithMedia)
         })),
-        feedbackCount: getFeedbacks({ studentId: student.id }).length
+        feedbackCount: getFeedbacks({ studentId: student.id }).length,
+        feedbacks: getFeedbacks({ studentId: student.id }).map(feedbackWithMedia)
       };
     }));
   },

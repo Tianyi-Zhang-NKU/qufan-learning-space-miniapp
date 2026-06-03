@@ -1,38 +1,66 @@
 <view class="qf-page login-page">
   <z-bg mode="auth"></z-bg>
-  <view class="login-brand">
-    <text class="login-title">趣帆学习空间</text>
-    <text class="login-sub">用报班手机号登录</text>
-  </view>
 
-  <view class="qf-card qf-hero">
-    <view class="qf-field">
-      <text class="qf-label">手机号</text>
-      <input
-        class="qf-input"
-        type="number"
-        maxlength="11"
-        value="{{phone}}"
-        placeholder="请输入手机号"
-        bindinput="onPhoneInput"
-      />
+  <view class="login-shell">
+    <view class="login-brand">
+      <view class="login-monogram">QF</view>
+      <text class="login-title">趣帆学习空间</text>
+      <text class="login-sub">课后反馈看得见，学习进度不打扰</text>
     </view>
 
-    <button class="qf-btn full" loading="{{logging}}" bindtap="login">登录</button>
-    <button class="qf-btn ghost full identity-entry" open-type="getPhoneNumber" bindgetphonenumber="onGetPhoneNumber">预留微信手机号授权</button>
-    <button class="qf-btn ghost full identity-entry" bindtap="smsPlaceholder">预留短信验证码登录</button>
-  </view>
+    <view class="login-signal-row">
+      <view class="login-signal">
+        <text class="signal-num">01</text>
+        <text class="signal-text">手机号识别</text>
+      </view>
+      <view class="login-signal">
+        <text class="signal-num">02</text>
+        <text class="signal-text">老师上传反馈</text>
+      </view>
+      <view class="login-signal">
+        <text class="signal-num">03</text>
+        <text class="signal-text">家长查看</text>
+      </view>
+    </view>
 
-  <view class="qf-card tight demo-card">
-    <text class="qf-muted qf-small">演示手机号</text>
-    <view class="qf-wrap demo-row">
-      <button
-        wx:for="{{demoPhones}}"
-        wx:key="phone"
-        class="qf-btn ghost small"
-        data-phone="{{item.phone}}"
-        bindtap="useDemoPhone"
-      >{{item.label}} {{item.phone}}</button>
+    <view class="qf-card qf-hero login-panel">
+      <view class="qf-field">
+        <text class="qf-label">报班手机号</text>
+        <input
+          class="qf-input login-input"
+          type="number"
+          maxlength="11"
+          value="{{phone}}"
+          placeholder="请输入手机号"
+          bindinput="onPhoneInput"
+        />
+      </view>
+
+      <button class="qf-btn full login-primary" loading="{{logging}}" bindtap="login">登录</button>
+
+      <view class="login-secondary">
+        <button class="qf-btn ghost small" open-type="getPhoneNumber" bindgetphonenumber="onGetPhoneNumber">微信手机号授权</button>
+        <button class="qf-btn ghost small" bindtap="smsPlaceholder">短信验证码</button>
+      </view>
+    </view>
+
+    <view class="qf-card tight login-demo-entry">
+      <view class="qf-row">
+        <view>
+          <text class="qf-h3">演示账号</text>
+          <text class="qf-muted">收起默认账号，减少首屏杂乱。</text>
+        </view>
+        <button class="qf-btn ghost small" bindtap="toggleDemo">{{showDemo ? '收起' : '展开'}}</button>
+      </view>
+      <view wx:if="{{showDemo}}" class="qf-wrap demo-row">
+        <button
+          wx:for="{{demoPhones}}"
+          wx:key="phone"
+          class="qf-btn ghost small"
+          data-phone="{{item.phone}}"
+          bindtap="useDemoPhone"
+        >{{item.label}} {{item.phone}}</button>
+      </view>
     </view>
   </view>
 </view>

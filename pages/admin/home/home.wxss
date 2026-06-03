@@ -1,0 +1,15 @@
+.admin-hero,
+.admin-loose-card {
+  max-width: 660rpx;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.admin-entry-grid {
+  max-width: 660rpx;
+  grid-template-columns: 1fr;
+}
+
+.live-chip-wrap {
+  justify-content: center;
+}

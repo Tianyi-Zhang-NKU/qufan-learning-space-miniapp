@@ -1,39 +1,120 @@
 .login-page {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  padding-bottom: 60rpx;
+  padding-top: 56rpx;
+  padding-bottom: 56rpx;
+}
+
+.login-shell {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 680rpx;
 }
 
 .login-brand {
-  margin: 20rpx 0 42rpx;
-  color: #FFF8EC;
   text-align: center;
+  color: #173a32;
+}
+
+.login-monogram {
+  width: 120rpx;
+  height: 120rpx;
+  margin: 0 auto 22rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid rgba(255, 250, 235, 0.34);
+  border-radius: 38rpx;
+  color: #fff8ec;
+  font-size: 36rpx;
+  font-weight: 700;
+  background:
+    radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.3), transparent 34%),
+    linear-gradient(145deg, rgba(249, 115, 22, 0.52), rgba(28, 79, 66, 0.72));
+  box-shadow: 0 28rpx 80rpx rgba(0, 0, 0, 0.28);
 }
 
 .login-title {
   display: block;
   font-size: 54rpx;
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.12;
+  color: #173a32;
+  font-family: "Noto Serif CJK SC", "Source Han Serif SC", "SimSun", serif;
 }
 
 .login-sub {
   display: block;
-  margin-top: 14rpx;
-  color: rgba(255, 248, 236, 0.78);
+  margin-top: 16rpx;
+  color: rgba(45, 75, 64, 0.72);
   font-size: 25rpx;
+  line-height: 1.45;
 }
 
-.relation-row,
-.demo-row {
-  margin-top: 14rpx;
+.login-signal-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14rpx;
+  margin: 34rpx 0 24rpx;
 }
 
-.identity-entry {
+.login-signal {
+  min-height: 108rpx;
+  padding: 18rpx 10rpx;
+  text-align: center;
+  border: 1rpx solid rgba(83, 117, 91, 0.18);
+  border-radius: 24rpx;
+  color: #173a32;
+  background: rgba(255, 250, 238, 0.62);
+  -webkit-backdrop-filter: blur(18rpx);
+  backdrop-filter: blur(18rpx);
+}
+
+.signal-num {
+  display: block;
+  color: #ea580c;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.signal-text {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 20rpx;
+  line-height: 1.25;
+}
+
+.login-panel {
+  margin-bottom: 20rpx;
+  padding: 34rpx;
+}
+
+.login-input {
+  text-align: center;
+  font-size: 31rpx;
+  font-weight: 650;
+}
+
+.login-primary {
+  margin-top: 26rpx;
+}
+
+.login-secondary {
+  display: flex;
+  gap: 14rpx;
   margin-top: 16rpx;
 }
 
-.demo-card {
-  background: rgba(255, 248, 236, 0.92);
+.login-secondary .qf-btn {
+  flex: 1;
+}
+
+.login-demo-entry {
+  margin-bottom: 0;
+}
+
+.demo-row {
+  margin-top: 20rpx;
 }

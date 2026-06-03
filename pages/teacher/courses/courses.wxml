@@ -3,15 +3,30 @@
   <view class="qf-top">
     <view class="qf-brand">
       <text class="qf-brand-title">我的课程</text>
-      <text class="qf-brand-sub">{{teacher.name || session.displayName}} · 课程 / 课次 / 学生 / 反馈</text>
+      <text class="qf-brand-sub">{{teacher.name || session.displayName}} · 课程表 / 课次 / 学生 / 反馈</text>
     </view>
   </view>
 
   <view class="qf-card qf-hero">
     <text class="qf-h2">{{teacher.fullName || teacher.name || session.displayName}}</text>
-    <text class="qf-muted">从课程进入课次，在学生名单中上传课后反馈。</text>
+    <text class="qf-muted">从课程表进入课次，再在学生名单中上传课后反馈。</text>
   </view>
 
+  <view class="qf-section">课程表</view>
+  <view class="qf-timetable">
+    <view class="qf-table-row qf-table-head">
+      <view class="qf-table-cell">时间</view>
+      <view class="qf-table-cell">课程 / 课次</view>
+      <view class="qf-table-cell">教室</view>
+    </view>
+    <view wx:for="{{timetableRows}}" wx:key="id" class="qf-table-row" data-id="{{item.id}}" bindtap="goSession">
+      <view class="qf-table-cell">{{item.time}}</view>
+      <view class="qf-table-cell">{{item.courseName}} · {{item.lesson}}</view>
+      <view class="qf-table-cell">{{item.classroom}}</view>
+    </view>
+  </view>
+
+  <view class="qf-section">课程列表</view>
   <view class="qf-card tight">
     <view wx:if="{{courseGroups.length}}" class="qf-list">
       <view wx:for="{{courseGroups}}" wx:key="id" class="qf-list-item">
@@ -22,17 +37,6 @@
             <text class="qf-muted">最近课次：{{item.recentSessionTitle || '暂无课次'}}</text>
           </view>
           <button class="qf-btn ghost small" data-id="{{item.id}}" bindtap="goCourse">进入课程</button>
-        </view>
-        <view class="qf-divider"></view>
-        <view wx:for="{{item.sessions}}" wx:for-item="session" wx:key="id" class="course-session-row">
-          <view class="qf-row">
-            <view>
-              <text class="qf-h3">{{session.sessionTitle}}</text>
-              <text class="qf-muted">{{session.displayTitle}} · {{session.date}} {{session.startTime}}-{{session.endTime}}</text>
-              <text class="qf-muted">反馈 {{session.feedbackCount}} 条</text>
-            </view>
-            <button class="qf-btn small" data-id="{{session.id}}" bindtap="goSession">进入课次</button>
-          </view>
         </view>
       </view>
     </view>

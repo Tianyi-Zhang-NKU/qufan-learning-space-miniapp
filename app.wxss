@@ -1,8 +1,8 @@
 page {
   min-height: 100%;
-  color: #fff9ec;
-  background: #071713;
-  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: #1f352e;
+  background: #f6efe1;
+  font-family: "HarmonyOS Sans SC", "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, sans-serif;
   letter-spacing: 0;
 }
 
@@ -44,12 +44,12 @@ navigator {
   position: relative;
   min-height: 100vh;
   padding: 42rpx 28rpx 172rpx;
-  color: #fff9ec;
-  background: #071713;
+  color: #1f352e;
+  background: #f6efe1;
 }
 
 .qf-page.plain {
-  background: #071713;
+  background: #f6efe1;
 }
 
 .qf-top,
@@ -328,6 +328,344 @@ navigator {
   font-size: 22rpx;
 }
 
+/* Visual refresh: calmer spacing, centered section rhythm, and glass panels. */
+.qf-page {
+  padding: 52rpx 30rpx 190rpx;
+  animation: qfPageSlideIn 220ms ease-out both;
+}
+
+.qf-top {
+  justify-content: center;
+  min-height: 78rpx;
+  margin-bottom: 36rpx;
+  text-align: center;
+}
+
+.qf-top .qf-brand {
+  flex: 1;
+  text-align: center;
+}
+
+.qf-top > .qf-btn {
+  position: absolute;
+  right: 0;
+  top: 6rpx;
+}
+
+.qf-brand-title {
+  font-size: 42rpx;
+  line-height: 1.16;
+}
+
+.qf-brand-sub {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+}
+
+.qf-section {
+  margin: 44rpx auto 22rpx;
+  text-align: center;
+  font-size: 32rpx;
+  line-height: 1.2;
+}
+
+.qf-card {
+  border-radius: 30rpx;
+  border-color: rgba(255, 250, 235, 0.2);
+  background:
+    linear-gradient(145deg, rgba(255, 250, 235, 0.16), rgba(255, 250, 235, 0.04)),
+    rgba(18, 42, 35, 0.58);
+  -webkit-backdrop-filter: blur(26rpx) saturate(1.18);
+  backdrop-filter: blur(26rpx) saturate(1.18);
+  box-shadow: 0 28rpx 80rpx rgba(0, 0, 0, 0.28);
+}
+
+.qf-card.qf-hero {
+  text-align: center;
+  border-color: rgba(249, 115, 22, 0.28);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(249, 115, 22, 0.24), transparent 58%),
+    linear-gradient(145deg, rgba(255, 250, 235, 0.18), rgba(255, 250, 235, 0.04)),
+    rgba(15, 45, 37, 0.66);
+}
+
+.qf-list-item,
+.qf-metric,
+.qf-empty {
+  border-radius: 26rpx;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.72), rgba(255, 250, 237, 0.5)),
+    rgba(255, 250, 237, 0.64);
+  -webkit-backdrop-filter: blur(18rpx);
+  backdrop-filter: blur(18rpx);
+}
+
+.qf-list-item {
+  margin-bottom: 18rpx;
+  padding: 26rpx;
+}
+
+.qf-list-item:last-child {
+  margin-bottom: 0;
+}
+
+.qf-entry-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18rpx;
+  margin: 24rpx 0;
+}
+
+.qf-entry-card {
+  min-height: 136rpx;
+  padding: 24rpx;
+  text-align: center;
+  border: 1rpx solid rgba(255, 250, 235, 0.18);
+  border-radius: 28rpx;
+  color: #fff9ec;
+  background:
+    linear-gradient(145deg, rgba(255, 250, 235, 0.14), rgba(255, 250, 235, 0.035)),
+    rgba(15, 45, 37, 0.62);
+  -webkit-backdrop-filter: blur(22rpx);
+  backdrop-filter: blur(22rpx);
+  box-shadow: 0 20rpx 56rpx rgba(0, 0, 0, 0.2);
+}
+
+.qf-entry-card.active {
+  border-color: rgba(249, 115, 22, 0.5);
+  background:
+    linear-gradient(145deg, rgba(249, 115, 22, 0.24), rgba(255, 250, 235, 0.07)),
+    rgba(18, 48, 40, 0.72);
+}
+
+.qf-entry-title {
+  display: block;
+  font-size: 29rpx;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.qf-entry-sub {
+  display: block;
+  margin-top: 10rpx;
+  color: rgba(248, 240, 223, 0.68);
+  font-size: 22rpx;
+  line-height: 1.35;
+}
+
+.qf-panel {
+  animation: qfPanelIn 180ms ease-out both;
+}
+
+@keyframes qfPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(14rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes qfPageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Light paper theme overrides. */
+.qf-page {
+  padding: 60rpx 36rpx 178rpx;
+  color: #1f352e;
+  background: transparent;
+}
+
+.qf-top {
+  color: #1f352e;
+}
+
+.qf-brand-title,
+.qf-section,
+.qf-title {
+  color: #19362e;
+  font-family: "Noto Serif CJK SC", "Source Han Serif SC", "SimSun", "HarmonyOS Sans SC", serif;
+}
+
+.qf-brand-sub,
+.qf-muted {
+  color: rgba(45, 75, 64, 0.68);
+}
+
+.qf-card {
+  margin-bottom: 34rpx;
+  padding: 36rpx;
+  border: 1rpx solid rgba(83, 117, 91, 0.22);
+  border-radius: 34rpx;
+  color: #1f352e;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.7), rgba(255, 248, 232, 0.36)),
+    rgba(255, 250, 238, 0.56);
+  -webkit-backdrop-filter: blur(30rpx) saturate(1.16);
+  backdrop-filter: blur(30rpx) saturate(1.16);
+  box-shadow: 0 26rpx 76rpx rgba(74, 92, 68, 0.2);
+}
+
+.qf-card.tight {
+  padding: 30rpx;
+}
+
+.qf-card.qf-hero {
+  border-color: rgba(234, 88, 12, 0.26);
+  color: #173a32;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(249, 115, 22, 0.18), transparent 58%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.72), rgba(255, 245, 224, 0.38)),
+    rgba(255, 250, 238, 0.64);
+}
+
+.qf-list-item,
+.qf-metric,
+.qf-empty {
+  color: #1f352e;
+  border-color: rgba(83, 117, 91, 0.18);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.82), rgba(255, 250, 238, 0.48)),
+    rgba(255, 250, 238, 0.68);
+  box-shadow: 0 16rpx 44rpx rgba(74, 92, 68, 0.14);
+}
+
+.qf-list-item {
+  margin-bottom: 24rpx;
+  padding: 30rpx;
+}
+
+.qf-grid {
+  gap: 24rpx;
+  margin-bottom: 16rpx;
+}
+
+.qf-grid > view {
+  width: calc((100% - 24rpx) / 2);
+}
+
+.qf-entry-grid {
+  gap: 26rpx;
+  margin: 34rpx 0;
+}
+
+.qf-entry-card {
+  min-height: 156rpx;
+  padding: 30rpx 24rpx;
+  border-color: rgba(83, 117, 91, 0.22);
+  color: #173a32;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.74), rgba(255, 247, 232, 0.46)),
+    rgba(255, 250, 238, 0.66);
+  -webkit-backdrop-filter: blur(26rpx);
+  backdrop-filter: blur(26rpx);
+}
+
+.qf-entry-card.active {
+  color: #fff9ec;
+  border-color: rgba(234, 88, 12, 0.42);
+  background:
+    linear-gradient(145deg, #f97316, #d95b11),
+    #f97316;
+  box-shadow: 0 20rpx 54rpx rgba(249, 115, 22, 0.32);
+}
+
+.qf-entry-card.active .qf-entry-sub {
+  color: rgba(255, 249, 236, 0.78);
+}
+
+.qf-entry-sub {
+  color: rgba(45, 75, 64, 0.64);
+}
+
+.qf-btn {
+  min-height: 78rpx;
+  border: 1rpx solid rgba(194, 65, 12, 0.26);
+  border-radius: 22rpx;
+  color: #fff9ec;
+  background:
+    linear-gradient(145deg, #fb923c, #ea580c),
+    #f97316;
+  box-shadow: 0 16rpx 34rpx rgba(234, 88, 12, 0.32);
+}
+
+.qf-btn.ghost {
+  color: #173a32;
+  border-color: rgba(31, 74, 64, 0.26);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.74), rgba(255, 250, 238, 0.48)),
+    rgba(255, 250, 238, 0.62);
+  box-shadow: 0 10rpx 28rpx rgba(74, 92, 68, 0.14);
+}
+
+.qf-tag {
+  color: #173a32;
+  border-color: rgba(31, 74, 64, 0.16);
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.qf-input,
+.qf-textarea,
+.qf-picker {
+  border-color: rgba(83, 117, 91, 0.24);
+  border-radius: 22rpx;
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.qf-timetable {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  border: 1rpx solid rgba(83, 117, 91, 0.22);
+  border-radius: 30rpx;
+  background: rgba(255, 250, 238, 0.62);
+  -webkit-backdrop-filter: blur(24rpx);
+  backdrop-filter: blur(24rpx);
+}
+
+.qf-table-row {
+  display: grid;
+  grid-template-columns: 132rpx 1fr 132rpx;
+  min-height: 86rpx;
+  border-bottom: 1rpx solid rgba(83, 117, 91, 0.14);
+}
+
+.qf-table-row:last-child {
+  border-bottom: 0;
+}
+
+.qf-table-head {
+  color: #173a32;
+  font-weight: 700;
+  background: rgba(214, 230, 190, 0.38);
+}
+
+.qf-table-cell {
+  display: flex;
+  align-items: center;
+  padding: 18rpx;
+  color: #1f352e;
+  font-size: 23rpx;
+  line-height: 1.35;
+  border-right: 1rpx solid rgba(83, 117, 91, 0.14);
+}
+
+.qf-table-cell:last-child {
+  border-right: 0;
+}
+
 .qf-input,
 .qf-textarea,
 .qf-picker {
@@ -425,4 +763,112 @@ navigator {
 
 .qf-safe-bottom {
   height: 24rpx;
+}
+
+/* Relaxed mobile rhythm: keep home cards from crowding each other. */
+.qf-page {
+  padding: 68rpx 44rpx 220rpx;
+}
+
+.qf-top {
+  margin-bottom: 44rpx;
+}
+
+.qf-card {
+  margin-bottom: 44rpx;
+  padding: 44rpx 40rpx;
+}
+
+.qf-card.tight {
+  padding: 36rpx;
+}
+
+.qf-section {
+  max-width: 660rpx;
+  margin: 56rpx auto 28rpx;
+  text-align: left;
+}
+
+.qf-grid {
+  max-width: 660rpx;
+  gap: 30rpx;
+  margin: 0 auto 40rpx;
+}
+
+.qf-grid > view {
+  width: calc((100% - 30rpx) / 2);
+}
+
+.qf-grid.three > view {
+  width: calc((100% - 60rpx) / 3);
+}
+
+.qf-metric {
+  min-height: 128rpx;
+  padding: 26rpx;
+  border-radius: 28rpx;
+}
+
+.qf-entry-grid {
+  max-width: 660rpx;
+  grid-template-columns: 1fr;
+  gap: 30rpx;
+  margin: 46rpx auto 58rpx;
+}
+
+.qf-entry-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 154rpx;
+  padding: 34rpx 36rpx;
+  text-align: left;
+  border-radius: 32rpx;
+}
+
+.qf-entry-title {
+  font-size: 31rpx;
+}
+
+.qf-entry-sub {
+  margin-top: 12rpx;
+  font-size: 23rpx;
+}
+
+.qf-panel {
+  max-width: 660rpx;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.qf-list {
+  gap: 24rpx;
+}
+
+.qf-list-item {
+  margin-bottom: 0;
+  padding: 32rpx;
+  border-radius: 28rpx;
+}
+
+.qf-row {
+  align-items: flex-start;
+  gap: 28rpx;
+}
+
+.qf-row > .qf-btn,
+.qf-row > button {
+  flex-shrink: 0;
+  margin-top: 2rpx;
+}
+
+.qf-btn {
+  min-height: 82rpx;
+  padding: 0 34rpx;
+  border-radius: 24rpx;
+}
+
+.qf-btn.small {
+  min-height: 60rpx;
+  padding: 0 22rpx;
 }

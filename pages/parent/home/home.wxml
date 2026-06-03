@@ -3,65 +3,109 @@
   <view class="qf-top">
     <view class="qf-brand">
       <text class="qf-brand-title">我的学习</text>
-      <text class="qf-brand-sub">{{dashboard.currentStudent.name || session.displayName}} · 趣帆学习空间</text>
+      <text class="qf-brand-sub">{{dashboard.currentStudent.name || session.displayName}} · 课后反馈入口</text>
     </view>
   </view>
 
-  <view class="qf-grid">
-    <view wx:for="{{dashboard.metrics}}" wx:key="label" class="qf-metric">
-      <text class="qf-metric-value">{{item.value}}</text>
-      <text class="qf-metric-label">{{item.label}}</text>
+  <view class="qf-card qf-hero parent-hero">
+    <text class="qf-h2">{{dashboard.currentStudent.name || session.displayName}} 的学习首页</text>
+    <text class="qf-muted">最近反馈、今日课程和直播入口分开呈现，先看重点，再进详情。</text>
+  </view>
+
+  <view class="home-summary-strip">
+    <view wx:for="{{dashboard.metrics}}" wx:key="label" class="home-summary-item">
+      <text class="home-summary-value">{{item.value}}</text>
+      <text class="home-summary-label">{{item.label}}</text>
     </view>
   </view>
 
-  <view class="qf-section">我的课程</view>
-  <view class="qf-card tight">
-    <view wx:if="{{dashboard.courses.length}}" class="qf-list">
-      <view wx:for="{{dashboard.courses}}" wx:key="id" class="qf-list-item">
-        <view class="qf-row">
-          <view>
-            <text class="qf-h3">{{item.name}}</text>
-            <text class="qf-muted">{{item.teacherName}} · {{item.sessions.length}} 次课 · 反馈 {{item.feedbackCount}} 条</text>
-          </view>
-          <button class="qf-btn ghost small" bindtap="goCourses">查看</button>
+  <view class="home-action-list">
+    <button class="home-action-card {{activePanel === 'feedback' ? 'active' : ''}}" data-panel="feedback" bindtap="setPanel">
+      <view class="home-action-copy">
+        <text class="qf-entry-title">最近反馈</text>
+        <text class="qf-entry-sub">老师新上传的课后反馈</text>
+      </view>
+      <text class="home-action-chip">查看</text>
+    </button>
+    <button class="home-action-card {{activePanel === 'courses' ? 'active' : ''}}" data-panel="courses" bindtap="setPanel">
+      <view class="home-action-copy">
+        <text class="qf-entry-title">我的课程</text>
+        <text class="qf-entry-sub">课程、课次和老师信息</text>
+      </view>
+      <text class="home-action-chip">课程</text>
+    </button>
+    <button class="home-action-card {{activePanel === 'today' ? 'active' : ''}}" data-panel="today" bindtap="setPanel">
+      <view class="home-action-copy">
+        <text class="qf-entry-title">今日课程</text>
+        <text class="qf-entry-sub">当天上课时间与直播入口</text>
+      </view>
+      <text class="home-action-chip">今天</text>
+    </button>
+    <button class="home-action-card {{activePanel === 'live' ? 'active' : ''}}" data-panel="live" bindtap="setPanel">
+      <view class="home-action-copy">
+        <text class="qf-entry-title">直播入口</text>
+        <text class="qf-entry-sub">ClassIn / 真实接口待接入</text>
+      </view>
+      <text class="home-action-chip">预留</text>
+    </button>
+  </view>
+
+  <view wx:if="{{activePanel === 'feedback'}}" class="qf-panel parent-panel">
+    <view class="qf-section">最近反馈</view>
+    <view class="qf-card tight">
+      <view wx:if="{{dashboard.recentFeedbacks.length}}" class="qf-list">
+        <view wx:for="{{dashboard.recentFeedbacks}}" wx:key="id" class="qf-list-item">
+          <text class="qf-h3">{{item.courseName}} · {{item.courseSessionTitle}}</text>
+          <text class="qf-muted">{{item.teacherName}} · {{item.createdAt}}</text>
+          <text class="qf-text">{{item.text}}</text>
         </view>
       </view>
+      <view wx:else class="qf-empty">暂无老师反馈</view>
+      <button class="qf-btn full" bindtap="goFeedbacks">查看全部反馈</button>
     </view>
-    <view wx:else class="qf-empty">暂无课程</view>
   </view>
 
-  <view class="qf-section">最近反馈</view>
-  <view class="qf-card tight">
-    <view wx:if="{{dashboard.recentFeedbacks.length}}" class="qf-list">
-      <view wx:for="{{dashboard.recentFeedbacks}}" wx:key="id" class="qf-list-item">
-        <text class="qf-h3">{{item.courseName}} · {{item.courseSessionTitle}}</text>
-        <text class="qf-muted">{{item.teacherName}} · {{item.createdAt}}</text>
-        <text class="qf-text">{{item.text}}</text>
-      </view>
-    </view>
-    <view wx:else class="qf-empty">暂无老师反馈</view>
-    <button class="qf-btn full" bindtap="goFeedbacks">查看全部反馈</button>
-  </view>
-
-  <view class="qf-section">今日课程</view>
-  <view class="qf-card tight">
-    <view wx:if="{{dashboard.todayCourses.length}}" class="qf-list">
-      <view wx:for="{{dashboard.todayCourses}}" wx:key="id" class="qf-list-item">
-        <view class="qf-row">
-          <view>
-            <text class="qf-h3">{{item.displayTitle}}</text>
-            <text class="qf-muted">{{item.courseName}} · {{item.startTime}}-{{item.endTime}} · {{item.teacherName}}</text>
+  <view wx:if="{{activePanel === 'courses'}}" class="qf-panel parent-panel">
+    <view class="qf-section">我的课程</view>
+    <view class="qf-card tight">
+      <view wx:if="{{dashboard.courses.length}}" class="qf-list">
+        <view wx:for="{{dashboard.courses}}" wx:key="id" class="qf-list-item">
+          <view class="qf-row">
+            <view>
+              <text class="qf-h3">{{item.name}}</text>
+              <text class="qf-muted">{{item.teacherName}} · {{item.sessions.length}} 次课 · 反馈 {{item.feedbackCount}} 条</text>
+            </view>
+            <button class="qf-btn ghost small" bindtap="goCourses">查看</button>
           </view>
-          <button class="qf-btn ghost small" data-id="{{item.id}}" bindtap="goLive">直播入口</button>
         </view>
       </view>
+      <view wx:else class="qf-empty">暂无课程</view>
     </view>
-    <view wx:else class="qf-empty">今天暂无课程</view>
   </view>
 
-  <view class="qf-section">直播入口</view>
-  <view class="qf-card tight">
-    <text class="qf-text">上课直播入口已保留，正式部署后接入 ClassIn 或真实服务器。</text>
+  <view wx:if="{{activePanel === 'today'}}" class="qf-panel parent-panel">
+    <view class="qf-section">今日课程</view>
+    <view class="qf-card tight">
+      <view wx:if="{{dashboard.todayCourses.length}}" class="qf-list">
+        <view wx:for="{{dashboard.todayCourses}}" wx:key="id" class="qf-list-item">
+          <view class="qf-row">
+            <view>
+              <text class="qf-h3">{{item.displayTitle}}</text>
+              <text class="qf-muted">{{item.courseName}} · {{item.startTime}}-{{item.endTime}}</text>
+            </view>
+            <button class="qf-btn ghost small" data-id="{{item.id}}" bindtap="goLive">直播入口</button>
+          </view>
+        </view>
+      </view>
+      <view wx:else class="qf-empty">今天暂无课程</view>
+    </view>
+  </view>
+
+  <view wx:if="{{activePanel === 'live'}}" class="qf-panel parent-panel">
+    <view class="qf-section">直播入口</view>
+    <view class="qf-card tight">
+      <text class="qf-text">上课直播入口已保留，正式部署后接入 ClassIn 或真实服务器。</text>
+    </view>
   </view>
 
   <qf-role-tabbar role="parent" current="/pages/parent/home/home"></qf-role-tabbar>

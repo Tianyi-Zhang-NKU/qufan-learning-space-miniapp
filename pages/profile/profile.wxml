@@ -1,4 +1,4 @@
-<view class="qf-page">
+<view class="qf-page profile-page">
   <z-bg mode="dark"></z-bg>
   <view class="qf-top">
     <view class="qf-brand">
@@ -7,16 +7,31 @@
     </view>
   </view>
 
-  <view class="qf-card">
+  <view class="qf-card qf-hero profile-hero">
     <text class="qf-h2">{{session.displayName}}</text>
     <text class="qf-muted">登录手机号：{{session.phone}}</text>
     <text class="qf-muted">当前身份：{{roleName}}</text>
-    <text wx:if="{{session.role === 'parent'}}" class="qf-muted">绑定学生：{{profile.name}} · {{profile.grade}}</text>
-    <text wx:if="{{session.role === 'teacher'}}" class="qf-muted">负责学科：{{profile.subject}}</text>
-    <view class="qf-divider"></view>
-    <button class="qf-btn full" bindtap="goIdentitySwitch">查看当前手机号身份</button>
-    <button class="qf-btn ghost full profile-logout" bindtap="logout">退出登录</button>
   </view>
+
+  <view class="qf-section">账号信息</view>
+  <view class="qf-card tight profile-card">
+    <view class="qf-list">
+      <view wx:if="{{session.role === 'parent'}}" class="qf-list-item">
+        <text class="qf-h3">绑定学生</text>
+        <text class="qf-muted">{{profile.name}} · {{profile.grade}}</text>
+      </view>
+      <view wx:if="{{session.role === 'teacher'}}" class="qf-list-item">
+        <text class="qf-h3">负责学科</text>
+        <text class="qf-muted">{{profile.subject}}</text>
+      </view>
+      <view wx:if="{{session.role === 'admin'}}" class="qf-list-item">
+        <text class="qf-h3">管理身份</text>
+        <text class="qf-muted">{{profile.roleTitle}}</text>
+      </view>
+    </view>
+  </view>
+
+  <button class="qf-btn ghost full profile-logout" bindtap="logout">退出登录</button>
 
   <qf-role-tabbar role="{{session.role}}" current="/pages/profile/profile"></qf-role-tabbar>
 </view>

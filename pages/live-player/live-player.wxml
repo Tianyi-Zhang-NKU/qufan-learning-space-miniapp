@@ -1,4 +1,4 @@
-<view class="qf-page">
+<view class="qf-page live-entry-page">
   <z-bg mode="dark"></z-bg>
   <view class="qf-top">
     <view class="qf-brand">
@@ -7,18 +7,39 @@
     </view>
   </view>
 
-  <view class="qf-card live-panel">
-    <text class="qf-h2">ClassIn 直播接口待接入</text>
-    <text class="qf-muted">{{detail.course.name}} · {{detail.courseSession.date}} {{detail.courseSession.startTime}}-{{detail.courseSession.endTime}}</text>
-    <view class="qf-divider"></view>
-    <view wx:if="{{entry && entry.classinEntryUrl}}" class="qf-empty live-placeholder">已获取真实 ClassIn 入口。</view>
-    <view wx:elif="{{entry}}" class="qf-empty live-placeholder">{{entry.message}}，已预留直播入口，正式部署后接入 ClassIn。</view>
-    <view wx:else class="qf-empty live-placeholder">{{error || '正在申请直播入口'}}</view>
-    <button class="qf-btn full" bindtap="openClassIn">{{entry && entry.classinEntryUrl ? '打开直播' : '直播入口预留'}}</button>
+  <view class="qf-card qf-hero live-hero">
+    <text class="qf-h2">ClassIn 数据流接入位</text>
+    <text class="qf-muted">{{entry.courseName || detail.course.name}} · {{entry.roomName || detail.courseSession.classroomName}}</text>
+    <text class="qf-muted">{{detail.courseSession.date}} {{entry.startTime || detail.courseSession.startTime}}-{{entry.endTime || detail.courseSession.endTime}}</text>
   </view>
 
-  <view class="qf-card tight">
-    <text class="qf-h3">真实部署说明</text>
-    <text class="qf-muted">ClassIn secret 不放在小程序前端，后续由后端或云函数生成签名 URL。</text>
+  <view class="qf-card live-stage">
+    <view wx:if="{{entry && entry.streamUrl}}">
+      <live-player class="live-player-box" src="{{entry.streamUrl}}" autoplay binderror="load"></live-player>
+    </view>
+    <view wx:else class="live-placeholder-box">
+      <text class="live-provider">CLASSIN</text>
+      <text class="live-state">{{entry ? entry.message : (error || '正在申请直播入口')}}</text>
+      <text class="live-hint">接入 streamUrl 后这里直接渲染播放流</text>
+    </view>
+    <button class="qf-btn full live-action" bindtap="openClassIn">{{entry && entry.classinEntryUrl ? '打开 ClassIn' : '等待接口接入'}}</button>
+  </view>
+
+  <view class="qf-section">接入字段</view>
+  <view class="qf-card tight live-config-card">
+    <view class="qf-list">
+      <view class="qf-list-item">
+        <text class="qf-h3">入口地址</text>
+        <text class="qf-muted">{{entry.classinEntryUrl || 'classinEntryUrl 待服务端签发'}}</text>
+      </view>
+      <view class="qf-list-item">
+        <text class="qf-h3">播放流</text>
+        <text class="qf-muted">{{entry.streamUrl || 'streamUrl 待服务端返回'}}</text>
+      </view>
+      <view class="qf-list-item">
+        <text class="qf-h3">签名有效期</text>
+        <text class="qf-muted">{{entry.signedAt || 'signedAt'}} -> {{entry.expiresAt || 'expiresAt'}}</text>
+      </view>
+    </view>
   </view>
 </view>

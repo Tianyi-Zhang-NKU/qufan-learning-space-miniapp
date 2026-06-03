@@ -1,10 +1,51 @@
-.live-panel {
-  min-height: 420rpx;
+.live-hero,
+.live-stage,
+.live-config-card {
+  max-width: 670rpx;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.live-placeholder {
+.live-stage {
+  padding: 26rpx;
+}
+
+.live-player-box,
+.live-placeholder-box {
+  width: 100%;
   min-height: 360rpx;
+  border-radius: 28rpx;
+  overflow: hidden;
+}
+
+.live-placeholder-box {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 16rpx;
+  color: #fff8ec;
+  background:
+    linear-gradient(145deg, rgba(23, 58, 50, 0.92), rgba(11, 33, 28, 0.88)),
+    #173a32;
+}
+
+.live-provider {
+  font-size: 42rpx;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.live-state {
+  font-size: 27rpx;
+  font-weight: 650;
+}
+
+.live-hint {
+  color: rgba(255, 248, 236, 0.7);
+  font-size: 22rpx;
+}
+
+.live-action {
+  margin-top: 22rpx;
 }

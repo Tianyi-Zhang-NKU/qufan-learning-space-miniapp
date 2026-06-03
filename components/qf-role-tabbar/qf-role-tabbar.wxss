@@ -1,55 +1,74 @@
 .qf-role-tabbar {
   position: fixed;
-  left: 24rpx;
-  right: 24rpx;
-  bottom: 18rpx;
+  left: 40rpx;
+  right: 40rpx;
+  bottom: 26rpx;
   z-index: 50;
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 14rpx 12rpx 24rpx;
-  border: 1rpx solid rgba(255, 250, 235, 0.2);
-  border-radius: 26rpx;
+  padding: 14rpx;
+  border: 1rpx solid rgba(83, 117, 91, 0.24);
+  border-radius: 38rpx;
   background:
-    linear-gradient(180deg, rgba(255, 250, 235, 0.08), rgba(255, 250, 235, 0.02)),
-    rgba(13, 40, 34, 0.88);
-  box-shadow: 0 -16rpx 44rpx rgba(0, 0, 0, 0.24);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(255, 250, 238, 0.46)),
+    rgba(255, 250, 238, 0.72);
+  -webkit-backdrop-filter: blur(28rpx) saturate(1.2);
+  backdrop-filter: blur(28rpx) saturate(1.2);
+  box-shadow: 0 -18rpx 56rpx rgba(74, 92, 68, 0.22);
+  overflow: hidden;
+}
+
+.qf-tab-slider {
+  position: absolute;
+  left: 0;
+  top: 14rpx;
+  bottom: 14rpx;
+  border-radius: 30rpx;
+  background:
+    linear-gradient(145deg, rgba(249, 115, 22, 0.9), rgba(234, 88, 12, 0.78)),
+    rgba(249, 115, 22, 0.8);
+  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .qf-role-tab {
+  position: relative;
+  z-index: 1;
   flex: 1;
   min-width: 0;
+  min-height: 98rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: rgba(255, 248, 236, 0.68);
+  color: rgba(31, 53, 46, 0.64);
+  transition: color 180ms ease, transform 180ms ease;
 }
 
 .qf-role-mark {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 46rpx;
-  height: 46rpx;
-  border-radius: 50%;
-  color: rgba(255, 248, 236, 0.8);
-  font-size: 21rpx;
-  font-weight: 650;
-  background: rgba(255, 250, 235, 0.1);
+  width: 42rpx;
+  height: 42rpx;
+  color: inherit;
+  font-size: 27rpx;
+  line-height: 1;
+  transition: transform 180ms ease, color 180ms ease;
 }
 
 .qf-role-text {
-  margin-top: 8rpx;
-  font-size: 20rpx;
+  margin-top: 6rpx;
+  font-size: 19rpx;
   line-height: 1;
 }
 
 .qf-role-tab.active {
-  color: #FFEDD5;
+  color: #fff8ec;
+  transform: translateY(-2rpx);
 }
 
 .qf-role-tab.active .qf-role-mark {
-  color: #FFF8EC;
-  background: #F97316;
+  color: #fff8ec;
+  transform: scale(1.16);
 }

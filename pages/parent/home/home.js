@@ -11,7 +11,8 @@ Page({
       courses: [],
       todayCourses: [],
       recentFeedbacks: []
-    }
+    },
+    activePanel: 'feedback'
   },
 
   onShow() {
@@ -37,5 +38,9 @@ Page({
 
   goLive(event) {
     wx.navigateTo({ url: `/pages/live-player/live-player?id=${event.currentTarget.dataset.id}` });
+  },
+
+  setPanel(event) {
+    this.setData({ activePanel: event.currentTarget.dataset.panel });
   }
 });

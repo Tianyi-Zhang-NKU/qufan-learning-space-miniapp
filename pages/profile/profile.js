@@ -30,10 +30,6 @@ Page({
       .catch((error) => Notice.alert(error.message || '个人信息加载失败'));
   },
 
-  goIdentitySwitch() {
-    wx.navigateTo({ url: '/pages/identity-switch/identity-switch' });
-  },
-
   logout() {
     Api.logout().then(() => {
       getApp().clearSession();

@@ -1,4 +1,5 @@
 <view class="qf-role-tabbar">
+  <view class="qf-tab-slider" style="{{sliderStyle}}"></view>
   <view
     wx:for="{{list}}"
     wx:key="url"

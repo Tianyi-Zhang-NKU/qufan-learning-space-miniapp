@@ -11,7 +11,8 @@ Page({
       recentFeedbacks: [],
       recentAuditLogs: [],
       todaySessions: []
-    }
+    },
+    activePanel: 'courses'
   },
 
   onShow() {
@@ -23,5 +24,9 @@ Page({
 
   goManage() {
     wx.redirectTo({ url: '/pages/admin/manage/manage' });
+  },
+
+  setPanel(event) {
+    this.setData({ activePanel: event.currentTarget.dataset.panel });
   }
 });

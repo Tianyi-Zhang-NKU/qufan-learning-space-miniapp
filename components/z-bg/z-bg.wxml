@@ -1,5 +1,4 @@
-<view class="z-bg-layer {{mode}}">
-  <image class="z-bg-image" src="{{bgSrc}}" mode="aspectFill"></image>
-  <view class="z-bg-vignette"></view>
-  <view class="z-bg-paper"></view>
+<view class="z-bg">
+  <image class="z-bg-image" mode="aspectFill" src="{{imageSrc}}"></image>
+  <view class="z-bg-wash"></view>
 </view>
