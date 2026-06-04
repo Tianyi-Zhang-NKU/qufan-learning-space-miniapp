@@ -1,5 +1,6 @@
 .wrongbook-screen {
   padding-top: 52rpx;
+  padding-bottom: 200rpx;
 }
 
 .wrong-stats {

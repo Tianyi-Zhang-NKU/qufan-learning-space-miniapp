@@ -1,64 +1,67 @@
-<view class="qf-page">
+<view class="qf-page qf-page-fixed">
   <z-bg mode="dark"></z-bg>
-  <view class="qf-top">
-    <view class="qf-brand">
-      <text class="qf-brand-title">排课看板</text>
-      <text class="qf-brand-sub">课程班 / 教师 / 教室冲突检查</text>
-    </view>
-  </view>
 
-  <view class="qf-card">
-    <text class="qf-h2">创建课次</text>
-    <picker range="{{courseOptions}}" value="{{courseIndex}}" bindchange="pickCourse">
-      <view class="qf-picker">
-        <text class="qf-picker-label">课程班</text>
-        <text class="qf-picker-value">{{courseOptions[courseIndex]}}</text>
+  <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
+    <view class="qf-top">
+      <view class="qf-brand">
+        <text class="qf-brand-title">排课看板</text>
+        <text class="qf-brand-sub">课程班 / 教师 / 教室冲突检查</text>
       </view>
-    </picker>
-    <input class="qf-input" value="{{form.title}}" data-field="title" bindinput="input" />
-    <picker range="{{teacherOptions}}" value="{{teacherIndex}}" bindchange="pickTeacher">
-      <view class="qf-picker">
-        <text class="qf-picker-label">授课教师</text>
-        <text class="qf-picker-value">{{teacherOptions[teacherIndex]}}</text>
-      </view>
-    </picker>
-    <picker range="{{classroomOptions}}" value="{{classroomIndex}}" bindchange="pickClassroom">
-      <view class="qf-picker">
-        <text class="qf-picker-label">上课教室</text>
-        <text class="qf-picker-value">{{classroomOptions[classroomIndex]}}</text>
-      </view>
-    </picker>
-    <input class="qf-input" value="{{form.date}}" data-field="date" bindinput="input" />
-    <view class="qf-grid time-grid">
-      <view><input class="qf-input" value="{{form.startTime}}" data-field="startTime" bindinput="input" /></view>
-      <view><input class="qf-input" value="{{form.endTime}}" data-field="endTime" bindinput="input" /></view>
     </view>
-    <view class="qf-wrap form-actions">
-      <button class="qf-btn ghost" bindtap="checkConflicts">检查冲突</button>
-      <button class="qf-btn" bindtap="save">保存课次</button>
-    </view>
-  </view>
 
-  <view wx:if="{{conflicts.length}}" class="qf-card tight">
-    <text class="qf-h2 qf-error">排课冲突</text>
-    <view class="qf-list conflict-list">
-      <view wx:for="{{conflicts}}" wx:key="message" class="qf-list-item">
-        <text class="qf-tag danger">{{item.label}}</text>
-        <text class="qf-muted">{{item.message}}</text>
+    <view class="qf-card">
+      <text class="qf-h2">创建课次</text>
+      <picker range="{{courseOptions}}" value="{{courseIndex}}" bindchange="pickCourse">
+        <view class="qf-picker">
+          <text class="qf-picker-label">课程班</text>
+          <text class="qf-picker-value">{{courseOptions[courseIndex]}}</text>
+        </view>
+      </picker>
+      <input class="qf-input" value="{{form.title}}" data-field="title" bindinput="input" />
+      <picker range="{{teacherOptions}}" value="{{teacherIndex}}" bindchange="pickTeacher">
+        <view class="qf-picker">
+          <text class="qf-picker-label">授课教师</text>
+          <text class="qf-picker-value">{{teacherOptions[teacherIndex]}}</text>
+        </view>
+      </picker>
+      <picker range="{{classroomOptions}}" value="{{classroomIndex}}" bindchange="pickClassroom">
+        <view class="qf-picker">
+          <text class="qf-picker-label">上课教室</text>
+          <text class="qf-picker-value">{{classroomOptions[classroomIndex]}}</text>
+        </view>
+      </picker>
+      <input class="qf-input" value="{{form.date}}" data-field="date" bindinput="input" />
+      <view class="qf-grid time-grid">
+        <view><input class="qf-input" value="{{form.startTime}}" data-field="startTime" bindinput="input" /></view>
+        <view><input class="qf-input" value="{{form.endTime}}" data-field="endTime" bindinput="input" /></view>
+      </view>
+      <view class="qf-wrap form-actions">
+        <button class="qf-btn ghost" bindtap="checkConflicts">检查冲突</button>
+        <button class="qf-btn" bindtap="save">保存课次</button>
       </view>
     </view>
-  </view>
 
-  <view class="qf-section">现有排课</view>
-  <view class="qf-card tight">
-    <view class="qf-list">
-      <view wx:for="{{bootstrap.courseSessions}}" wx:key="id" class="qf-list-item">
-        <text class="qf-h3">{{item.courseName}} · {{item.sessionTitle}}</text>
-        <text class="qf-muted">{{item.displayTitle}}</text>
-        <text class="qf-muted">{{item.date}} {{item.startTime}}-{{item.endTime}} · {{item.teacherName}} · {{item.classroomName}}</text>
+    <view wx:if="{{conflicts.length}}" class="qf-card tight">
+      <text class="qf-h2 qf-error">排课冲突</text>
+      <view class="qf-list conflict-list">
+        <view wx:for="{{conflicts}}" wx:key="message" class="qf-list-item">
+          <text class="qf-tag danger">{{item.label}}</text>
+          <text class="qf-muted">{{item.message}}</text>
+        </view>
       </view>
     </view>
-  </view>
 
-  <qf-role-tabbar role="admin" current="/pages/admin/schedule-board/schedule-board"></qf-role-tabbar>
+    <view class="qf-section">现有排课</view>
+    <view class="qf-card tight">
+      <view class="qf-list">
+        <view wx:for="{{bootstrap.courseSessions}}" wx:key="id" class="qf-list-item">
+          <text class="qf-h3">{{item.courseName}} · {{item.sessionTitle}}</text>
+          <text class="qf-muted">{{item.displayTitle}}</text>
+          <text class="qf-muted">{{item.date}} {{item.startTime}}-{{item.endTime}} · {{item.teacherName}} · {{item.classroomName}}</text>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <qf-role-tabbar role="admin" current="/pages/admin/schedule-board/schedule-board" fixed="{{false}}"></qf-role-tabbar>
 </view>

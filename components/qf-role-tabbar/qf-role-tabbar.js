@@ -27,6 +27,10 @@ Component({
     current: {
       type: String,
       value: ''
+    },
+    fixed: {
+      type: Boolean,
+      value: true
     }
   },
 

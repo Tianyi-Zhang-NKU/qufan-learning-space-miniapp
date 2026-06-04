@@ -30,6 +30,10 @@ Page({
       .catch((error) => Notice.alert(error.message || '个人信息加载失败'));
   },
 
+  goWrongBook() {
+    wx.navigateTo({ url: '/pages/parent/exercises/exercises?all=1' });
+  },
+
   logout() {
     Api.logout().then(() => {
       getApp().clearSession();

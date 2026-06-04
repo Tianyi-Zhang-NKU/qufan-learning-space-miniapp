@@ -1,32 +1,16 @@
-.child-row {
-  margin-top: 18rpx;
-}
+/* ============================================
+   Student Home Page — 课程卡片首页
+   ============================================ */
 
-.course-action {
-  margin-top: 16rpx;
-}
-
-.parent-hero,
-.home-summary-strip,
-.home-action-list,
-.parent-panel {
-  max-width: 620rpx;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.parent-hero {
-  margin-bottom: 42rpx;
-  padding: 48rpx 42rpx;
-}
-
+/* Summary strip — quick stats */
 .home-summary-strip {
   position: relative;
   z-index: 1;
   display: flex;
   align-items: stretch;
-  margin-bottom: 52rpx;
-  padding: 28rpx 18rpx;
+  max-width: 620rpx;
+  margin: 0 auto 44rpx;
+  padding: 28rpx 16rpx;
   border: 1rpx solid rgba(83, 117, 91, 0.18);
   border-radius: 32rpx;
   background:
@@ -40,7 +24,7 @@
 .home-summary-item {
   flex: 1;
   min-width: 0;
-  padding: 0 12rpx;
+  padding: 0 10rpx;
   text-align: center;
 }
 
@@ -51,108 +35,205 @@
 .home-summary-value {
   display: block;
   color: #173a32;
-  font-size: 34rpx;
+  font-size: 32rpx;
   font-weight: 700;
   line-height: 1;
 }
 
 .home-summary-label {
   display: block;
-  margin-top: 12rpx;
+  margin-top: 10rpx;
   color: rgba(45, 75, 64, 0.66);
-  font-size: 21rpx;
+  font-size: 20rpx;
   line-height: 1.25;
 }
 
-.home-action-list {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24rpx;
-  margin-bottom: 56rpx;
+/* Course list */
+.course-list {
+  max-width: 620rpx;
+  margin: 0 auto;
 }
 
-.home-action-card {
+/* Course card */
+.course-card {
+  margin-bottom: 34rpx;
+  padding: 38rpx 36rpx;
+}
+
+.course-header {
+  margin-bottom: 28rpx;
+}
+
+.course-title-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  flex-wrap: wrap;
+}
+
+.course-name {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #173a32;
+  line-height: 1.25;
+}
+
+.course-grade {
+  display: block;
+  margin-top: 8rpx;
+  color: rgba(45, 75, 64, 0.58);
+  font-size: 23rpx;
+}
+
+/* Course info rows */
+.course-info {
+  margin-bottom: 22rpx;
+  padding: 22rpx 24rpx;
+  border-radius: 20rpx;
+  background: rgba(255, 255, 255, 0.48);
+  border: 1rpx solid rgba(83, 117, 91, 0.12);
+}
+
+.course-info-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 10rpx 0;
+}
+
+.course-info-row + .course-info-row {
+  border-top: 1rpx solid rgba(83, 117, 91, 0.08);
+}
+
+.course-info-icon {
+  flex-shrink: 0;
+  font-size: 26rpx;
+}
+
+.course-info-label {
+  flex-shrink: 0;
+  color: rgba(45, 75, 64, 0.58);
+  font-size: 23rpx;
+  min-width: 120rpx;
+}
+
+.course-info-value {
+  flex: 1;
+  min-width: 0;
+  color: #173a32;
+  font-size: 24rpx;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: right;
+}
+
+/* Schedule lines */
+.course-schedule {
+  margin-bottom: 28rpx;
+}
+
+.schedule-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 14rpx;
+  padding: 8rpx 0;
+}
+
+.schedule-dot {
+  flex-shrink: 0;
+  width: 12rpx;
+  height: 12rpx;
+  margin-top: 10rpx;
+  border-radius: 50%;
+  background: #f97316;
+  box-shadow: 0 0 0 4rpx rgba(249, 115, 22, 0.16);
+}
+
+.schedule-text {
+  flex: 1;
+  color: rgba(45, 75, 64, 0.72);
+  font-size: 23rpx;
+  line-height: 1.45;
+}
+
+/* Action buttons row */
+.course-actions {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 6rpx;
+}
+
+.test-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  min-height: 86rpx;
+  padding: 18rpx 22rpx;
+  border-radius: 22rpx;
+  font-weight: 700;
+  font-size: 26rpx;
+  color: #fff9ec;
+  border: 0;
+  box-shadow: 0 16rpx 34rpx rgba(234, 88, 12, 0.28);
+  background:
+    linear-gradient(145deg, #fb923c, #ea580c),
+    #f97316;
+}
+
+.test-btn:active {
+  background:
+    linear-gradient(145deg, #ea580c, #c2410c),
+    #ea580c;
+  transform: scale(0.97);
+}
+
+.pre-test-btn {
+  background:
+    linear-gradient(145deg, #fb923c, #ea580c),
+    #f97316;
+}
+
+.post-test-btn {
+  background:
+    linear-gradient(145deg, #4f8c6c, #2d5a3f),
+    #3d6b4f;
+  box-shadow: 0 16rpx 34rpx rgba(45, 90, 63, 0.28);
+}
+
+.post-test-btn:active {
+  background:
+    linear-gradient(145deg, #2d5a3f, #1a3d2a),
+    #2d5a3f;
+}
+
+.test-btn-icon {
+  flex-shrink: 0;
+  font-size: 32rpx;
+}
+
+.test-btn-text {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  justify-content: center;
-  min-height: 154rpx;
-  padding: 30rpx 26rpx;
-  text-align: left;
-  border: 2rpx solid rgba(83, 117, 91, 0.22);
-  border-radius: 30rpx;
-  color: #173a32;
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.78), rgba(255, 247, 232, 0.46)),
-    rgba(255, 250, 238, 0.66);
-  -webkit-backdrop-filter: blur(24rpx);
-  backdrop-filter: blur(24rpx);
-  box-shadow: 0 18rpx 48rpx rgba(74, 92, 68, 0.18);
-}
-
-.home-action-card.active {
-  color: #fff9ec;
-  border-color: rgba(234, 88, 12, 0.42);
-  background:
-    linear-gradient(145deg, #f97316, #d95b11),
-    #f97316;
-  box-shadow: 0 24rpx 58rpx rgba(249, 115, 22, 0.38);
-}
-
-.home-action-copy {
-  flex: 1;
   min-width: 0;
 }
 
-.home-action-card .qf-entry-title {
-  font-size: 30rpx;
+.test-btn-title {
+  font-size: 26rpx;
+  font-weight: 700;
 }
 
-.home-action-card .qf-entry-sub {
-  margin-top: 12rpx;
-  font-size: 22rpx;
+.test-btn-sub {
+  margin-top: 4rpx;
+  font-size: 20rpx;
+  font-weight: 400;
+  opacity: 0.82;
 }
 
-.home-action-card.active .qf-entry-sub {
-  color: rgba(255, 249, 236, 0.78);
-}
-
-.home-action-chip {
-  flex: 0 0 auto;
-  margin-top: 20rpx;
-  min-width: 82rpx;
-  min-height: 48rpx;
-  padding: 0 18rpx;
-  border: 1rpx solid rgba(31, 74, 64, 0.14);
-  border-radius: 999rpx;
-  color: rgba(45, 75, 64, 0.74);
-  font-size: 21rpx;
-  font-weight: 600;
-  line-height: 48rpx;
-  text-align: center;
-  background: rgba(255, 255, 255, 0.58);
-}
-
-.home-action-card.active .home-action-chip {
-  color: #fff9ec;
-  border-color: rgba(255, 249, 236, 0.32);
-  background: rgba(255, 249, 236, 0.14);
-}
-
-.parent-panel .qf-section {
-  margin-top: 0;
-}
-
-.parent-panel .qf-card.tight {
-  padding: 36rpx;
-}
-
-.parent-panel .qf-btn.full {
-  margin-top: 28rpx;
-}
-
-.home-week-scroll {
-  margin-bottom: 28rpx;
+/* Empty state tweaks */
+.qf-empty {
+  max-width: 620rpx;
+  margin: 0 auto;
 }

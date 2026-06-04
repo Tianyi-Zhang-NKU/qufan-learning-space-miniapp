@@ -1,5 +1,6 @@
 .home-screen {
   padding-top: 54rpx;
+  padding-bottom: 200rpx;
 }
 
 .small-ghost {

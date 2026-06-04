@@ -1,3 +1,4 @@
 {
-  "navigationBarTitleText": "我的学习"
+  "navigationBarTitleText": "我的学习",
+  "disableScroll": true
 }

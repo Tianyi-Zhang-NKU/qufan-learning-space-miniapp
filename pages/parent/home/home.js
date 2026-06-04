@@ -2,47 +2,12 @@ const Api = require('../../../services/api');
 const Guard = require('../../../utils/page-guard');
 const Notice = require('../../../utils/notice');
 
-const WEEK_DAYS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-
-function dayIndex(date) {
-  const day = new Date(`${date}T00:00:00`).getDay();
-  return day === 0 ? 6 : day - 1;
-}
-
-function buildWeekRows(courses) {
-  const sessions = (courses || []).flatMap((course) => (course.sessions || []).map((session) => ({
-    id: session.id,
-    date: session.date,
-    day: dayIndex(session.date),
-    time: `${session.startTime}-${session.endTime}`,
-    courseName: course.name,
-    lesson: session.sessionTitle || session.displayTitle,
-    classroom: session.classroomName || course.classroomName || '待定教室',
-    feedbackCount: session.feedbackCount || 0
-  })));
-  const slots = Array.from(new Set(sessions.map((item) => item.time))).sort();
-  return slots.map((slot) => ({
-    time: slot,
-    cells: WEEK_DAYS.map((dayName, day) => ({
-      day: dayName,
-      sessions: sessions.filter((item) => item.time === slot && item.day === day)
-    }))
-  }));
-}
-
 Page({
   data: {
     session: {},
-    dashboard: {
-      currentStudent: {},
-      metrics: [],
-      courses: [],
-      todayCourses: [],
-      recentFeedbacks: []
-    },
-    weekDays: WEEK_DAYS,
-    weekRows: [],
-    activePanel: 'feedback'
+    studentName: '',
+    courses: [],
+    loading: true
   },
 
   onShow() {
@@ -53,31 +18,101 @@ Page({
   },
 
   load() {
+    this.setData({ loading: true });
     Api.getStudentDashboard()
-      .then((dashboard) => this.setData({
-        dashboard,
-        weekRows: buildWeekRows(dashboard.courses)
-      }))
-      .catch((error) => Notice.alert(error.message || '首页加载失败'));
+      .then((dashboard) => {
+        const courses = (dashboard.courses || []).map((course) =>
+          this.buildCourseCard(course)
+        );
+        this.setData({
+          studentName: (dashboard.currentStudent || {}).name || (dashboard.currentChild || {}).name || '',
+          courses,
+          loading: false
+        });
+      })
+      .catch((error) => {
+        this.setData({ loading: false });
+        Notice.alert(error.message || '首页加载失败');
+      });
   },
 
-  goCourses() {
-    wx.redirectTo({ url: '/pages/parent/courses/courses' });
+  buildCourseCard(course) {
+    const sessions = (course.sessions || []).sort(
+      (a, b) => a.sessionIndex - b.sessionIndex
+    );
+
+    // Gather unique session time slots as a readable string
+    const scheduleLines = sessions.map((s) => {
+      const date = s.date || '';
+      const time = s.startTime && s.endTime ? `${s.startTime}-${s.endTime}` : '';
+      return date && time ? `${date} ${time}` : date || time || '';
+    }).filter(Boolean);
+
+    const nextSession = sessions.find((s) => s.status === 'scheduled') || sessions[sessions.length - 1] || {};
+    const classroomName = nextSession.classroomName || course.classroomName || '待定教室';
+    const teacherName = course.teacherName || '';
+
+    // Pre/post test assignment counts by session
+    const sessionTests = sessions.map((s) => {
+      const preTests = (course.assignments || []).filter(
+        (a) => a.courseSessionId === s.id && a.type === 'pre'
+      );
+      const postTests = (course.assignments || []).filter(
+        (a) => a.courseSessionId === s.id && a.type === 'post'
+      );
+      return {
+        sessionId: s.id,
+        sessionTitle: s.sessionTitle || s.displayTitle || `第${s.sessionIndex}次课`,
+        sessionIndex: s.sessionIndex,
+        date: s.date,
+        time: s.startTime ? `${s.startTime}-${s.endTime}` : '',
+        preCount: preTests.length,
+        postCount: postTests.length
+      };
+    });
+
+    const totalPreCount = sessionTests.reduce((sum, s) => sum + s.preCount, 0);
+    const totalPostCount = sessionTests.reduce((sum, s) => sum + s.postCount, 0);
+
+    return {
+      id: course.id,
+      name: course.name,
+      subject: course.subject || '',
+      grade: course.grade || '',
+      teacherName,
+      classroomName,
+      scheduleLines,
+      nextSessionTime: nextSession.startTime
+        ? `${nextSession.date || ''} ${nextSession.startTime}-${nextSession.endTime || ''}`
+        : '',
+      sessionCount: sessions.length,
+      sessionTests,
+      totalPreCount,
+      totalPostCount
+    };
   },
 
-  goFeedbacks() {
-    wx.redirectTo({ url: '/pages/parent/exercises/exercises' });
+  // Navigate to pre-test list for this course
+  goPreTests(event) {
+    const courseId = event.currentTarget.dataset.id;
+    wx.navigateTo({
+      url: `/pages/parent/exercises/exercises?courseId=${courseId}&type=pre`
+    });
   },
 
-  goSession(event) {
-    wx.navigateTo({ url: `/pages/course-detail/course-detail?id=${event.currentTarget.dataset.id}` });
+  // Navigate to post-test list for this course
+  goPostTests(event) {
+    const courseId = event.currentTarget.dataset.id;
+    wx.navigateTo({
+      url: `/pages/parent/exercises/exercises?courseId=${courseId}&type=post`
+    });
   },
 
-  goLive(event) {
-    wx.navigateTo({ url: `/pages/live-player/live-player?id=${event.currentTarget.dataset.id}` });
-  },
-
-  setPanel(event) {
-    this.setData({ activePanel: event.currentTarget.dataset.panel });
+  // Navigate to course detail
+  goCourseDetail(event) {
+    const courseId = event.currentTarget.dataset.id;
+    wx.navigateTo({
+      url: `/pages/course-detail/course-detail?courseId=${courseId}`
+    });
   }
 });

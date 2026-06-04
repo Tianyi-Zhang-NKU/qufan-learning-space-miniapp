@@ -1,3 +1,571 @@
-.filter-row {
-  margin-top: 18rpx;
+/* ================================================================
+   Exercises / 反馈 Page — 课程错题 + 课前/课后测
+   ================================================================ */
+
+/* ---- Shared layout ---- */
+.content-area {
+  max-width: 620rpx;
+  margin: 0 auto;
+}
+
+/* ---- Shared meta row ---- */
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 10rpx 0;
+}
+
+.meta-row + .meta-row {
+  border-top: 1rpx solid rgba(83, 117, 91, 0.08);
+}
+
+.meta-icon {
+  flex-shrink: 0;
+  font-size: 26rpx;
+}
+
+.meta-text {
+  flex: 1;
+  min-width: 0;
+  color: #173a32;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+/* ---- Shared empty ---- */
+.records-empty {
+  padding: 28rpx 20rpx;
+  border-radius: 18rpx;
+  border: 1rpx dashed rgba(83, 117, 91, 0.16);
+  background: rgba(255, 255, 255, 0.32);
+  text-align: center;
+}
+
+.records-empty > text {
+  display: block;
+  color: rgba(45, 75, 64, 0.42);
+  font-size: 23rpx;
+  line-height: 1.5;
+}
+
+/* ---- Shared tag ---- */
+.detail-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 20rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+}
+
+.detail-tag.ok {
+  color: #14532d;
+  border: 1rpx solid rgba(22, 163, 74, 0.18);
+  background: rgba(187, 247, 208, 0.5);
+}
+
+.detail-tag.muted {
+  color: #506157;
+  border: 1rpx solid rgba(83, 117, 91, 0.14);
+  background: rgba(226, 232, 222, 0.5);
+}
+
+/* ================================================================
+   Mode 1: Course List — 反馈首页
+   ================================================================ */
+
+.course-entry-card {
+  margin-bottom: 30rpx;
+  padding: 34rpx 32rpx;
+}
+
+.course-entry-header {
+  margin-bottom: 22rpx;
+}
+
+.course-entry-title-row {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  flex-wrap: wrap;
+}
+
+.course-entry-name {
+  font-size: 33rpx;
+  font-weight: 700;
+  color: #173a32;
+  line-height: 1.25;
+}
+
+.course-entry-grade {
+  display: block;
+  margin-top: 8rpx;
+  color: rgba(45, 75, 64, 0.58);
+  font-size: 23rpx;
+}
+
+.course-entry-meta {
+  margin-bottom: 20rpx;
+  padding: 16rpx 22rpx;
+  border-radius: 18rpx;
+  background: rgba(255, 255, 255, 0.44);
+  border: 1rpx solid rgba(83, 117, 91, 0.1);
+}
+
+.course-entry-sessions {
+  margin-bottom: 20rpx;
+}
+
+.session-preview-item {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  padding: 12rpx 0;
+}
+
+.session-preview-item + .session-preview-item {
+  border-top: 1rpx solid rgba(83, 117, 91, 0.08);
+}
+
+.session-preview-dot {
+  flex-shrink: 0;
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: #f97316;
+  box-shadow: 0 0 0 4rpx rgba(249, 115, 22, 0.14);
+}
+
+.session-preview-label {
+  flex: 1;
+  min-width: 0;
+  color: #173a32;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.session-preview-date {
+  flex-shrink: 0;
+  color: rgba(45, 75, 64, 0.5);
+  font-size: 21rpx;
+}
+
+.session-preview-count {
+  flex-shrink: 0;
+  color: rgba(45, 75, 64, 0.42);
+  font-size: 21rpx;
+  padding: 4rpx 14rpx;
+  border-radius: 999rpx;
+  background: rgba(83, 117, 91, 0.06);
+}
+
+.session-preview-count.has-records {
+  color: #14532d;
+  background: rgba(187, 247, 208, 0.44);
+}
+
+.course-entry-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16rpx;
+  border-top: 1rpx solid rgba(83, 117, 91, 0.1);
+}
+
+.course-entry-total {
+  color: #f97316;
+  font-size: 23rpx;
+  font-weight: 600;
+}
+
+.course-entry-total.muted {
+  color: rgba(45, 75, 64, 0.42);
+  font-weight: 400;
+}
+
+.course-entry-arrow {
+  color: rgba(45, 75, 64, 0.3);
+  font-size: 36rpx;
+  font-weight: 300;
+}
+
+/* ================================================================
+   Mode 2: Session List — 课次列表（可点击）
+   ================================================================ */
+
+.session-entry-card {
+  margin-bottom: 30rpx;
+  padding: 34rpx 32rpx;
+}
+
+.session-entry-header {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  margin-bottom: 10rpx;
+}
+
+.session-entry-index {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #173a32;
+}
+
+.session-entry-badge {
+  font-size: 21rpx;
+  color: #fff9ec;
+  padding: 6rpx 18rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(145deg, #f97316, #ea580c);
+  font-weight: 600;
+}
+
+.session-entry-title {
+  display: block;
+  color: rgba(45, 75, 64, 0.64);
+  font-size: 24rpx;
+  margin-bottom: 18rpx;
+}
+
+.session-entry-meta {
+  margin-bottom: 18rpx;
+  padding: 16rpx 22rpx;
+  border-radius: 18rpx;
+  background: rgba(255, 255, 255, 0.44);
+  border: 1rpx solid rgba(83, 117, 91, 0.1);
+}
+
+.session-entry-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16rpx;
+  border-top: 1rpx solid rgba(83, 117, 91, 0.1);
+}
+
+.session-entry-count {
+  color: rgba(45, 75, 64, 0.42);
+  font-size: 23rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 999rpx;
+  background: rgba(83, 117, 91, 0.06);
+}
+
+.session-entry-count.has-records {
+  color: #f97316;
+  font-weight: 600;
+  background: rgba(249, 115, 22, 0.1);
+}
+
+.session-entry-arrow {
+  color: rgba(45, 75, 64, 0.3);
+  font-size: 36rpx;
+  font-weight: 300;
+}
+
+/* ================================================================
+   Mode 3: Single-session Records — 仅本次课错题
+   ================================================================ */
+
+.session-info-card {
+  margin-bottom: 8rpx;
+  padding: 30rpx 32rpx;
+}
+
+.session-info-title {
+  display: block;
+  color: #173a32;
+  font-size: 28rpx;
+  font-weight: 700;
+  margin-bottom: 16rpx;
+}
+
+.session-info-rows {
+  padding: 14rpx 20rpx;
+  border-radius: 18rpx;
+  background: rgba(255, 255, 255, 0.44);
+  border: 1rpx solid rgba(83, 117, 91, 0.1);
+}
+
+/* Records list — single session only */
+.records-single-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.record-detail-card {
+  margin-bottom: 0;
+  padding: 28rpx 30rpx;
+}
+
+.record-detail-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14rpx;
+}
+
+.record-detail-date {
+  color: rgba(45, 75, 64, 0.5);
+  font-size: 21rpx;
+}
+
+.record-detail-teacher {
+  color: rgba(45, 75, 64, 0.6);
+  font-size: 21rpx;
+  font-weight: 600;
+}
+
+.record-detail-text {
+  display: block;
+  color: #1f352e;
+  font-size: 26rpx;
+  line-height: 1.6;
+  margin-bottom: 12rpx;
+}
+
+.record-detail-tags {
+  display: flex;
+  gap: 12rpx;
+  flex-wrap: wrap;
+  margin-bottom: 14rpx;
+}
+
+.record-detail-tags .detail-tag {
+  color: rgba(45, 75, 64, 0.62);
+  font-size: 20rpx;
+  padding: 6rpx 14rpx;
+  border-radius: 999rpx;
+  border: 1rpx solid rgba(83, 117, 91, 0.12);
+  background: rgba(255, 255, 255, 0.44);
+}
+
+.record-detail-media {
+  display: flex;
+  gap: 12rpx;
+  flex-wrap: wrap;
+  margin-top: 6rpx;
+}
+
+.media-btn {
+  min-height: 60rpx;
+  font-size: 22rpx;
+}
+
+/* ================================================================
+   Mode 5: All Records — 我的错题本
+   ================================================================ */
+
+.all-course-header {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  margin: 36rpx 0 20rpx;
+}
+
+.all-course-header:first-child {
+  margin-top: 8rpx;
+}
+
+.all-course-name {
+  flex-shrink: 0;
+  color: #fff9ec;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.all-course-divider {
+  flex: 1;
+  height: 1rpx;
+  background: rgba(255, 249, 236, 0.16);
+}
+
+.all-session-card {
+  margin-bottom: 22rpx;
+  padding: 28rpx 30rpx;
+}
+
+.all-session-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18rpx;
+  padding-bottom: 14rpx;
+  border-bottom: 1rpx solid rgba(83, 117, 91, 0.12);
+}
+
+.all-session-title {
+  color: #173a32;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.all-session-count {
+  color: #f97316;
+  font-size: 21rpx;
+  font-weight: 600;
+  padding: 4rpx 14rpx;
+  border-radius: 999rpx;
+  background: rgba(249, 115, 22, 0.1);
+}
+
+.all-records-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+}
+
+.all-record-item {
+  padding: 20rpx;
+  border-radius: 16rpx;
+  border: 1rpx solid rgba(83, 117, 91, 0.1);
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.all-record-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10rpx;
+}
+
+.all-record-date {
+  color: rgba(45, 75, 64, 0.5);
+  font-size: 21rpx;
+}
+
+.all-record-teacher {
+  color: rgba(45, 75, 64, 0.6);
+  font-size: 21rpx;
+  font-weight: 600;
+}
+
+.all-record-text {
+  display: block;
+  color: #1f352e;
+  font-size: 25rpx;
+  line-height: 1.55;
+  margin-bottom: 8rpx;
+}
+
+.all-record-tags {
+  display: flex;
+  gap: 10rpx;
+  flex-wrap: wrap;
+  margin-bottom: 8rpx;
+}
+
+.all-record-media {
+  display: flex;
+  gap: 10rpx;
+  flex-wrap: wrap;
+  margin-top: 6rpx;
+}
+
+/* ================================================================
+   Mode 4: Test List — 课前测 / 课后测
+   ================================================================ */
+
+.test-session-card {
+  margin-bottom: 30rpx;
+  padding: 34rpx 32rpx;
+}
+
+.test-session-header {
+  margin-bottom: 20rpx;
+  padding-bottom: 16rpx;
+  border-bottom: 1rpx solid rgba(83, 117, 91, 0.14);
+}
+
+.test-session-title-row {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  margin-bottom: 8rpx;
+}
+
+.test-session-index {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #173a32;
+}
+
+.test-session-label {
+  font-size: 21rpx;
+  color: #fff9ec;
+  padding: 6rpx 18rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(145deg, #f97316, #ea580c);
+  font-weight: 600;
+}
+
+.test-session-name {
+  display: block;
+  color: rgba(45, 75, 64, 0.64);
+  font-size: 24rpx;
+}
+
+.test-session-info {
+  margin-bottom: 20rpx;
+  padding: 14rpx 20rpx;
+  border-radius: 18rpx;
+  background: rgba(255, 255, 255, 0.44);
+  border: 1rpx solid rgba(83, 117, 91, 0.1);
+}
+
+.test-records {
+  margin-top: 6rpx;
+}
+
+.test-records-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+}
+
+.test-record-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  padding: 20rpx 22rpx;
+  border-radius: 18rpx;
+  border: 1rpx solid rgba(234, 88, 12, 0.16);
+  background:
+    linear-gradient(145deg, rgba(255, 237, 213, 0.52), rgba(255, 255, 255, 0.38)),
+    rgba(255, 247, 232, 0.44);
+}
+
+.test-record-left {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.test-record-title {
+  color: #173a32;
+  font-size: 25rpx;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.test-record-meta {
+  margin-top: 6rpx;
+  color: rgba(45, 75, 64, 0.56);
+  font-size: 21rpx;
+}
+
+.test-record-right {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.test-record-arrow {
+  color: rgba(45, 75, 64, 0.34);
+  font-size: 32rpx;
+  font-weight: 300;
 }

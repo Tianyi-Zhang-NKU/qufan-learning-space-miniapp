@@ -1,4 +1,4 @@
-<view class="qf-role-tabbar">
+<view class="qf-role-tabbar {{fixed ? '' : 'inline'}}">
   <view class="qf-tab-slider" style="{{sliderStyle}}"></view>
   <view
     wx:for="{{list}}"

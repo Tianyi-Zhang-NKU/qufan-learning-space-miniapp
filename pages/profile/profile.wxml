@@ -1,37 +1,49 @@
-<view class="qf-page profile-page">
+<view class="qf-page qf-page-fixed">
   <z-bg mode="dark"></z-bg>
-  <view class="qf-top">
-    <view class="qf-brand">
-      <text class="qf-brand-title">个人中心</text>
-      <text class="qf-brand-sub">{{session.displayName}} · {{roleName}}</text>
-    </view>
-  </view>
 
-  <view class="qf-card qf-hero profile-hero">
-    <text class="qf-h2">{{session.displayName}}</text>
-    <text class="qf-muted">登录手机号：{{session.phone}}</text>
-    <text class="qf-muted">当前身份：{{roleName}}</text>
-  </view>
-
-  <view class="qf-section">账号信息</view>
-  <view class="qf-card tight profile-card">
-    <view class="qf-list">
-      <view wx:if="{{session.role === 'parent'}}" class="qf-list-item">
-        <text class="qf-h3">绑定学生</text>
-        <text class="qf-muted">{{profile.name}} · {{profile.grade}}</text>
-      </view>
-      <view wx:if="{{session.role === 'teacher'}}" class="qf-list-item">
-        <text class="qf-h3">负责学科</text>
-        <text class="qf-muted">{{profile.subject}}</text>
-      </view>
-      <view wx:if="{{session.role === 'admin'}}" class="qf-list-item">
-        <text class="qf-h3">管理身份</text>
-        <text class="qf-muted">{{profile.roleTitle}}</text>
+  <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
+    <view class="qf-top">
+      <view class="qf-brand">
+        <text class="qf-brand-title">个人中心</text>
+        <text class="qf-brand-sub">{{session.displayName}} · {{roleName}}</text>
       </view>
     </view>
-  </view>
 
-  <button class="qf-btn ghost full profile-logout" bindtap="logout">退出登录</button>
+    <view class="qf-card qf-hero profile-hero">
+      <text class="qf-h2">{{session.displayName}}</text>
+      <text class="qf-muted">登录手机号：{{session.phone}}</text>
+      <text class="qf-muted">当前身份：{{roleName}}</text>
+    </view>
 
-  <qf-role-tabbar role="{{session.role}}" current="/pages/profile/profile"></qf-role-tabbar>
+    <!-- 我的错题本 — 仅学生/家长端显示 -->
+    <view wx:if="{{session.role === 'parent'}}" class="qf-section">学习工具</view>
+    <view wx:if="{{session.role === 'parent'}}" class="qf-grid profile-actions">
+      <view class="qf-entry-card" bindtap="goWrongBook">
+        <text class="qf-entry-title">📖 我的错题本</text>
+        <text class="qf-entry-sub">审阅全部课程错题记录</text>
+      </view>
+    </view>
+
+    <view class="qf-section">账号信息</view>
+    <view class="qf-card tight profile-card">
+      <view class="qf-list">
+        <view wx:if="{{session.role === 'parent'}}" class="qf-list-item">
+          <text class="qf-h3">绑定学生</text>
+          <text class="qf-muted">{{profile.name}} · {{profile.grade}}</text>
+        </view>
+        <view wx:if="{{session.role === 'teacher'}}" class="qf-list-item">
+          <text class="qf-h3">负责学科</text>
+          <text class="qf-muted">{{profile.subject}}</text>
+        </view>
+        <view wx:if="{{session.role === 'admin'}}" class="qf-list-item">
+          <text class="qf-h3">管理身份</text>
+          <text class="qf-muted">{{profile.roleTitle}}</text>
+        </view>
+      </view>
+    </view>
+
+    <button class="qf-btn ghost full profile-logout" bindtap="logout">退出登录</button>
+  </scroll-view>
+
+  <qf-role-tabbar role="{{session.role}}" current="/pages/profile/profile" fixed="{{false}}"></qf-role-tabbar>
 </view>

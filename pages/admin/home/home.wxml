@@ -1,66 +1,69 @@
-<view class="qf-page admin-home">
+<view class="qf-page qf-page-fixed admin-home">
   <z-bg mode="dark"></z-bg>
-  <view class="qf-top">
-    <view class="qf-brand">
-      <text class="qf-brand-title">管理首页</text>
-      <text class="qf-brand-sub">课程关系、反馈和直播配置一屏入口化</text>
+
+  <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
+    <view class="qf-top">
+      <view class="qf-brand">
+        <text class="qf-brand-title">管理首页</text>
+        <text class="qf-brand-sub">课程关系、反馈和直播配置一屏入口化</text>
+      </view>
+      <button class="qf-btn ghost small" bindtap="goManage">数据管理</button>
     </view>
-    <button class="qf-btn ghost small" bindtap="goManage">数据管理</button>
-  </view>
 
-  <view class="qf-card qf-hero admin-hero">
-    <text class="qf-h2">先看概览，再进细节</text>
-    <text class="qf-muted">减少管理端信息密度，保留课程、手机号、反馈、直播四类入口。</text>
-  </view>
-
-  <view class="qf-grid">
-    <view wx:for="{{overview.metrics}}" wx:key="label" class="qf-metric">
-      <text class="qf-metric-value">{{item.value}}</text>
-      <text class="qf-metric-label">{{item.label}}</text>
+    <view class="qf-card qf-hero admin-hero">
+      <text class="qf-h2">先看概览，再进细节</text>
+      <text class="qf-muted">减少管理端信息密度，保留课程、手机号、反馈、直播四类入口。</text>
     </view>
-  </view>
 
-  <view class="qf-entry-grid admin-entry-grid">
-    <button class="qf-entry-card {{activePanel === 'courses' ? 'active' : ''}}" data-panel="courses" bindtap="setPanel">
-      <text class="qf-entry-title">课程关系</text>
-      <text class="qf-entry-sub">老师 / 学生 / 反馈数</text>
-    </button>
-    <button class="qf-entry-card" bindtap="goManage">
-      <text class="qf-entry-title">教室关系</text>
-      <text class="qf-entry-sub">进入数据管理查看</text>
-    </button>
-    <button class="qf-entry-card {{activePanel === 'live' ? 'active' : ''}}" data-panel="live" bindtap="setPanel">
-      <text class="qf-entry-title">直播配置</text>
-      <text class="qf-entry-sub">15 间教室占位</text>
-    </button>
-    <button class="qf-entry-card" bindtap="goManage">
-      <text class="qf-entry-title">完整数据</text>
-      <text class="qf-entry-sub">进入管理面板</text>
-    </button>
-  </view>
+    <view class="qf-grid">
+      <view wx:for="{{overview.metrics}}" wx:key="label" class="qf-metric">
+        <text class="qf-metric-value">{{item.value}}</text>
+        <text class="qf-metric-label">{{item.label}}</text>
+      </view>
+    </view>
 
-  <view wx:if="{{activePanel === 'courses'}}" class="qf-panel">
-    <view class="qf-section">课程关系总览</view>
-    <view class="qf-card tight admin-loose-card">
-      <view wx:if="{{overview.relationOverview.length}}" class="qf-list">
-        <view wx:for="{{overview.relationOverview}}" wx:key="courseId" class="qf-list-item">
-          <text class="qf-h3">{{item.courseName}}</text>
-          <text class="qf-muted">{{item.teacherName}} · {{item.classroomName}}</text>
-          <text class="qf-text">学生 {{item.studentCount}} 人 · 手机号映射 {{item.phoneAccountCount}} 个 · 反馈 {{item.feedbackCount}} 条</text>
+    <view class="qf-entry-grid admin-entry-grid">
+      <button class="qf-entry-card {{activePanel === 'courses' ? 'active' : ''}}" data-panel="courses" bindtap="setPanel">
+        <text class="qf-entry-title">课程关系</text>
+        <text class="qf-entry-sub">老师 / 学生 / 反馈数</text>
+      </button>
+      <button class="qf-entry-card" bindtap="goManage">
+        <text class="qf-entry-title">教室关系</text>
+        <text class="qf-entry-sub">进入数据管理查看</text>
+      </button>
+      <button class="qf-entry-card {{activePanel === 'live' ? 'active' : ''}}" data-panel="live" bindtap="setPanel">
+        <text class="qf-entry-title">直播配置</text>
+        <text class="qf-entry-sub">15 间教室占位</text>
+      </button>
+      <button class="qf-entry-card" bindtap="goManage">
+        <text class="qf-entry-title">完整数据</text>
+        <text class="qf-entry-sub">进入管理面板</text>
+      </button>
+    </view>
+
+    <view wx:if="{{activePanel === 'courses'}}" class="qf-panel">
+      <view class="qf-section">课程关系总览</view>
+      <view class="qf-card tight admin-loose-card">
+        <view wx:if="{{overview.relationOverview.length}}" class="qf-list">
+          <view wx:for="{{overview.relationOverview}}" wx:key="courseId" class="qf-list-item">
+            <text class="qf-h3">{{item.courseName}}</text>
+            <text class="qf-muted">{{item.teacherName}} · {{item.classroomName}}</text>
+            <text class="qf-text">学生 {{item.studentCount}} 人 · 手机号映射 {{item.phoneAccountCount}} 个 · 反馈 {{item.feedbackCount}} 条</text>
+          </view>
+        </view>
+        <view wx:else class="qf-empty">暂无课程关系</view>
+      </view>
+    </view>
+
+    <view wx:if="{{activePanel === 'live'}}" class="qf-panel">
+      <view class="qf-section">直播配置状态</view>
+      <view class="qf-card tight admin-loose-card">
+        <view class="qf-wrap live-chip-wrap">
+          <text wx:for="{{overview.liveRooms}}" wx:key="id" class="qf-tag warn">{{item.classroom.name}} ClassIn 待接入</text>
         </view>
       </view>
-      <view wx:else class="qf-empty">暂无课程关系</view>
     </view>
-  </view>
+  </scroll-view>
 
-  <view wx:if="{{activePanel === 'live'}}" class="qf-panel">
-    <view class="qf-section">直播配置状态</view>
-    <view class="qf-card tight admin-loose-card">
-      <view class="qf-wrap live-chip-wrap">
-        <text wx:for="{{overview.liveRooms}}" wx:key="id" class="qf-tag warn">{{item.classroom.name}} ClassIn 待接入</text>
-      </view>
-    </view>
-  </view>
-
-  <qf-role-tabbar role="admin" current="/pages/admin/home/home"></qf-role-tabbar>
+  <qf-role-tabbar role="admin" current="/pages/admin/home/home" fixed="{{false}}"></qf-role-tabbar>
 </view>

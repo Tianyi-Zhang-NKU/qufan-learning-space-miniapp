@@ -988,3 +988,24 @@ navigator {
   color: rgba(45, 75, 64, 0.34);
   font-size: 20rpx;
 }
+
+/* ============================================
+   Fixed bottom tab layout — prevents the
+   role tabbar from scrolling with the page.
+   ============================================ */
+
+/* Each page that embeds qf-role-tabbar must use this root class. */
+.qf-page.qf-page-fixed {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0;  /* tab bar sits in normal flow, no extra padding needed */
+}
+
+/* Scrollable body area — replaces page-level scroll */
+.qf-page-fixed .qf-scroll-body {
+  flex: 1;
+  min-height: 0;
+  padding-bottom: 32rpx;  /* breathing room at bottom of scroll content */
+}

@@ -1,3 +1,4 @@
 {
-  "navigationBarTitleText": "课后反馈"
+  "navigationBarTitleText": "课程错题",
+  "disableScroll": true
 }

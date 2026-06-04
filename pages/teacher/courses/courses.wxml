@@ -1,47 +1,50 @@
-<view class="qf-page">
+<view class="qf-page qf-page-fixed">
   <z-bg mode="dark"></z-bg>
-  <view class="qf-top">
-    <view class="qf-brand">
-      <text class="qf-brand-title">我的课程</text>
-      <text class="qf-brand-sub">{{teacher.name || session.displayName}} · 课程表 / 课次 / 学生 / 反馈</text>
-    </view>
-  </view>
 
-  <view class="qf-card qf-hero">
-    <text class="qf-h2">{{teacher.fullName || teacher.name || session.displayName}}</text>
-    <text class="qf-muted">从课程表进入课次，再在学生名单中上传课后反馈。</text>
-  </view>
-
-  <view class="qf-section">课程表</view>
-  <view class="qf-timetable">
-    <view class="qf-table-row qf-table-head">
-      <view class="qf-table-cell">时间</view>
-      <view class="qf-table-cell">课程 / 课次</view>
-      <view class="qf-table-cell">教室</view>
-    </view>
-    <view wx:for="{{timetableRows}}" wx:key="id" class="qf-table-row" data-id="{{item.id}}" bindtap="goSession">
-      <view class="qf-table-cell">{{item.time}}</view>
-      <view class="qf-table-cell">{{item.courseName}} · {{item.lesson}}</view>
-      <view class="qf-table-cell">{{item.classroom}}</view>
-    </view>
-  </view>
-
-  <view class="qf-section">课程列表</view>
-  <view class="qf-card tight">
-    <view wx:if="{{courseGroups.length}}" class="qf-list">
-      <view wx:for="{{courseGroups}}" wx:key="id" class="qf-list-item">
-        <view class="qf-row">
-          <view>
-            <text class="qf-h3">{{item.name}}</text>
-            <text class="qf-muted">{{item.subject}} · 学生 {{item.studentCount}} 人 · 已上传反馈 {{item.feedbackCount}} 条</text>
-            <text class="qf-muted">最近课次：{{item.recentSessionTitle || '暂无课次'}}</text>
-          </view>
-          <button class="qf-btn ghost small" data-id="{{item.id}}" bindtap="goCourse">进入课程</button>
-        </view>
+  <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
+    <view class="qf-top">
+      <view class="qf-brand">
+        <text class="qf-brand-title">我的课程</text>
+        <text class="qf-brand-sub">{{teacher.name || session.displayName}} · 课程表 / 课次 / 学生 / 反馈</text>
       </view>
     </view>
-    <view wx:else class="qf-empty">暂无课程</view>
-  </view>
 
-  <qf-role-tabbar role="teacher" current="/pages/teacher/courses/courses"></qf-role-tabbar>
+    <view class="qf-card qf-hero">
+      <text class="qf-h2">{{teacher.fullName || teacher.name || session.displayName}}</text>
+      <text class="qf-muted">从课程表进入课次，再在学生名单中上传课后反馈。</text>
+    </view>
+
+    <view class="qf-section">课程表</view>
+    <view class="qf-timetable">
+      <view class="qf-table-row qf-table-head">
+        <view class="qf-table-cell">时间</view>
+        <view class="qf-table-cell">课程 / 课次</view>
+        <view class="qf-table-cell">教室</view>
+      </view>
+      <view wx:for="{{timetableRows}}" wx:key="id" class="qf-table-row" data-id="{{item.id}}" bindtap="goSession">
+        <view class="qf-table-cell">{{item.time}}</view>
+        <view class="qf-table-cell">{{item.courseName}} · {{item.lesson}}</view>
+        <view class="qf-table-cell">{{item.classroom}}</view>
+      </view>
+    </view>
+
+    <view class="qf-section">课程列表</view>
+    <view class="qf-card tight">
+      <view wx:if="{{courseGroups.length}}" class="qf-list">
+        <view wx:for="{{courseGroups}}" wx:key="id" class="qf-list-item">
+          <view class="qf-row">
+            <view>
+              <text class="qf-h3">{{item.name}}</text>
+              <text class="qf-muted">{{item.subject}} · 学生 {{item.studentCount}} 人 · 已上传反馈 {{item.feedbackCount}} 条</text>
+              <text class="qf-muted">最近课次：{{item.recentSessionTitle || '暂无课次'}}</text>
+            </view>
+            <button class="qf-btn ghost small" data-id="{{item.id}}" bindtap="goCourse">进入课程</button>
+          </view>
+        </view>
+      </view>
+      <view wx:else class="qf-empty">暂无课程</view>
+    </view>
+  </scroll-view>
+
+  <qf-role-tabbar role="teacher" current="/pages/teacher/courses/courses" fixed="{{false}}"></qf-role-tabbar>
 </view>
