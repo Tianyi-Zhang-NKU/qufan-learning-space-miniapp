@@ -2,15 +2,13 @@
   <z-bg mode="dark"></z-bg>
 
   <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
-    <!-- 顶部标题 -->
     <view class="qf-top">
       <view class="qf-brand">
-        <text class="qf-brand-title">{{studentName}} · 课后反馈</text>
-        <text class="qf-brand-sub">{{courseName}} · 选择课次填写反馈</text>
+        <text class="qf-brand-title">{{studentName}} · 错题反馈</text>
+        <text class="qf-brand-sub">{{courseName}} · 选择课次和反馈类型</text>
       </view>
     </view>
 
-    <!-- 课次横向滑动导航栏 -->
     <view class="session-nav-wrapper">
       <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="session-nav-scroll">
         <view class="session-nav-inner">
@@ -29,26 +27,36 @@
       </scroll-view>
     </view>
 
-    <!-- 当前课次已有反馈展示 -->
+    <view class="qf-section">反馈类型</view>
+    <view class="feedback-type-switch">
+      <view
+        wx:for="{{feedbackTypes}}"
+        wx:key="value"
+        class="type-pill {{feedbackType === item.value ? 'active' : ''}}"
+        data-type="{{item.value}}"
+        bindtap="selectFeedbackType"
+      >{{item.label}}</view>
+    </view>
+
     <view wx:if="{{existingFeedback}}" class="qf-card existing-feedback">
       <view class="existing-header">
-        <text class="qf-h3">📋 已有反馈</text>
+        <text class="qf-h3">已有{{existingFeedback.feedbackTypeText}}</text>
         <text class="qf-muted">{{existingFeedback.createdAt}}</text>
       </view>
       <text class="existing-text">{{existingFeedback.text}}</text>
-      <view wx:if="{{existingFeedback.imageFiles.length || existingFeedback.voiceFiles.length}}" class="existing-media-tags">
-        <text wx:for="{{existingFeedback.imageFiles}}" wx:key="id" class="media-tag">🖼 图片</text>
-        <text wx:for="{{existingFeedback.voiceFiles}}" wx:key="id" class="media-tag">🎤 语音</text>
+      <view wx:if="{{existingFeedback.imageCount || existingFeedback.videoCount || existingFeedback.voiceCount}}" class="existing-media-tags">
+        <text wx:if="{{existingFeedback.imageCount}}" class="media-tag">图片 {{existingFeedback.imageCount}}</text>
+        <text wx:if="{{existingFeedback.videoCount}}" class="media-tag">视频 {{existingFeedback.videoCount}}</text>
+        <text wx:if="{{existingFeedback.voiceCount}}" class="media-tag">语音 {{existingFeedback.voiceCount}}</text>
       </view>
     </view>
 
-    <!-- 反馈文本输入 -->
-    <view class="qf-section">反馈留言</view>
+    <view class="qf-section">文字说明</view>
     <view class="qf-card tight">
       <textarea
         class="feedback-textarea"
         value="{{feedbackText}}"
-        placeholder="请输入课后反馈内容，如：课堂表现、知识薄弱点、建议等…"
+        placeholder="记录错题原因、讲解重点、学生需要回看的位置等"
         placeholder-style="color: #9aada2;"
         maxlength="2000"
         auto-height
@@ -56,46 +64,54 @@
       ></textarea>
     </view>
 
-    <!-- 图片上传 -->
-    <view class="qf-section">图片上传</view>
+    <view class="qf-section">图片 / 视频</view>
     <view class="qf-card tight">
-      <view wx:if="{{imageFiles.length}}" class="image-preview-list">
-        <view wx:for="{{imageFiles}}" wx:key="id" class="image-preview-item">
+      <view wx:if="{{imageFiles.length || videoFiles.length}}" class="media-preview-list">
+        <view wx:for="{{imageFiles}}" wx:key="id" class="media-preview-item">
           <image wx:if="{{item.tempPath}}" class="preview-thumb" src="{{item.tempPath}}" mode="aspectFill"></image>
-          <view wx:else class="preview-thumb-placeholder">🖼</view>
+          <view wx:else class="preview-thumb-placeholder">图</view>
           <text class="preview-name">{{item.name}}</text>
-          <button class="remove-btn" data-id="{{item.id}}" data-type="image" bindtap="removeMedia">✕</button>
+          <button class="remove-btn" data-id="{{item.id}}" data-type="image" bindtap="removeMedia">×</button>
+        </view>
+        <view wx:for="{{videoFiles}}" wx:key="id" class="media-preview-item">
+          <view class="preview-thumb video-thumb">视频</view>
+          <text class="preview-name">{{item.name}}</text>
+          <button class="remove-btn" data-id="{{item.id}}" data-type="video" bindtap="removeMedia">×</button>
         </view>
       </view>
-      <button class="upload-btn" bindtap="chooseImage">
-        <text class="upload-btn-icon">📷</text>
-        <text>添加图片</text>
+      <button class="upload-btn" bindtap="chooseMedia">
+        <text class="upload-btn-icon">＋</text>
+        <text>添加图片或视频</text>
       </button>
     </view>
 
-    <!-- PDF/Word 文件上传 -->
-    <view class="qf-section">资料文件上传（PDF / Word）</view>
+    <view class="qf-section">语音讲解</view>
     <view class="qf-card tight">
-      <view wx:if="{{attachFiles.length}}" class="file-preview-list">
-        <view wx:for="{{attachFiles}}" wx:key="id" class="file-preview-item">
-          <text class="file-preview-icon">{{item.ext === 'pdf' ? '📄' : '📃'}}</text>
-          <view class="file-preview-info">
-            <text class="file-preview-name">{{item.name}}</text>
-            <text class="file-preview-size">{{item.sizeText}}</text>
+      <view wx:if="{{voiceFiles.length}}" class="voice-preview-list">
+        <view wx:for="{{voiceFiles}}" wx:key="id" class="voice-preview-item">
+          <view class="voice-mark">声</view>
+          <view class="voice-info">
+            <text class="voice-name">{{item.name}}</text>
+            <text class="voice-meta">{{item.duration || 1}} 秒</text>
           </view>
-          <button class="remove-btn" data-id="{{item.id}}" data-type="file" bindtap="removeMedia">✕</button>
+          <button class="remove-btn inline-remove" data-id="{{item.id}}" data-type="voice" bindtap="removeMedia">×</button>
         </view>
       </view>
-      <button class="upload-btn" bindtap="chooseAttachFile">
-        <text class="upload-btn-icon">📎</text>
-        <text>添加 PDF / Word 文件</text>
-      </button>
+      <view class="record-actions">
+        <button wx:if="{{!recording}}" class="upload-btn record-btn" bindtap="startRecord">
+          <text class="upload-btn-icon">●</text>
+          <text>开始录音</text>
+        </button>
+        <button wx:else class="upload-btn record-btn recording" bindtap="stopRecord">
+          <text class="upload-btn-icon">■</text>
+          <text>结束录音</text>
+        </button>
+      </view>
     </view>
 
-    <!-- 提交按钮 -->
     <view class="submit-area">
-      <button class="qf-btn full submit-btn" bindtap="submitFeedback" disabled="{{submitting}}">
-        {{submitting ? '提交中…' : '提交反馈'}}
+      <button class="qf-btn full submit-btn" bindtap="submitFeedback" disabled="{{submitting || recording}}">
+        {{submitting ? '提交中…' : recording ? '录音中，请先结束' : '保存错题反馈'}}
       </button>
     </view>
 

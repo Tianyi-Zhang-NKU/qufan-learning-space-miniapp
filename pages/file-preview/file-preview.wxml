@@ -3,33 +3,48 @@
   <view class="qf-top">
     <view class="qf-brand">
       <text class="qf-brand-title">媒体预览</text>
-      <text class="qf-brand-sub">课后反馈图片 / 语音 / 可选资料</text>
+      <text class="qf-brand-sub">图片 / 视频 / 语音均在小程序内查看</text>
     </view>
   </view>
 
-  <view wx:if="{{preview}}" class="qf-card">
+  <view wx:if="{{preview}}" class="qf-card preview-card">
     <text class="qf-h2">{{preview.file.name}}</text>
     <text class="qf-muted">类型：{{preview.kind}}</text>
     <text class="qf-muted">大小：{{preview.file.size}} bytes</text>
     <view class="qf-divider"></view>
 
-    <view wx:if="{{preview.kind === 'image'}}">
+    <view wx:if="{{preview.kind === 'image'}}" class="preview-block">
       <image wx:if="{{preview.file.previewUrl}}" class="preview-image" mode="widthFix" src="{{preview.file.previewUrl}}"></image>
-      <view wx:else class="qf-empty">当前为 mock 图片，真实部署后显示临时预览地址。</view>
-      <view class="qf-wrap file-actions">
-        <button class="qf-btn" bindtap="previewImage">查看图片</button>
-        <button wx:if="{{preview.downloadable}}" class="qf-btn ghost" bindtap="downloadImage">下载图片</button>
+      <view wx:else class="qf-empty">当前为 mock 图片占位，真实部署后显示临时预览地址。</view>
+      <button class="qf-btn full" bindtap="previewImage">查看大图</button>
+    </view>
+
+    <view wx:elif="{{preview.kind === 'video'}}" class="preview-block">
+      <video
+        wx:if="{{preview.file.previewUrl}}"
+        class="preview-video"
+        src="{{preview.file.previewUrl}}"
+        controls
+        show-center-play-btn
+        show-fullscreen-btn
+      ></video>
+      <view wx:else class="qf-empty">当前为 mock 视频占位，真实部署后在这里直接播放。</view>
+    </view>
+
+    <view wx:elif="{{preview.kind === 'voice'}}" class="preview-block">
+      <view class="voice-panel">
+        <view class="voice-icon">声</view>
+        <view class="voice-copy">
+          <text class="voice-title">语音反馈</text>
+          <text class="voice-sub">不提供下载入口，直接在小程序内播放</text>
+        </view>
       </view>
+      <button class="qf-btn full" bindtap="toggleVoice">{{audioPlaying ? '停止播放' : '播放语音'}}</button>
     </view>
 
-    <view wx:elif="{{preview.kind === 'voice'}}">
-      <view class="qf-empty">语音反馈只能收听，不提供下载入口。</view>
-      <button class="qf-btn full" bindtap="playVoice">播放语音</button>
-    </view>
-
-    <view wx:else>
+    <view wx:else class="preview-block">
       <view class="qf-empty">{{preview.message}}</view>
-      <text class="qf-muted">PDF / Word 仅作为可选资料兼容，不是当前主流程。</text>
+      <text class="qf-muted">可选资料仅保留兼容展示。</text>
     </view>
   </view>
 </view>

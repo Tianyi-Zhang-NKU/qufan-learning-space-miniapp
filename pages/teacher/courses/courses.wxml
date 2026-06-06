@@ -64,19 +64,19 @@
             data-course-id="{{item.courseId}}"
             data-course-name="{{item.courseName}}"
             bindtap="goPreTest"
-          >课前测</button>
+          >课前错题</button>
           <button
             class="qf-btn small test-btn post-test"
             data-course-id="{{item.courseId}}"
             data-course-name="{{item.courseName}}"
             bindtap="goPostTest"
-          >课后测</button>
+          >课后错题</button>
           <button
             class="qf-btn small test-btn feedback-btn-action"
             data-course-id="{{item.courseId}}"
             data-course-name="{{item.courseName}}"
             bindtap="goFeedback"
-          >反馈</button>
+          >课程错题</button>
         </view>
       </view>
     </view>

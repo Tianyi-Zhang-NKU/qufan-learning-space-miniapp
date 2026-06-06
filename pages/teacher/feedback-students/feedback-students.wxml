@@ -5,8 +5,8 @@
     <!-- 顶部标题 -->
     <view class="qf-top">
       <view class="qf-brand">
-        <text class="qf-brand-title">{{courseName}} · 课后反馈</text>
-        <text class="qf-brand-sub">共 {{students.length}} 名学生 · 点击学生进入反馈详情</text>
+        <text class="qf-brand-title">{{courseName}} · {{feedbackTypeLabel}}</text>
+        <text class="qf-brand-sub">共 {{students.length}} 名学生 · 点击学生录入错题反馈</text>
       </view>
     </view>
 
@@ -17,7 +17,7 @@
       <view class="summary-stats">
         <text class="stat-item">📋 {{courseInfo.sessionCount || 0}} 次课</text>
         <text class="stat-item">👥 {{students.length}} 名学生</text>
-        <text class="stat-item">📝 {{totalFeedbackCount}} 条反馈</text>
+        <text class="stat-item">📝 {{totalFeedbackCount}} 条{{feedbackTypeLabel}}</text>
       </view>
     </view>
 
@@ -39,7 +39,7 @@
             </view>
             <view class="student-info">
               <text class="student-name">{{item.name}}</text>
-              <text class="student-meta">{{item.grade || ''}} · 已有 {{item.feedbackCount || 0}} 条反馈</text>
+              <text class="student-meta">{{item.grade || ''}} · 已有 {{item.feedbackCount || 0}} 条{{feedbackTypeLabel}}</text>
             </view>
             <view class="student-arrow">›</view>
           </view>

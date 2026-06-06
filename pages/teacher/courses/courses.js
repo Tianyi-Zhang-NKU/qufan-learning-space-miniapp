@@ -286,19 +286,19 @@ Page({
     });
   },
 
-  /** Navigate to pre-test upload page */
+  /** Navigate to pre-test wrong-feedback student list */
   goPreTest(event) {
     const { courseId, courseName } = event.currentTarget.dataset;
     wx.navigateTo({
-      url: `/pages/teacher/test-upload/test-upload?courseId=${courseId}&courseName=${encodeURIComponent(courseName)}&type=pre`
+      url: `/pages/teacher/feedback-students/feedback-students?courseId=${courseId}&courseName=${encodeURIComponent(courseName)}&feedbackType=pre`
     });
   },
 
-  /** Navigate to post-test upload page */
+  /** Navigate to post-test wrong-feedback student list */
   goPostTest(event) {
     const { courseId, courseName } = event.currentTarget.dataset;
     wx.navigateTo({
-      url: `/pages/teacher/test-upload/test-upload?courseId=${courseId}&courseName=${encodeURIComponent(courseName)}&type=post`
+      url: `/pages/teacher/feedback-students/feedback-students?courseId=${courseId}&courseName=${encodeURIComponent(courseName)}&feedbackType=post`
     });
   },
 
@@ -306,7 +306,7 @@ Page({
   goFeedback(event) {
     const { courseId, courseName } = event.currentTarget.dataset;
     wx.navigateTo({
-      url: `/pages/teacher/feedback-students/feedback-students?courseId=${courseId}&courseName=${encodeURIComponent(courseName)}`
+      url: `/pages/teacher/feedback-students/feedback-students?courseId=${courseId}&courseName=${encodeURIComponent(courseName)}&feedbackType=general`
     });
   }
 });

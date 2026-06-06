@@ -395,8 +395,10 @@ const db = {
       teacherId: 'teacher_001',
       courseId: 'course_bio_001',
       courseSessionId: 'lesson_bio_001_01',
+      feedbackType: 'pre',
       text: '本次课前测错在细胞器功能区分，已当面讲解，建议回家复看笔记。',
       imageFileIds: ['media_img_001'],
+      videoFileIds: ['media_video_001'],
       voiceFileIds: ['media_voice_001'],
       createdAt: '2026-06-03 20:10',
       visibleToStudent: true
@@ -407,8 +409,10 @@ const db = {
       teacherId: 'teacher_001',
       courseId: 'course_bio_001',
       courseSessionId: 'lesson_bio_001_01',
+      feedbackType: 'post',
       text: '课堂练习完成度较好，生态系统能量流动部分还需要按步骤画图。',
       imageFileIds: ['media_img_002'],
+      videoFileIds: [],
       voiceFileIds: [],
       createdAt: '2026-06-03 20:18',
       visibleToStudent: true
@@ -419,8 +423,10 @@ const db = {
       teacherId: 'teacher_003',
       courseId: 'course_math_001',
       courseSessionId: 'lesson_math_001_01',
+      feedbackType: 'post',
       text: '一次函数图像题审题有进步，定义域限制仍要先写出来。',
       imageFileIds: [],
+      videoFileIds: [],
       voiceFileIds: ['media_voice_002'],
       createdAt: '2026-06-03 21:55',
       visibleToStudent: true
@@ -431,8 +437,10 @@ const db = {
       teacherId: 'teacher_002',
       courseId: 'course_eng_001',
       courseSessionId: 'lesson_eng_001_01',
+      feedbackType: 'post',
       text: '阅读定位速度提升明显，长难句建议继续拆主谓宾。',
       imageFileIds: ['media_img_003'],
+      videoFileIds: [],
       voiceFileIds: ['media_voice_003'],
       createdAt: '2026-06-04 20:08',
       visibleToStudent: true
@@ -450,7 +458,7 @@ const db = {
       size: 320000,
       createdAt: '2026-06-03 20:08',
       retentionUntil: '2026-12-03',
-      downloadable: true
+      downloadable: false
     },
     {
       id: 'media_img_002',
@@ -462,7 +470,7 @@ const db = {
       size: 286000,
       createdAt: '2026-06-03 20:17',
       retentionUntil: '2026-12-03',
-      downloadable: true
+      downloadable: false
     },
     {
       id: 'media_img_003',
@@ -474,7 +482,20 @@ const db = {
       size: 248000,
       createdAt: '2026-06-04 20:06',
       retentionUntil: '2026-12-04',
-      downloadable: true
+      downloadable: false
+    },
+    {
+      id: 'media_video_001',
+      type: 'video',
+      name: '课前测错题讲解视频.mp4',
+      url: '',
+      tempPath: '',
+      storageKey: 'feedback/course_bio_001/lesson_bio_001_01/stu_001/video_001.mp4',
+      duration: 42,
+      size: 4280000,
+      createdAt: '2026-06-03 20:09',
+      retentionUntil: '2026-12-03',
+      downloadable: false
     },
     {
       id: 'media_voice_001',

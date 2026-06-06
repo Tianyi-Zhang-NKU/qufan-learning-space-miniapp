@@ -56,27 +56,27 @@ Page({
     return sorted[sorted.length - 1];
   },
 
-  /** 跳转课前测页面 */
+  /** 跳转课前测错题反馈 */
   goPreTest(event) {
     const { courseId, courseName } = event.currentTarget.dataset;
     wx.navigateTo({
-      url: `/pages/teacher/test-upload/test-upload?courseId=${courseId}&courseName=${encodeURIComponent(courseName)}&type=pre`
+      url: `/pages/teacher/feedback-students/feedback-students?courseId=${courseId}&courseName=${encodeURIComponent(courseName)}&feedbackType=pre`
     });
   },
 
-  /** 跳转课后测页面 */
+  /** 跳转课后测错题反馈 */
   goPostTest(event) {
     const { courseId, courseName } = event.currentTarget.dataset;
     wx.navigateTo({
-      url: `/pages/teacher/test-upload/test-upload?courseId=${courseId}&courseName=${encodeURIComponent(courseName)}&type=post`
+      url: `/pages/teacher/feedback-students/feedback-students?courseId=${courseId}&courseName=${encodeURIComponent(courseName)}&feedbackType=post`
     });
   },
 
-  /** 跳转反馈页面（学生名单） */
+  /** 跳转课程错题反馈学生名单 */
   goFeedback(event) {
     const { courseId, courseName } = event.currentTarget.dataset;
     wx.navigateTo({
-      url: `/pages/teacher/feedback-students/feedback-students?courseId=${courseId}&courseName=${encodeURIComponent(courseName)}`
+      url: `/pages/teacher/feedback-students/feedback-students?courseId=${courseId}&courseName=${encodeURIComponent(courseName)}&feedbackType=general`
     });
   }
 });

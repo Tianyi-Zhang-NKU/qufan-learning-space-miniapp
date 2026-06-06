@@ -1,9 +1,8 @@
 <view class="qf-role-tabbar {{fixed ? '' : 'inline'}}">
-  <view class="qf-tab-slider" style="{{sliderStyle}}"></view>
   <view
     wx:for="{{list}}"
     wx:key="url"
-    class="qf-role-tab {{item.active ? 'active' : ''}}"
+    class="qf-role-tab {{item.primary ? 'primary' : ''}} {{item.active ? 'active' : ''}}"
     data-url="{{item.url}}"
     bindtap="go"
   >

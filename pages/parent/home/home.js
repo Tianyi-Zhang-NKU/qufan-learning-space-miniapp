@@ -52,22 +52,15 @@ Page({
     const classroomName = nextSession.classroomName || course.classroomName || '待定教室';
     const teacherName = course.teacherName || '';
 
-    // Pre/post test assignment counts by session
     const sessionTests = sessions.map((s) => {
-      const preTests = (course.assignments || []).filter(
-        (a) => a.courseSessionId === s.id && a.type === 'pre'
-      );
-      const postTests = (course.assignments || []).filter(
-        (a) => a.courseSessionId === s.id && a.type === 'post'
-      );
       return {
         sessionId: s.id,
         sessionTitle: s.sessionTitle || s.displayTitle || `第${s.sessionIndex}次课`,
         sessionIndex: s.sessionIndex,
         date: s.date,
         time: s.startTime ? `${s.startTime}-${s.endTime}` : '',
-        preCount: preTests.length,
-        postCount: postTests.length
+        preCount: s.preFeedbackCount || 0,
+        postCount: s.postFeedbackCount || 0
       };
     });
 

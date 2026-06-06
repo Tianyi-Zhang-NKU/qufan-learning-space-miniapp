@@ -135,13 +135,19 @@ async function run() {
   }), 'course subject should match its teacher subject');
   assert(db.courses.every((course) => db.courseSessions.filter((item) => item.courseId === course.id).length >= 2), 'each course should have at least 2 lessons');
   assert(db.lessonFeedbacks.length >= 3, 'should include lesson feedback samples');
-  assert(db.mediaFiles.some((item) => item.type === 'image' && item.downloadable === true), 'image media should be downloadable');
+  assert(db.mediaFiles.some((item) => item.type === 'image' && item.downloadable === false), 'image media should preview in miniapp without download');
+  assert(db.mediaFiles.some((item) => item.type === 'video' && item.downloadable === false), 'video media should preview in miniapp without download');
   assert(db.mediaFiles.some((item) => item.type === 'voice' && item.downloadable === false), 'voice media should not be downloadable');
 
   const Api = require('../services/api');
   assert(typeof Api.loginByPhone === 'function', 'loginByPhone missing');
   assert(typeof Api.createLessonFeedback === 'function', 'createLessonFeedback missing');
+  assert(typeof Api.uploadFeedbackVideo === 'function', 'uploadFeedbackVideo missing');
   assert(typeof Api.requestClassInLiveEntry === 'function', 'requestClassInLiveEntry missing');
+  assert(typeof Api.updateCourse === 'function' && typeof Api.deleteCourse === 'function', 'admin course CRUD missing');
+  assert(typeof Api.updateStudent === 'function' && typeof Api.deleteStudent === 'function', 'admin student CRUD missing');
+  assert(typeof Api.updateTeacher === 'function' && typeof Api.deleteTeacher === 'function', 'admin teacher CRUD missing');
+  assert(typeof Api.updateClassroom === 'function' && typeof Api.deleteClassroom === 'function', 'admin classroom CRUD missing');
   assert(!Object.prototype.hasOwnProperty.call(Api, ['b', 'i', 'n', 'd', 'I', 'n', 'v', 'i', 't', 'e'].join('')), 'old auth API should not be exported');
 
   const teacherSession = await Api.loginByPhone({ phone: '13800000002' });
@@ -164,7 +170,15 @@ async function run() {
     size: 2048,
     tempPath: ''
   });
-  assert(uploadedImage.type === 'image' && uploadedImage.downloadable === true, 'feedback image metadata should be downloadable');
+  assert(uploadedImage.type === 'image' && uploadedImage.downloadable === false, 'feedback image metadata should preview without download');
+
+  const uploadedVideo = await Api.uploadFeedbackVideo({
+    fileName: 'smoke-feedback.mp4',
+    size: 8192,
+    duration: 18,
+    tempPath: ''
+  });
+  assert(uploadedVideo.type === 'video' && uploadedVideo.downloadable === false, 'feedback video metadata should preview without download');
 
   const uploadedVoice = await Api.uploadFeedbackVoice({
     fileName: 'smoke-feedback.m4a',
@@ -180,12 +194,16 @@ async function run() {
     courseId: 'course_bio_001',
     courseSessionId: 'lesson_bio_001_01',
     text: 'Smoke 文字反馈',
+    feedbackType: 'pre',
     imageFileIds: [uploadedImage.id],
+    videoFileIds: [uploadedVideo.id],
     voiceFileIds: [uploadedVoice.id]
   });
   assert(createdFeedback.id, 'teacher should create lesson feedback');
+  assert(createdFeedback.feedbackType === 'pre' && createdFeedback.feedbackTypeText === '课前测错题反馈', 'feedback should preserve pre/post wrong-feedback type');
   assert(createdFeedback.text.includes('Smoke'), 'feedback should support text');
   assert(createdFeedback.imageFiles.length === 1, 'feedback should support image media');
+  assert(createdFeedback.videoFiles.length === 1, 'feedback should support video media');
   assert(createdFeedback.voiceFiles.length === 1, 'feedback should support voice media');
 
   await expectReject(Api.createLessonFeedback({
@@ -207,12 +225,14 @@ async function run() {
   assert(studentFeedbacks.feedbacks.length >= 1, 'student should see own feedbacks');
   assert(studentFeedbacks.feedbacks.every((item) => item.studentId === 'stu_001'), 'student should only see own feedbacks');
   assert(studentFeedbacks.feedbacks.some((item) => item.id === createdFeedback.id), 'student should see newly created feedback');
+  const preWrongFeedbacks = await Api.getStudentLessonFeedbacks({ courseId: 'course_bio_001', feedbackType: 'pre' });
+  assert(preWrongFeedbacks.feedbacks.every((item) => item.feedbackType === 'pre'), 'student pre-test view should show only pre wrong feedbacks');
   await expectReject(Api.getFeedbackDetail('feedback_002'), 'NO_PERMISSION');
 
   const imagePreview = await Api.getMediaPreview(uploadedImage.id);
-  assert(imagePreview.kind === 'image' && imagePreview.downloadable === true, 'image preview should allow download');
-  const imageDownload = await Api.downloadFeedbackImage(uploadedImage.id);
-  assert(imageDownload.file.downloadable === true, 'download image should preserve downloadable=true');
+  assert(imagePreview.kind === 'image' && imagePreview.downloadable === false, 'image preview should not require download');
+  const videoPreview = await Api.getMediaPreview(uploadedVideo.id);
+  assert(videoPreview.kind === 'video' && videoPreview.downloadable === false, 'video preview should not require download');
   const voicePreview = await Api.getMediaPreview(uploadedVoice.id);
   assert(voicePreview.kind === 'voice' && voicePreview.downloadable === false, 'voice preview should not allow download');
   const voicePlay = await Api.playFeedbackVoice(uploadedVoice.id);
@@ -237,6 +257,34 @@ async function run() {
   assert(teacherRelations.every((item) => item.phone && Array.isArray(item.courses)), 'teacher relation should expose phone and courses');
   const studentRelations = await Api.getAdminStudentRelations();
   assert(studentRelations.every((item) => item.loginPhone && Array.isArray(item.courses)), 'student relation should expose phone and courses');
+
+  const createdClassroom = await Api.createClassroom({ name: 'Smoke CRUD 教室', campus: '东校区', capacity: 16, cameraStatus: 'ready' });
+  const updatedClassroom = await Api.updateClassroom({ id: createdClassroom.id, name: 'Smoke CRUD 教室A', capacity: 20, cameraStatus: 'testing' });
+  assert(updatedClassroom.name === 'Smoke CRUD 教室A' && updatedClassroom.capacity === 20, 'admin should update classroom');
+
+  const createdTeacher = await Api.createTeacher({ fullName: 'Smoke 老师', name: 'Smoke 老师', phone: '13900009991', subject: '物理', title: '物理老师' });
+  const updatedTeacher = await Api.updateTeacher({ id: createdTeacher.id, fullName: 'Smoke 老师A', name: 'Smoke 老师A', phone: '13900009992', subject: '化学' });
+  assert(updatedTeacher.fullName === 'Smoke 老师A' && updatedTeacher.subject === '化学', 'admin should update teacher');
+
+  const createdStudent = await Api.createStudent({ name: 'Smoke 学生', phone: '13900009993', grade: '初一' });
+  const updatedStudent = await Api.updateStudent({ id: createdStudent.id, name: 'Smoke 学生A', phone: '13900009994', grade: '初二' });
+  assert(updatedStudent.name === 'Smoke 学生A' && updatedStudent.grade === '初二', 'admin should update student');
+
+  const createdCourse = await Api.createCourse({
+    name: 'Smoke CRUD 课程',
+    subject: '化学',
+    grade: '初二',
+    teacherId: updatedTeacher.id,
+    classroomId: updatedClassroom.id,
+    studentIds: [updatedStudent.id],
+    description: 'CRUD smoke'
+  });
+  const updatedCourse = await Api.updateCourse({ id: createdCourse.id, name: 'Smoke CRUD 课程A', subject: '化学', grade: '初三', teacherId: updatedTeacher.id, classroomId: updatedClassroom.id });
+  assert(updatedCourse.name === 'Smoke CRUD 课程A' && updatedCourse.grade === '初三', 'admin should update course');
+  await Api.deleteCourse(createdCourse.id);
+  await Api.deleteStudent(updatedStudent.id);
+  await Api.deleteTeacher(updatedTeacher.id);
+  await Api.deleteClassroom(updatedClassroom.id);
 
   console.log('Smoke test passed.');
 }

@@ -1,12 +1,7 @@
-/* ============================================
-   反馈详情页面样式
-   ============================================ */
-
-/* 课次横向滑动导航 — 复用 test-upload 的样式 */
 .session-nav-wrapper {
   position: relative;
   z-index: 1;
-  margin-bottom: 32rpx;
+  margin-bottom: 28rpx;
 }
 
 .session-nav-scroll {
@@ -33,7 +28,6 @@
   background: rgba(18, 42, 35, 0.52);
   -webkit-backdrop-filter: blur(18rpx);
   backdrop-filter: blur(18rpx);
-  transition: all 160ms ease;
 }
 
 .session-tab.active {
@@ -78,7 +72,36 @@
   background: rgba(249, 115, 22, 0.18);
 }
 
-/* 已有反馈展示 */
+.feedback-type-switch {
+  max-width: 660rpx;
+  margin: 0 auto 28rpx;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+}
+
+.type-pill {
+  min-height: 74rpx;
+  padding: 0 12rpx;
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 22rpx;
+  font-weight: 700;
+  color: rgba(255, 249, 236, 0.72);
+  background: rgba(18, 42, 35, 0.52);
+  border: 1rpx solid rgba(255, 250, 235, 0.14);
+}
+
+.type-pill.active {
+  color: #fff9ec;
+  background: linear-gradient(145deg, #f97316, #ea580c);
+  border-color: rgba(255, 249, 236, 0.22);
+  box-shadow: 0 12rpx 30rpx rgba(249, 115, 22, 0.22);
+}
+
 .existing-feedback {
   margin-bottom: 28rpx;
 }
@@ -87,6 +110,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 18rpx;
   margin-bottom: 16rpx;
 }
 
@@ -101,23 +125,23 @@
 .existing-media-tags {
   display: flex;
   gap: 12rpx;
+  flex-wrap: wrap;
   margin-top: 16rpx;
 }
 
 .media-tag {
   display: inline-flex;
   align-items: center;
-  padding: 4rpx 14rpx;
+  padding: 6rpx 14rpx;
   border-radius: 999rpx;
   font-size: 20rpx;
   color: #506157;
   background: rgba(105, 71, 38, 0.08);
 }
 
-/* 反馈文本输入 */
 .feedback-textarea {
   width: 100%;
-  min-height: 200rpx;
+  min-height: 210rpx;
   padding: 8rpx;
   font-size: 26rpx;
   line-height: 1.6;
@@ -125,13 +149,12 @@
   background: transparent;
 }
 
-/* 上传按钮 */
 .upload-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12rpx;
-  min-height: 80rpx;
+  min-height: 82rpx;
   padding: 0 24rpx;
   margin-top: 8rpx;
   border: 2rpx dashed rgba(83, 117, 91, 0.28);
@@ -147,50 +170,55 @@
 }
 
 .upload-btn-icon {
-  font-size: 32rpx;
+  font-size: 30rpx;
+  font-weight: 800;
 }
 
-/* 图片预览列表 */
-.image-preview-list {
+.media-preview-list {
   display: flex;
   flex-wrap: wrap;
   gap: 16rpx;
   margin-bottom: 8rpx;
 }
 
-.image-preview-item {
+.media-preview-item {
   position: relative;
-  width: 160rpx;
+  width: 166rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6rpx;
+  gap: 8rpx;
 }
 
-.preview-thumb {
-  width: 140rpx;
-  height: 140rpx;
-  border-radius: 16rpx;
-  border: 1rpx solid rgba(83, 117, 91, 0.16);
-}
-
+.preview-thumb,
 .preview-thumb-placeholder {
-  width: 140rpx;
-  height: 140rpx;
+  width: 146rpx;
+  height: 146rpx;
   border-radius: 16rpx;
   border: 1rpx solid rgba(83, 117, 91, 0.16);
-  background: rgba(105, 71, 38, 0.05);
+}
+
+.preview-thumb-placeholder,
+.video-thumb {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 48rpx;
+  color: #506157;
+  font-size: 24rpx;
+  font-weight: 800;
+  background: rgba(105, 71, 38, 0.05);
+}
+
+.video-thumb {
+  color: #0b173d;
+  background: linear-gradient(145deg, rgba(219, 234, 254, 0.86), rgba(255, 237, 213, 0.78));
 }
 
 .preview-name {
+  max-width: 146rpx;
   font-size: 18rpx;
   color: #65756b;
   text-align: center;
-  max-width: 140rpx;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -198,69 +226,87 @@
 
 .remove-btn {
   position: absolute;
-  top: -6rpx;
-  right: 4rpx;
-  width: 36rpx;
-  height: 36rpx;
+  top: -8rpx;
+  right: 2rpx;
+  width: 38rpx;
+  height: 38rpx;
   border-radius: 50%;
   background: #ef4444;
   color: #fff;
-  font-size: 20rpx;
+  font-size: 24rpx;
   line-height: 36rpx;
   text-align: center;
   box-shadow: 0 4rpx 10rpx rgba(239, 68, 68, 0.3);
 }
 
-/* 文件预览列表 */
-.file-preview-list {
+.voice-preview-list {
   display: flex;
   flex-direction: column;
   gap: 12rpx;
-  margin-bottom: 8rpx;
+  margin-bottom: 10rpx;
 }
 
-.file-preview-item {
+.voice-preview-item {
   display: flex;
   align-items: center;
   gap: 14rpx;
   padding: 14rpx 16rpx;
-  border-radius: 14rpx;
+  border-radius: 16rpx;
   background: rgba(105, 71, 38, 0.04);
+  border: 1rpx solid rgba(83, 117, 91, 0.1);
 }
 
-.file-preview-icon {
-  font-size: 36rpx;
+.voice-mark {
+  width: 54rpx;
+  height: 54rpx;
+  border-radius: 18rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  color: #fff9ec;
+  font-size: 20rpx;
+  font-weight: 800;
+  background: #0b173d;
 }
 
-.file-preview-info {
+.voice-info {
   flex: 1;
   min-width: 0;
 }
 
-.file-preview-name {
+.voice-name {
   display: block;
   font-size: 24rpx;
   color: #1f352e;
-  font-weight: 500;
+  font-weight: 650;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.file-preview-size {
+.voice-meta {
   display: block;
-  margin-top: 2rpx;
+  margin-top: 4rpx;
   font-size: 20rpx;
   color: #65756b;
 }
 
-.file-preview-item .remove-btn {
+.inline-remove {
   position: static;
   flex-shrink: 0;
 }
 
-/* 提交区域 */
+.record-actions {
+  margin-top: 4rpx;
+}
+
+.record-btn.recording {
+  color: #991b1b;
+  border-color: rgba(239, 68, 68, 0.34);
+  background: rgba(254, 226, 226, 0.48);
+}
+
 .submit-area {
   margin-top: 44rpx;
   margin-bottom: 20rpx;

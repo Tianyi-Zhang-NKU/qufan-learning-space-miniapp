@@ -5,8 +5,10 @@ let activeSession = null;
 
 const TODAY = '2026-06-03';
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'heic'];
+const VIDEO_EXTS = ['mp4', 'mov', 'm4v', 'webm'];
 const VOICE_EXTS = ['m4a', 'mp3', 'aac', 'wav'];
 const IMAGE_MAX_SIZE = 10 * 1024 * 1024;
+const VIDEO_MAX_SIZE = 200 * 1024 * 1024;
 const VOICE_MAX_SIZE = 20 * 1024 * 1024;
 
 function hasWx() {
@@ -119,6 +121,55 @@ function findFeedback(id) {
   return db.lessonFeedbacks.find((item) => item.id === id);
 }
 
+function addUnique(list, value) {
+  if (!Array.isArray(list) || !value || list.includes(value)) return;
+  list.push(value);
+}
+
+function removeFromCollection(collection, predicate) {
+  let removed = 0;
+  for (let index = collection.length - 1; index >= 0; index -= 1) {
+    if (predicate(collection[index])) {
+      collection.splice(index, 1);
+      removed += 1;
+    }
+  }
+  return removed;
+}
+
+function normalizeId(input) {
+  return typeof input === 'string' ? input : (input && input.id) || '';
+}
+
+function syncPhoneAccount(role, linkedId, phone, nickname) {
+  const accountRole = role === 'student' ? 'parent' : role;
+  const cleanPhone = String(phone || '').trim();
+  const account = db.phoneAccounts.find((item) => item.role === accountRole && item.linkedId === linkedId);
+  if (!cleanPhone) {
+    removeFromCollection(db.phoneAccounts, (item) => item.role === accountRole && item.linkedId === linkedId);
+    return null;
+  }
+  if (account) {
+    account.phone = cleanPhone;
+    account.nickname = nickname || account.nickname;
+    return account;
+  }
+  const created = {
+    id: nextId(`account_${accountRole}`, db.phoneAccounts),
+    phone: cleanPhone,
+    role: accountRole,
+    linkedId,
+    nickname: nickname || cleanPhone
+  };
+  db.phoneAccounts.push(created);
+  return created;
+}
+
+function removePhoneAccounts(role, linkedId) {
+  const accountRole = role === 'student' ? 'parent' : role;
+  removeFromCollection(db.phoneAccounts, (item) => item.role === accountRole && item.linkedId === linkedId);
+}
+
 function getCourseSessions(courseId) {
   return db.courseSessions
     .filter((item) => item.courseId === courseId)
@@ -143,6 +194,7 @@ function getFeedbacks(filter = {}) {
     if (filter.teacherId && item.teacherId !== filter.teacherId) return false;
     if (filter.courseId && item.courseId !== filter.courseId) return false;
     if (filter.courseSessionId && item.courseSessionId !== filter.courseSessionId) return false;
+    if (filter.feedbackType && (item.feedbackType || 'post') !== filter.feedbackType) return false;
     if (filter.visibleToStudent && !item.visibleToStudent) return false;
     return true;
   });
@@ -178,16 +230,26 @@ function assignmentWithFile(item) {
   };
 }
 
+function feedbackTypeText(type) {
+  if (type === 'pre') return '课前测错题反馈';
+  if (type === 'post') return '课后测错题反馈';
+  return '课程错题反馈';
+}
+
 function decorateMedia(file) {
   if (!file) return null;
+  const messageMap = {
+    image: '图片反馈可在小程序内查看，正式部署后由后端签发临时预览地址。',
+    video: '视频反馈可在小程序内播放，正式部署后由后端签发临时播放地址。',
+    voice: '语音反馈可在小程序内收听，正式部署后由后端签发临时播放地址。'
+  };
   return {
     ...file,
-    canPreview: file.type === 'image' || file.type === 'voice',
-    canDownload: file.type === 'image' && file.downloadable,
+    canPreview: ['image', 'video', 'voice'].includes(file.type),
+    canDownload: false,
+    downloadable: false,
     previewUrl: file.url || file.tempPath || '',
-    message: file.type === 'voice'
-      ? '语音反馈仅支持收听，不提供下载入口。'
-      : '图片反馈支持查看和下载，正式部署后由后端签发临时地址。'
+    message: messageMap[file.type] || '反馈媒体可在小程序内查看。'
   };
 }
 
@@ -196,20 +258,26 @@ function feedbackWithMedia(item) {
   const teacher = findTeacher(item.teacherId) || {};
   const course = findCourse(item.courseId) || {};
   const courseSession = findCourseSession(item.courseSessionId) || {};
+  const feedbackType = item.feedbackType || 'post';
   const imageFiles = (item.imageFileIds || []).map(findMedia).filter(Boolean).map(decorateMedia);
+  const videoFiles = (item.videoFileIds || []).map(findMedia).filter(Boolean).map(decorateMedia);
   const voiceFiles = (item.voiceFileIds || []).map(findMedia).filter(Boolean).map(decorateMedia);
   const attachFiles = (item.attachFileIds || []).map(findOptionalFile).filter(Boolean);
   return {
     ...item,
+    feedbackType,
+    feedbackTypeText: feedbackTypeText(feedbackType),
     studentName: student.name || '',
     teacherName: teacher.name || teacher.fullName || '',
     courseName: course.name || '',
     courseSessionTitle: courseSession.displayTitle || courseSession.title || '',
     imageFiles,
+    videoFiles,
     voiceFiles,
     attachFiles,
-    mediaFiles: imageFiles.concat(voiceFiles),
+    mediaFiles: imageFiles.concat(videoFiles, voiceFiles),
     imageCount: imageFiles.length,
+    videoCount: videoFiles.length,
     voiceCount: voiceFiles.length,
     attachFileCount: attachFiles.length
   };
@@ -226,6 +294,8 @@ function decorateSession(item, options = {}) {
     studentId,
     visibleToStudent: options.visibleToStudent
   });
+  const preFeedbackCount = feedbacks.filter((feedback) => (feedback.feedbackType || 'post') === 'pre').length;
+  const postFeedbackCount = feedbacks.filter((feedback) => (feedback.feedbackType || 'post') === 'post').length;
   return {
     ...item,
     courseName: course.name || '',
@@ -233,6 +303,8 @@ function decorateSession(item, options = {}) {
     classroomName: classroom.name || '待定教室',
     statusTone: statusTone(item.status),
     feedbackCount: feedbacks.length,
+    preFeedbackCount,
+    postFeedbackCount,
     liveStatusText: 'ClassIn 接口待接入',
     liveTone: 'warn'
   };
@@ -293,7 +365,7 @@ function canAccessFeedback(session, feedback) {
 
 function canAccessMedia(session, fileId) {
   const feedback = db.lessonFeedbacks.find((item) => {
-    const ids = (item.imageFileIds || []).concat(item.voiceFileIds || []);
+    const ids = (item.imageFileIds || []).concat(item.videoFileIds || [], item.voiceFileIds || []);
     return ids.includes(fileId);
   });
   if (feedback) return canAccessFeedback(session, feedback);
@@ -387,28 +459,39 @@ function studentCourses(session) {
 function validateMediaUpload(payload, type) {
   const ext = getExt(payload.fileName || payload.name || '');
   const size = Number(payload.size || 0);
-  const supported = type === 'image' ? IMAGE_EXTS : VOICE_EXTS;
-  const maxSize = type === 'image' ? IMAGE_MAX_SIZE : VOICE_MAX_SIZE;
-  if (!supported.includes(ext)) throw makeError('UNSUPPORTED_FILE_TYPE', type === 'image' ? '仅支持图片格式。' : '仅支持常见音频格式。');
-  if (size > maxSize) throw makeError('FILE_TOO_LARGE', type === 'image' ? '图片不能超过 10MB。' : '语音不能超过 20MB。');
+  const rules = {
+    image: { exts: IMAGE_EXTS, maxSize: IMAGE_MAX_SIZE, message: '仅支持图片格式。', tooLarge: '图片不能超过 10MB。' },
+    video: { exts: VIDEO_EXTS, maxSize: VIDEO_MAX_SIZE, message: '仅支持常见视频格式。', tooLarge: '视频不能超过 200MB。' },
+    voice: { exts: VOICE_EXTS, maxSize: VOICE_MAX_SIZE, message: '仅支持常见音频格式。', tooLarge: '语音不能超过 20MB。' }
+  };
+  const rule = rules[type];
+  if (!rule) throw makeError('VALIDATION_ERROR', '未知媒体类型。');
+  if (!rule.exts.includes(ext)) throw makeError('UNSUPPORTED_FILE_TYPE', rule.message);
+  if (size > rule.maxSize) throw makeError('FILE_TOO_LARGE', rule.tooLarge);
   return { ext, size };
 }
 
 function mediaPlaceholder(type, payload, session) {
   const validation = validateMediaUpload(payload, type);
-  const id = nextId(type === 'image' ? 'media_img' : 'media_voice', db.mediaFiles);
+  const idPrefix = type === 'image' ? 'media_img' : type === 'video' ? 'media_video' : 'media_voice';
+  const defaultName = {
+    image: '错题反馈图片.jpg',
+    video: '错题反馈视频.mp4',
+    voice: '错题反馈语音.m4a'
+  };
+  const id = nextId(idPrefix, db.mediaFiles);
   const file = {
     id,
     type,
-    name: payload.fileName || payload.name || (type === 'image' ? '课后反馈图片.jpg' : '课后反馈语音.m4a'),
+    name: payload.fileName || payload.name || defaultName[type],
     url: '',
     tempPath: payload.tempPath || '',
     storageKey: `feedback/pending/${id}.${validation.ext}`,
     size: validation.size,
-    duration: type === 'voice' ? Number(payload.duration || 0) : undefined,
+    duration: type === 'voice' || type === 'video' ? Number(payload.duration || 0) : undefined,
     createdAt: nowLabel(),
     retentionUntil: addMonthsLabel(6),
-    downloadable: type === 'image',
+    downloadable: false,
     uploadedBy: session.teacherId || session.adminId || session.accountId
   };
   db.mediaFiles.unshift(file);
@@ -592,11 +675,17 @@ const mockApi = {
       throw makeError('NO_PERMISSION', '老师只能给自己课程下的学生创建反馈。');
     }
     const imageFileIds = payload.imageFileIds || [];
+    const videoFileIds = payload.videoFileIds || [];
     const voiceFileIds = payload.voiceFileIds || [];
     const attachFileIds = payload.attachFileIds || [];
+    const feedbackType = ['pre', 'post', 'general'].includes(payload.feedbackType) ? payload.feedbackType : 'post';
     imageFileIds.forEach((id) => {
       const file = findMedia(id);
       if (!file || file.type !== 'image') throw makeError('VALIDATION_ERROR', '图片媒体不存在。');
+    });
+    videoFileIds.forEach((id) => {
+      const file = findMedia(id);
+      if (!file || file.type !== 'video') throw makeError('VALIDATION_ERROR', '视频媒体不存在。');
     });
     voiceFileIds.forEach((id) => {
       const file = findMedia(id);
@@ -606,8 +695,8 @@ const mockApi = {
       const file = findOptionalFile(id);
       if (!file) throw makeError('VALIDATION_ERROR', '附件文件不存在。');
     });
-    if (!String(payload.text || '').trim() && !imageFileIds.length && !voiceFileIds.length && !attachFileIds.length) {
-      throw makeError('VALIDATION_ERROR', '请填写文字反馈或添加图片/语音/文件。');
+    if (!String(payload.text || '').trim() && !imageFileIds.length && !videoFileIds.length && !voiceFileIds.length && !attachFileIds.length) {
+      throw makeError('VALIDATION_ERROR', '请填写文字反馈或添加图片/视频/语音。');
     }
     const record = {
       id: nextId('feedback', db.lessonFeedbacks),
@@ -615,21 +704,28 @@ const mockApi = {
       teacherId,
       courseId: course.id,
       courseSessionId: courseSession.id,
+      feedbackType,
       text: String(payload.text || '').trim(),
       imageFileIds: imageFileIds.slice(),
+      videoFileIds: videoFileIds.slice(),
       voiceFileIds: voiceFileIds.slice(),
       attachFileIds: attachFileIds.slice(),
       createdAt: nowLabel(),
       visibleToStudent: payload.visibleToStudent !== false
     };
     db.lessonFeedbacks.unshift(record);
-    pushAudit(session.identityId, 'create_lesson_feedback', 'lessonFeedback', record.id, `为 ${student.name} 保存课后反馈`);
+    pushAudit(session.identityId, 'create_lesson_feedback', 'lessonFeedback', record.id, `为 ${student.name} 保存${feedbackTypeText(feedbackType)}`);
     return delay(feedbackWithMedia(record));
   },
 
   uploadFeedbackImage(payload = {}) {
     const session = requireRole(['teacher', 'admin']);
     return delay(decorateMedia(mediaPlaceholder('image', payload, session)));
+  },
+
+  uploadFeedbackVideo(payload = {}) {
+    const session = requireRole(['teacher', 'admin']);
+    return delay(decorateMedia(mediaPlaceholder('video', payload, session)));
   },
 
   uploadFeedbackVoice(payload = {}) {
@@ -695,6 +791,7 @@ const mockApi = {
       studentId: session.studentId,
       courseId: payload.courseId || '',
       courseSessionId: payload.courseSessionId || '',
+      feedbackType: payload.feedbackType || '',
       visibleToStudent: true
     }).map(feedbackWithMedia);
     return delay({
@@ -716,15 +813,14 @@ const mockApi = {
     const media = findMedia(fileId);
     if (media) {
       if (!canAccessMedia(session, fileId)) throw makeError('NO_PERMISSION', '当前账号不能查看该媒体。');
+      const decorated = decorateMedia(media);
       return delay({
         kind: media.type,
-        file: decorateMedia(media),
-        message: media.type === 'image'
-          ? '图片可查看并下载，真实部署后由后端签发临时下载地址。'
-          : '语音只能收听，不提供下载入口。',
+        file: decorated,
+        message: decorated.message,
         canPreview: true,
-        canDownload: media.type === 'image' && media.downloadable,
-        downloadable: media.type === 'image' && media.downloadable
+        canDownload: false,
+        downloadable: false
       });
     }
     const optionalFile = findOptionalFile(fileId);
@@ -1175,16 +1271,38 @@ const mockApi = {
       status: 'active'
     };
     db.teachers.push(teacher);
-    if (teacher.phone) {
-      db.phoneAccounts.push({
-        id: nextId('account_teacher', db.phoneAccounts),
-        phone: teacher.phone,
-        role: 'teacher',
-        linkedId: teacher.id,
-        nickname: teacher.name
-      });
-    }
+    syncPhoneAccount('teacher', teacher.id, teacher.phone, teacher.name);
     return delay(teacher);
+  },
+
+  updateTeacher(payload = {}) {
+    requireRole('admin');
+    const teacher = findTeacher(payload.id);
+    if (!teacher) throw makeError('NOT_FOUND', '教师不存在。');
+    const fullName = payload.fullName !== undefined ? String(payload.fullName || '').trim() : teacher.fullName;
+    const name = payload.name !== undefined ? String(payload.name || '').trim() : teacher.name;
+    teacher.fullName = fullName || name || teacher.fullName;
+    teacher.name = name || (teacher.fullName ? `${teacher.fullName}老师` : teacher.name);
+    teacher.phone = payload.phone !== undefined ? String(payload.phone || '').trim() : teacher.phone;
+    teacher.subject = payload.subject !== undefined ? String(payload.subject || '').trim() : teacher.subject;
+    teacher.subjects = teacher.subject ? [teacher.subject] : [];
+    teacher.title = payload.title !== undefined ? String(payload.title || '').trim() : teacher.title;
+    syncPhoneAccount('teacher', teacher.id, teacher.phone, teacher.name);
+    pushAudit(getSession().identityId, 'update_teacher', 'teacher', teacher.id, `更新教师 ${teacher.name}`);
+    return delay({ ...teacher });
+  },
+
+  deleteTeacher(input) {
+    requireRole('admin');
+    const id = normalizeId(input);
+    const teacher = findTeacher(id);
+    if (!teacher) throw makeError('NOT_FOUND', '教师不存在。');
+    const usedCourses = db.courses.filter((course) => course.teacherId === id);
+    if (usedCourses.length) throw makeError('VALIDATION_ERROR', '该教师仍负责课程，请先调整课程老师。');
+    removeFromCollection(db.teachers, (item) => item.id === id);
+    removePhoneAccounts('teacher', id);
+    pushAudit(getSession().identityId, 'delete_teacher', 'teacher', id, `删除教师 ${teacher.name}`);
+    return delay({ ok: true, id });
   },
 
   createStudent(payload = {}) {
@@ -1198,16 +1316,41 @@ const mockApi = {
       status: 'active'
     };
     db.students.push(student);
-    if (student.phone) {
-      db.phoneAccounts.push({
-        id: nextId('account_student', db.phoneAccounts),
-        phone: student.phone,
-        role: 'parent',
-        linkedId: student.id,
-        nickname: student.name
-      });
-    }
+    syncPhoneAccount('student', student.id, student.phone, student.name);
     return delay(student);
+  },
+
+  updateStudent(payload = {}) {
+    requireRole('admin');
+    const student = findStudent(payload.id);
+    if (!student) throw makeError('NOT_FOUND', '学生不存在。');
+    student.name = payload.name !== undefined ? String(payload.name || '').trim() || student.name : student.name;
+    student.phone = payload.phone !== undefined ? String(payload.phone || '').trim() : student.phone;
+    student.grade = payload.grade !== undefined ? String(payload.grade || '').trim() : student.grade;
+    syncPhoneAccount('student', student.id, student.phone, student.name);
+    pushAudit(getSession().identityId, 'update_student', 'student', student.id, `更新学生 ${student.name}`);
+    return delay({ ...student });
+  },
+
+  deleteStudent(input) {
+    requireRole('admin');
+    const id = normalizeId(input);
+    const student = findStudent(id);
+    if (!student) throw makeError('NOT_FOUND', '学生不存在。');
+    db.courses.forEach((course) => {
+      course.studentIds = (course.studentIds || []).filter((studentId) => studentId !== id);
+    });
+    db.classes.forEach((classItem) => {
+      classItem.studentIds = (classItem.studentIds || []).filter((studentId) => studentId !== id);
+    });
+    db.courseSessions.forEach((courseSession) => {
+      courseSession.studentIds = (courseSession.studentIds || []).filter((studentId) => studentId !== id);
+    });
+    removeFromCollection(db.lessonFeedbacks, (feedback) => feedback.studentId === id);
+    removeFromCollection(db.students, (item) => item.id === id);
+    removePhoneAccounts('student', id);
+    pushAudit(getSession().identityId, 'delete_student', 'student', id, `删除学生 ${student.name}`);
+    return delay({ ok: true, id });
   },
 
   createStudentGuardian(payload = {}) {
@@ -1225,7 +1368,7 @@ const mockApi = {
       name: payload.name || '新教室',
       capacity: Number(payload.capacity || 18),
       campus: payload.campus || '主校区',
-      cameraStatus: 'pending',
+      cameraStatus: payload.cameraStatus || 'pending',
       streamPlaceholder: '',
       liveProvider: 'classin',
       liveConfigStatus: 'pending'
@@ -1234,10 +1377,38 @@ const mockApi = {
     return delay(classroom);
   },
 
+  updateClassroom(payload = {}) {
+    requireRole('admin');
+    const classroom = findClassroom(payload.id);
+    if (!classroom) throw makeError('NOT_FOUND', '教室不存在。');
+    classroom.name = payload.name !== undefined ? String(payload.name || '').trim() || classroom.name : classroom.name;
+    classroom.campus = payload.campus !== undefined ? String(payload.campus || '').trim() || classroom.campus : classroom.campus;
+    classroom.capacity = payload.capacity !== undefined ? Number(payload.capacity || 0) || classroom.capacity : classroom.capacity;
+    classroom.cameraStatus = payload.cameraStatus !== undefined ? payload.cameraStatus || 'pending' : classroom.cameraStatus;
+    pushAudit(getSession().identityId, 'update_classroom', 'classroom', classroom.id, `更新教室 ${classroom.name}`);
+    return delay({ ...classroom, cameraStatusText: cameraStatusText(classroom.cameraStatus) });
+  },
+
+  deleteClassroom(input) {
+    requireRole('admin');
+    const id = normalizeId(input);
+    const classroom = findClassroom(id);
+    if (!classroom) throw makeError('NOT_FOUND', '教室不存在。');
+    const used = db.courses.some((course) => course.classroomId === id || course.defaultClassroomId === id)
+      || db.classes.some((classItem) => classItem.defaultClassroomId === id)
+      || db.courseSessions.some((courseSession) => courseSession.classroomId === id);
+    if (used) throw makeError('VALIDATION_ERROR', '该教室仍有关联课程或课次，请先调整排课。');
+    removeFromCollection(db.classrooms, (item) => item.id === id);
+    removeFromCollection(db.liveRooms, (item) => item.classroomId === id);
+    pushAudit(getSession().identityId, 'delete_classroom', 'classroom', id, `删除教室 ${classroom.name}`);
+    return delay({ ok: true, id });
+  },
+
   createCourse(payload = {}) {
     requireRole('admin');
     const teacher = findTeacher(payload.teacherId) || db.teachers[0];
     const classroom = findClassroom(payload.classroomId) || db.classrooms[0];
+    const studentIds = (payload.studentIds || []).filter((id) => Boolean(findStudent(id)));
     const course = {
       id: nextId('course', db.courses),
       classId: nextId('class', db.classes),
@@ -1248,13 +1419,17 @@ const mockApi = {
       mainTeacherId: teacher.id,
       classroomId: classroom.id,
       defaultClassroomId: classroom.id,
-      studentIds: payload.studentIds || [],
+      studentIds,
       defaultDurationMinutes: 90,
       status: 'active',
       description: payload.description || ''
     };
     db.courses.push(course);
-    teacher.courseIds.push(course.id);
+    addUnique(teacher.courseIds, course.id);
+    studentIds.forEach((studentId) => {
+      const student = findStudent(studentId);
+      if (student) addUnique(student.courseIds, course.id);
+    });
     db.classes.push({
       id: course.classId,
       courseId: course.id,
@@ -1262,11 +1437,87 @@ const mockApi = {
       subject: course.subject,
       grade: course.grade,
       mainTeacherId: teacher.id,
-      studentIds: course.studentIds,
+      studentIds: course.studentIds.slice(),
       defaultClassroomId: classroom.id,
       status: 'active'
     });
     return delay(decorateCourse(course));
+  },
+
+  updateCourse(payload = {}) {
+    requireRole('admin');
+    const course = findCourse(payload.id);
+    if (!course) throw makeError('NOT_FOUND', '课程不存在。');
+    const oldTeacher = findTeacher(course.teacherId);
+    const teacher = payload.teacherId ? findTeacher(payload.teacherId) : oldTeacher;
+    const classroom = payload.classroomId ? findClassroom(payload.classroomId) : findClassroom(course.classroomId);
+    if (!teacher) throw makeError('VALIDATION_ERROR', '授课教师不存在。');
+    if (!classroom) throw makeError('VALIDATION_ERROR', '教室不存在。');
+    course.name = payload.name !== undefined ? String(payload.name || '').trim() || course.name : course.name;
+    course.subject = payload.subject !== undefined ? String(payload.subject || '').trim() : course.subject;
+    course.grade = payload.grade !== undefined ? String(payload.grade || '').trim() : course.grade;
+    course.description = payload.description !== undefined ? String(payload.description || '').trim() : course.description;
+    course.teacherId = teacher.id;
+    course.mainTeacherId = teacher.id;
+    course.classroomId = classroom.id;
+    course.defaultClassroomId = classroom.id;
+    if (Array.isArray(payload.studentIds)) {
+      const nextStudentIds = payload.studentIds.filter((id) => Boolean(findStudent(id)));
+      const previousStudentIds = course.studentIds.slice();
+      course.studentIds = nextStudentIds;
+      previousStudentIds.forEach((studentId) => {
+        if (!nextStudentIds.includes(studentId)) {
+          const student = findStudent(studentId);
+          if (student) student.courseIds = student.courseIds.filter((courseId) => courseId !== course.id);
+        }
+      });
+      nextStudentIds.forEach((studentId) => {
+        const student = findStudent(studentId);
+        if (student) addUnique(student.courseIds, course.id);
+      });
+    }
+    if (oldTeacher && oldTeacher.id !== teacher.id) {
+      oldTeacher.courseIds = oldTeacher.courseIds.filter((courseId) => courseId !== course.id);
+    }
+    addUnique(teacher.courseIds, course.id);
+    const classItem = findClass(course.classId);
+    if (classItem) {
+      classItem.name = course.name;
+      classItem.subject = course.subject;
+      classItem.grade = course.grade;
+      classItem.mainTeacherId = teacher.id;
+      classItem.defaultClassroomId = classroom.id;
+      classItem.studentIds = course.studentIds.slice();
+    }
+    db.courseSessions.forEach((courseSession) => {
+      if (courseSession.courseId === course.id) {
+        courseSession.teacherId = teacher.id;
+        courseSession.classroomId = classroom.id;
+        courseSession.studentIds = course.studentIds.slice();
+      }
+    });
+    pushAudit(getSession().identityId, 'update_course', 'course', course.id, `更新课程 ${course.name}`);
+    return delay(decorateCourse(course));
+  },
+
+  deleteCourse(input) {
+    requireRole('admin');
+    const id = normalizeId(input);
+    const course = findCourse(id);
+    if (!course) throw makeError('NOT_FOUND', '课程不存在。');
+    db.teachers.forEach((teacher) => {
+      teacher.courseIds = (teacher.courseIds || []).filter((courseId) => courseId !== id);
+    });
+    db.students.forEach((student) => {
+      student.courseIds = (student.courseIds || []).filter((courseId) => courseId !== id);
+    });
+    removeFromCollection(db.assignments, (assignment) => assignment.courseId === id);
+    removeFromCollection(db.lessonFeedbacks, (feedback) => feedback.courseId === id);
+    removeFromCollection(db.courseSessions, (courseSession) => courseSession.courseId === id);
+    removeFromCollection(db.classes, (classItem) => classItem.courseId === id || classItem.id === course.classId);
+    removeFromCollection(db.courses, (item) => item.id === id);
+    pushAudit(getSession().identityId, 'delete_course', 'course', id, `删除课程 ${course.name}`);
+    return delay({ ok: true, id });
   },
 
   checkScheduleConflicts(payload = {}) {

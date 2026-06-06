@@ -2,6 +2,24 @@ const Api = require('../../../services/api');
 const Guard = require('../../../utils/page-guard');
 const Notice = require('../../../utils/notice');
 
+function buildFeedbackRecord(feedback) {
+  return {
+    id: feedback.id,
+    text: feedback.text || '',
+    createdAt: feedback.createdAt || '',
+    teacherName: feedback.teacherName || '',
+    feedbackType: feedback.feedbackType || 'post',
+    feedbackTypeText: feedback.feedbackTypeText || ((feedback.feedbackType || 'post') === 'pre' ? '课前测错题反馈' : '课后测错题反馈'),
+    imageFiles: feedback.imageFiles || [],
+    videoFiles: feedback.videoFiles || [],
+    voiceFiles: feedback.voiceFiles || [],
+    mediaFiles: feedback.mediaFiles || [],
+    imageCount: feedback.imageCount || 0,
+    videoCount: feedback.videoCount || 0,
+    voiceCount: feedback.voiceCount || 0
+  };
+}
+
 Page({
   data: {
     session: {},
@@ -221,16 +239,7 @@ Page({
         // ONLY this session's records
         const records = feedbacks
           .filter((f) => f.courseSessionId === this.data.sessionId)
-          .map((r) => ({
-            id: r.id,
-            text: r.text || '',
-            createdAt: r.createdAt || '',
-            teacherName: r.teacherName || '',
-            imageFiles: r.imageFiles || [],
-            voiceFiles: r.voiceFiles || [],
-            imageCount: r.imageCount || 0,
-            voiceCount: r.voiceCount || 0
-          }));
+          .map(buildFeedbackRecord);
 
         this.setData({
           courseName: course.name || '',
@@ -278,7 +287,6 @@ Page({
   //  Mode 4: Test list — 课前测/课后测
   // ================================================================
   loadTestList() {
-    const typeLabel = this.data.testTypeLabel;
     this.setData({ loading: true });
     Api.getStudentCourseDetail(this.data.courseId)
       .then((detail) => {
@@ -286,12 +294,15 @@ Page({
         const sessions = (detail.sessions || []).sort(
           (a, b) => a.sessionIndex - b.sessionIndex
         );
-        const assignments = detail.assignments || [];
+        const feedbacks = detail.lessonFeedbacks || [];
 
         const sessionTests = sessions.map((s) => {
-          const tests = assignments.filter(
-            (a) => a.courseSessionId === s.id && a.type === this.data.testType
-          );
+          const records = feedbacks
+            .filter((feedback) =>
+              feedback.courseSessionId === s.id
+              && (feedback.feedbackType || 'post') === this.data.testType
+            )
+            .map(buildFeedbackRecord);
           return {
             sessionId: s.id,
             sessionTitle: s.sessionTitle || s.displayTitle || `第${s.sessionIndex}次课`,
@@ -302,13 +313,7 @@ Page({
             classroomName: s.classroomName || course.classroomName || '',
             status: s.status || '',
             statusText: s.statusText || '',
-            tests: tests.map((t) => ({
-              id: t.id,
-              title: t.title || `${s.sessionTitle || '课次'}${typeLabel}`,
-              statusText: t.statusText || '可选记录',
-              file: t.file || null,
-              hasFile: !!t.file
-            }))
+            records
           };
         });
 
@@ -325,12 +330,14 @@ Page({
   },
 
   goTestDetail(event) {
-    const fileId = event.currentTarget.dataset.fileId;
-    if (fileId) {
-      wx.navigateTo({ url: `/pages/file-preview/file-preview?id=${fileId}` });
-    } else {
-      Notice.toast('该测验暂无文件资料', 'none');
-    }
+    const feedbackId = event.currentTarget.dataset.id;
+    if (!feedbackId) return;
+    Api.getFeedbackDetail(feedbackId)
+      .then((feedback) => {
+        const content = feedback.text || '该记录仅包含媒体反馈。';
+        Notice.alert(content, feedback.feedbackTypeText || '错题反馈');
+      })
+      .catch((error) => Notice.alert(error.message || '详情加载失败'));
   },
 
   // ================================================================
@@ -369,16 +376,7 @@ Page({
               records: []
             };
           }
-          groupMap[groupKey].records.push({
-            id: f.id,
-            text: f.text || '',
-            createdAt: f.createdAt || '',
-            teacherName: f.teacherName || '',
-            imageFiles: f.imageFiles || [],
-            voiceFiles: f.voiceFiles || [],
-            imageCount: f.imageCount || 0,
-            voiceCount: f.voiceCount || 0
-          });
+          groupMap[groupKey].records.push(buildFeedbackRecord(f));
         });
 
         // Convert to sorted array: groups by course, sessions in order

@@ -3,9 +3,12 @@ const Guard = require('../../utils/page-guard');
 const Notice = require('../../utils/notice');
 
 Page({
+  audioContext: null,
+
   data: {
     id: '',
-    preview: null
+    preview: null,
+    audioPlaying: false
   },
 
   onLoad(query) {
@@ -15,6 +18,10 @@ Page({
   onShow() {
     if (!Guard.ensureLogin()) return;
     this.load();
+  },
+
+  onUnload() {
+    this.destroyAudio();
   },
 
   load() {
@@ -34,15 +41,36 @@ Page({
     wx.previewImage({ urls: [url], current: url });
   },
 
-  downloadImage() {
-    Api.downloadFeedbackImage(this.data.id)
-      .then((result) => Notice.alert(result.message, '图片下载'))
-      .catch((error) => Notice.alert(error.message || '下载失败'));
+  toggleVoice() {
+    const file = this.data.preview && this.data.preview.file;
+    const src = file ? (file.previewUrl || file.url || file.tempPath) : '';
+    if (!src) {
+      Notice.toast('当前为 mock 语音占位');
+      return;
+    }
+    if (this.data.audioPlaying && this.audioContext) {
+      this.audioContext.stop();
+      this.setData({ audioPlaying: false });
+      return;
+    }
+    this.destroyAudio();
+    this.audioContext = wx.createInnerAudioContext();
+    this.audioContext.src = src;
+    this.audioContext.onEnded(() => this.setData({ audioPlaying: false }));
+    this.audioContext.onStop(() => this.setData({ audioPlaying: false }));
+    this.audioContext.onError(() => {
+      this.setData({ audioPlaying: false });
+      Notice.toast('语音播放失败');
+    });
+    this.audioContext.play();
+    this.setData({ audioPlaying: true });
   },
 
-  playVoice() {
-    Api.playFeedbackVoice(this.data.id)
-      .then((result) => Notice.alert(result.message, '语音播放'))
-      .catch((error) => Notice.alert(error.message || '播放失败'));
+  destroyAudio() {
+    if (!this.audioContext) return;
+    this.audioContext.stop();
+    this.audioContext.destroy();
+    this.audioContext = null;
+    this.setData({ audioPlaying: false });
   }
 });

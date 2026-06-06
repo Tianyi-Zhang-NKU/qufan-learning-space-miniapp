@@ -1,117 +1,383 @@
-/* ===== Admin Home — 课程合集 ===== */
+.admin-home {
+  color: #0b173d;
+}
 
-.course-collection-list {
+.overview-panel,
+.collection-launch-grid,
+.detail-top,
+.search-card,
+.result-line,
+.detail-list {
   max-width: 660rpx;
-  margin: 0 auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.overview-panel {
+  padding: 34rpx;
+  border-radius: 28rpx;
+  background: rgba(255, 252, 244, 0.86);
+  border: 1rpx solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 22rpx 58rpx rgba(44, 62, 80, 0.12);
+}
+
+.overview-head {
   display: flex;
   flex-direction: column;
-  gap: 28rpx;
+  gap: 8rpx;
 }
 
-/* ---- 合集卡片 ---- */
-.collection-card {
-  padding: 32rpx;
-  transition: all 200ms ease;
+.overview-title {
+  font-size: 34rpx;
+  font-weight: 800;
+  color: #0b173d;
 }
 
-.collection-card.expanded {
-  border-color: rgba(249, 115, 22, 0.32);
-  box-shadow: 0 28rpx 64rpx rgba(74, 92, 68, 0.22);
+.overview-sub {
+  font-size: 23rpx;
+  color: rgba(15, 23, 42, 0.52);
 }
 
-/* ---- 卡片头部（可点击） ---- */
-.collection-header:active {
-  opacity: 0.85;
+.overview-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14rpx;
+  margin-top: 30rpx;
 }
 
-.collection-header-top {
+.overview-stat {
+  min-width: 0;
+  padding: 22rpx 8rpx;
+  border-radius: 22rpx;
+  background: rgba(240, 243, 221, 0.68);
+  text-align: center;
+}
+
+.stat-number {
+  display: block;
+  font-size: 34rpx;
+  font-weight: 800;
+  color: #0b173d;
+  line-height: 1;
+}
+
+.stat-label {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 21rpx;
+  color: rgba(15, 23, 42, 0.48);
+}
+
+.collection-launch-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  margin-top: 28rpx;
+}
+
+.collection-launch {
   display: flex;
   align-items: center;
-  gap: 20rpx;
+  gap: 22rpx;
+  min-height: 136rpx;
+  padding: 24rpx 28rpx;
+  border-radius: 26rpx;
+  background: rgba(255, 252, 244, 0.9);
+  border: 1rpx solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 18rpx 42rpx rgba(44, 62, 80, 0.1);
 }
 
-.collection-icon {
-  width: 64rpx;
-  height: 64rpx;
-  border-radius: 20rpx;
-  background: rgba(249, 115, 22, 0.08);
+.collection-launch:active {
+  transform: scale(0.99);
+}
+
+.launch-icon {
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: 24rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 34rpx;
   flex-shrink: 0;
+  font-size: 30rpx;
+  font-weight: 800;
+  color: #0b173d;
+  background: #f0f3dd;
 }
 
-.collection-info {
+.collection-launch.students .launch-icon {
+  background: #dceee3;
+}
+
+.collection-launch.teachers .launch-icon {
+  background: #e5e8ff;
+}
+
+.collection-launch.classrooms .launch-icon {
+  background: #ffe6be;
+}
+
+.launch-body {
   flex: 1;
   min-width: 0;
 }
 
-.collection-name {
+.launch-title {
   display: block;
   font-size: 30rpx;
-  font-weight: 700;
-  color: #173a32;
-  line-height: 1.25;
+  font-weight: 800;
+  color: #0b173d;
 }
 
-.collection-meta {
+.launch-sub {
   display: block;
-  margin-top: 6rpx;
+  margin-top: 8rpx;
   font-size: 22rpx;
-  color: #65756b;
-  line-height: 1.35;
+  line-height: 1.45;
+  color: rgba(15, 23, 42, 0.52);
 }
 
-.collection-arrow {
+.launch-meta {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
   flex-shrink: 0;
-  width: 48rpx;
-  height: 48rpx;
-  border-radius: 50%;
-  background: rgba(23, 58, 50, 0.06);
+}
+
+.launch-count {
+  min-width: 56rpx;
+  height: 56rpx;
+  padding: 0 12rpx;
+  border-radius: 999rpx;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 24rpx;
+  font-weight: 800;
+  color: #0b173d;
+  background: rgba(15, 23, 42, 0.06);
 }
 
-.arrow-icon {
-  font-size: 20rpx;
-  color: #65756b;
+.launch-arrow {
+  font-size: 44rpx;
+  line-height: 1;
+  color: rgba(15, 23, 42, 0.38);
 }
 
-/* ---- 折叠态预览 ---- */
-.collection-preview {
+.detail-top {
   display: flex;
   align-items: center;
-  gap: 24rpx;
-  margin-top: 16rpx;
-  padding-top: 16rpx;
-  border-top: 1rpx dashed rgba(83, 117, 91, 0.12);
+  gap: 22rpx;
+  margin-bottom: 22rpx;
 }
 
-.preview-teacher {
-  font-size: 23rpx;
-  color: #506157;
+.back-btn {
+  width: 70rpx;
+  height: 70rpx;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 54rpx;
+  line-height: 1;
+  color: #0b173d;
+  background: rgba(255, 252, 244, 0.9);
+  border: 1rpx solid rgba(15, 23, 42, 0.08);
 }
 
-.preview-count {
-  font-size: 23rpx;
-  color: #f97316;
-  font-weight: 600;
+.detail-title-block {
+  min-width: 0;
+  flex: 1;
 }
 
-/* ---- 展开详情区域 ---- */
-.collection-detail {
-  margin-top: 24rpx;
-  padding-top: 24rpx;
-  border-top: 2rpx solid rgba(249, 115, 22, 0.16);
-  animation: detailFadeIn 200ms ease-out both;
+.detail-add-btn {
+  width: 112rpx;
+  height: 64rpx;
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 24rpx;
+  font-weight: 800;
+  color: #fff9ec;
+  background: #0b173d;
+  box-shadow: 0 12rpx 26rpx rgba(11, 23, 61, 0.18);
 }
 
-@keyframes detailFadeIn {
+.search-card {
+  min-height: 88rpx;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 0 24rpx;
+  border-radius: 26rpx;
+  background: rgba(255, 252, 244, 0.9);
+  border: 1rpx solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 14rpx 34rpx rgba(44, 62, 80, 0.08);
+}
+
+.search-icon {
+  flex-shrink: 0;
+  font-size: 30rpx;
+  color: rgba(15, 23, 42, 0.42);
+}
+
+.search-input {
+  flex: 1;
+  min-width: 0;
+  height: 88rpx;
+  font-size: 25rpx;
+  color: #0b173d;
+}
+
+.search-clear {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 32rpx;
+  color: rgba(15, 23, 42, 0.5);
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.result-line {
+  margin-top: 22rpx;
+  margin-bottom: 14rpx;
+  font-size: 22rpx;
+  color: rgba(15, 23, 42, 0.56);
+}
+
+.detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.collection-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.collection-card.expanded {
+  border-color: rgba(8, 19, 58, 0.18);
+  box-shadow: 0 24rpx 60rpx rgba(44, 62, 80, 0.14);
+}
+
+.item-head {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 26rpx;
+}
+
+.item-icon {
+  width: 70rpx;
+  height: 70rpx;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 28rpx;
+  font-weight: 800;
+  color: #0b173d;
+  background: #f0f3dd;
+}
+
+.student-icon {
+  background: #dceee3;
+}
+
+.teacher-icon {
+  background: #e5e8ff;
+}
+
+.room-icon {
+  background: #ffe6be;
+}
+
+.item-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 800;
+  color: #0b173d;
+  line-height: 1.25;
+}
+
+.item-sub {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 21rpx;
+  line-height: 1.45;
+  color: rgba(15, 23, 42, 0.52);
+}
+
+.item-side {
+  min-width: 68rpx;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.side-number {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 800;
+  color: #0b173d;
+  line-height: 1;
+}
+
+.side-label {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 19rpx;
+  color: rgba(15, 23, 42, 0.44);
+}
+
+.item-detail {
+  padding: 0 26rpx 28rpx 116rpx;
+  animation: detailIn 160ms ease-out both;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.edit-btn {
+  min-width: 112rpx;
+  height: 56rpx;
+  border-radius: 18rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22rpx;
+  font-weight: 750;
+  color: #0b173d;
+  background: rgba(240, 243, 221, 0.9);
+  border: 1rpx solid rgba(15, 23, 42, 0.08);
+}
+
+.edit-btn.danger {
+  color: #991b1b;
+  background: rgba(254, 226, 226, 0.76);
+  border-color: rgba(239, 68, 68, 0.16);
+}
+
+@keyframes detailIn {
   from {
     opacity: 0;
-    transform: translateY(-8rpx);
+    transform: translateY(-6rpx);
   }
   to {
     opacity: 1;
@@ -119,274 +385,211 @@
   }
 }
 
-.detail-section {
-  margin-bottom: 32rpx;
-}
-
-.detail-section:last-child {
-  margin-bottom: 0;
-}
-
-.detail-section-title {
+.detail-row {
   display: flex;
-  align-items: center;
-  gap: 10rpx;
-  margin-bottom: 18rpx;
-  font-size: 25rpx;
-  font-weight: 650;
-  color: #173a32;
+  justify-content: space-between;
+  gap: 18rpx;
+  padding: 12rpx 0;
+  border-top: 1rpx solid rgba(15, 23, 42, 0.06);
 }
 
-.section-icon {
-  font-size: 26rpx;
-}
-
-/* ---- 老师卡片 ---- */
-.teacher-card {
-  display: flex;
-  align-items: center;
-  gap: 20rpx;
-  padding: 24rpx;
-  border-radius: 20rpx;
-  background: linear-gradient(145deg, rgba(99, 102, 241, 0.06), rgba(255, 255, 255, 0.5));
-  border: 1rpx solid rgba(99, 102, 241, 0.14);
-}
-
-.teacher-avatar {
-  width: 68rpx;
-  height: 68rpx;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #6366f1, #4f46e5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.detail-label {
   flex-shrink: 0;
-}
-
-.teacher-avatar-text {
-  color: #fff;
-  font-size: 28rpx;
-  font-weight: 700;
-}
-
-.teacher-detail {
-  min-width: 0;
-}
-
-.teacher-name {
-  display: block;
-  font-size: 27rpx;
-  font-weight: 650;
-  color: #173a32;
-}
-
-.teacher-meta {
-  display: block;
-  margin-top: 4rpx;
-  font-size: 22rpx;
-  color: #65756b;
-}
-
-.teacher-subject {
-  display: block;
-  margin-top: 4rpx;
   font-size: 21rpx;
-  color: #6366f1;
+  color: rgba(15, 23, 42, 0.46);
 }
 
-/* ---- 学生列表 ---- */
-.student-list {
-  display: flex;
-  flex-direction: column;
-  gap: 14rpx;
-}
-
-.student-card {
-  border-radius: 18rpx;
-  background: rgba(255, 255, 255, 0.48);
-  border: 1rpx solid rgba(83, 117, 91, 0.1);
-  overflow: hidden;
-}
-
-.student-card-header {
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
-  padding: 18rpx 20rpx;
-}
-
-.student-card-header:active {
-  background: rgba(249, 115, 22, 0.04);
-}
-
-.student-avatar {
-  width: 52rpx;
-  height: 52rpx;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #0d9488, #0f766e);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.student-avatar-text {
-  color: #fff;
-  font-size: 24rpx;
-  font-weight: 700;
-}
-
-.student-info {
-  flex: 1;
+.detail-value {
   min-width: 0;
+  text-align: right;
+  font-size: 22rpx;
+  color: #0b173d;
 }
 
-.student-name {
-  display: block;
-  font-size: 25rpx;
-  font-weight: 600;
-  color: #1f352e;
+.mini-section {
+  margin-top: 22rpx;
+  margin-bottom: 12rpx;
+  font-size: 22rpx;
+  font-weight: 750;
+  color: #0b173d;
 }
 
-.student-grade {
-  display: block;
-  margin-top: 2rpx;
-  font-size: 20rpx;
-  color: #65756b;
-}
-
-.student-badges {
+.chip-list {
   display: flex;
-  align-items: center;
-  gap: 12rpx;
-  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 10rpx;
 }
 
-.badge-feedback {
-  display: inline-block;
-  padding: 4rpx 14rpx;
+.info-chip {
+  max-width: 100%;
+  padding: 9rpx 16rpx;
   border-radius: 999rpx;
-  font-size: 19rpx;
-  color: #0d9488;
-  background: rgba(13, 148, 136, 0.08);
+  font-size: 20rpx;
+  color: rgba(15, 23, 42, 0.66);
+  background: rgba(240, 243, 221, 0.78);
 }
 
-.expand-badge {
-  font-size: 18rpx;
-  color: #b5c4b8;
-  width: 28rpx;
-  text-align: center;
-}
-
-/* ---- 学生反馈详情 ---- */
-.student-feedback-detail {
-  padding: 0 20rpx 18rpx 88rpx;
-  animation: detailFadeIn 160ms ease-out both;
-}
-
-.feedback-list {
+.mini-list {
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
+  gap: 10rpx;
 }
 
-.feedback-item {
-  padding: 16rpx;
-  border-radius: 14rpx;
-  background: rgba(255, 250, 238, 0.6);
-  border: 1rpx solid rgba(83, 117, 91, 0.06);
+.mini-row {
+  padding: 16rpx 18rpx;
+  border-radius: 18rpx;
+  background: rgba(255, 255, 255, 0.52);
+  border: 1rpx solid rgba(15, 23, 42, 0.06);
 }
 
-.fb-header {
+.mini-title {
+  display: block;
+  font-size: 23rpx;
+  font-weight: 700;
+  color: #0b173d;
+}
+
+.mini-meta {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 20rpx;
+  line-height: 1.45;
+  color: rgba(15, 23, 42, 0.52);
+}
+
+.empty-inline {
+  padding: 18rpx;
+  border-radius: 16rpx;
+  font-size: 21rpx;
+  text-align: center;
+  color: rgba(15, 23, 42, 0.46);
+  background: rgba(255, 255, 255, 0.48);
+}
+
+.editor-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 28rpx;
+  background: rgba(8, 13, 35, 0.48);
+}
+
+.editor-panel {
+  width: 100%;
+  max-width: 690rpx;
+  max-height: 86vh;
+  padding: 28rpx;
+  border-radius: 28rpx;
+  background: #fffaf0;
+  box-shadow: 0 28rpx 80rpx rgba(8, 13, 35, 0.28);
+  overflow-y: auto;
+}
+
+.editor-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 6rpx;
+  gap: 18rpx;
+  margin-bottom: 24rpx;
 }
 
-.fb-teacher {
-  font-size: 20rpx;
-  font-weight: 600;
-  color: #6366f1;
+.editor-title {
+  font-size: 32rpx;
+  font-weight: 850;
+  color: #0b173d;
 }
 
-.fb-time {
-  font-size: 18rpx;
-  color: #8a9d92;
-}
-
-.fb-text {
-  display: block;
-  font-size: 22rpx;
-  color: #1f352e;
-  line-height: 1.5;
-}
-
-.fb-media-tags {
-  margin-top: 10rpx;
+.editor-close {
+  width: 52rpx;
+  height: 52rpx;
+  border-radius: 50%;
   display: flex;
-  gap: 14rpx;
+  align-items: center;
+  justify-content: center;
+  color: rgba(15, 23, 42, 0.52);
+  font-size: 34rpx;
+  background: rgba(15, 23, 42, 0.06);
 }
 
-.fb-media-tag {
-  font-size: 19rpx;
-  color: #65756b;
-}
-
-.no-feedback-detail {
-  padding: 16rpx 0;
-  font-size: 20rpx;
-  color: #8a9d92;
-  text-align: center;
-}
-
-/* ---- 课次概览 ---- */
-.session-mini-list {
+.editor-fields {
   display: flex;
   flex-direction: column;
-  gap: 10rpx;
+  gap: 18rpx;
 }
 
-.session-mini-item {
+.editor-row {
   display: flex;
-  align-items: flex-start;
   gap: 16rpx;
-  padding: 14rpx 16rpx;
-  border-radius: 14rpx;
-  background: rgba(255, 255, 255, 0.44);
-  border: 1rpx solid rgba(83, 117, 91, 0.08);
 }
 
-.session-mini-dot {
-  width: 10rpx;
-  height: 10rpx;
-  border-radius: 50%;
-  background: #f97316;
-  margin-top: 10rpx;
-  flex-shrink: 0;
-}
-
-.session-mini-info {
-  flex: 1;
+.editor-field {
   min-width: 0;
 }
 
-.session-mini-title {
-  display: block;
-  font-size: 23rpx;
-  font-weight: 600;
-  color: #1f352e;
+.editor-field.half {
+  flex: 1;
 }
 
-.session-mini-meta {
+.field-label {
   display: block;
-  margin-top: 4rpx;
-  font-size: 20rpx;
-  color: #65756b;
+  margin-bottom: 8rpx;
+  color: rgba(15, 23, 42, 0.52);
+  font-size: 22rpx;
+  font-weight: 700;
 }
 
-/* ===== Shared ===== */
-.compact-empty {
-  margin-top: 16rpx;
-  padding: 28rpx 16rpx;
+.field-input,
+.picker-value,
+.field-textarea {
+  width: 100%;
+  min-height: 76rpx;
+  box-sizing: border-box;
+  padding: 0 20rpx;
+  border-radius: 18rpx;
+  border: 1rpx solid rgba(15, 23, 42, 0.1);
+  background: rgba(255, 255, 255, 0.78);
+  color: #0b173d;
+  font-size: 25rpx;
+}
+
+.picker-value {
+  display: flex;
+  align-items: center;
+}
+
+.field-textarea {
+  min-height: 150rpx;
+  padding-top: 18rpx;
+  line-height: 1.5;
+}
+
+.editor-actions {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 28rpx;
+}
+
+.editor-cancel,
+.editor-save {
+  flex: 1;
+  height: 78rpx;
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+  font-weight: 800;
+}
+
+.editor-cancel {
+  color: #0b173d;
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.editor-save {
+  color: #fff9ec;
+  background: #0b173d;
 }

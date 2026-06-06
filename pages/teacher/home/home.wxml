@@ -5,7 +5,7 @@
     <view class="qf-top">
       <view class="qf-brand">
         <text class="qf-brand-title">{{teacherName}} 老师的课程</text>
-        <text class="qf-brand-sub">共 {{courses.length}} 门课程 · 课前测 / 课后测 / 课后反馈</text>
+        <text class="qf-brand-sub">共 {{courses.length}} 门课程 · 课前/课后错题反馈</text>
       </view>
     </view>
 
@@ -59,15 +59,15 @@
         <view class="course-actions">
           <button class="action-btn pre-test-btn" data-course-id="{{item.id}}" data-course-name="{{item.name}}" bindtap="goPreTest">
             <text class="action-icon">📋</text>
-            <text class="action-label">课前测</text>
+            <text class="action-label">课前错题</text>
           </button>
           <button class="action-btn post-test-btn" data-course-id="{{item.id}}" data-course-name="{{item.name}}" bindtap="goPostTest">
             <text class="action-icon">📝</text>
-            <text class="action-label">课后测</text>
+            <text class="action-label">课后错题</text>
           </button>
           <button class="action-btn feedback-btn" data-course-id="{{item.id}}" data-course-name="{{item.name}}" bindtap="goFeedback">
             <text class="action-icon">💬</text>
-            <text class="action-label">反馈</text>
+            <text class="action-label">课程错题</text>
           </button>
         </view>
       </view>

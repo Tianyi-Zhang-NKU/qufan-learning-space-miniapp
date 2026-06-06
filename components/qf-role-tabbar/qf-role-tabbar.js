@@ -1,18 +1,17 @@
 const TABS = {
   parent: [
     { text: '首页', mark: '⌂', url: '/pages/parent/home/home' },
-    { text: '课程', mark: '▤', url: '/pages/parent/courses/courses' },
-    { text: '反馈', mark: '✎', url: '/pages/parent/exercises/exercises' },
+    { text: '课程', mark: '+', url: '/pages/parent/courses/courses', primary: true },
     { text: '我的', mark: '○', url: '/pages/profile/profile' }
   ],
   teacher: [
     { text: '首页', mark: '⌂', url: '/pages/teacher/home/home' },
-    { text: '课程', mark: '▤', url: '/pages/teacher/courses/courses' },
+    { text: '课程', mark: '+', url: '/pages/teacher/courses/courses', primary: true },
     { text: '我的', mark: '○', url: '/pages/profile/profile' }
   ],
   admin: [
     { text: '首页', mark: '⌂', url: '/pages/admin/home/home' },
-    { text: '数据', mark: '◇', url: '/pages/admin/manage/manage' },
+    { text: '数据', mark: '+', url: '/pages/admin/manage/manage', primary: true },
     { text: '课表', mark: '◷', url: '/pages/admin/schedule-board/schedule-board' },
     { text: '我的', mark: '○', url: '/pages/profile/profile' }
   ]

@@ -529,6 +529,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 16rpx;
+  flex-wrap: wrap;
   padding: 20rpx 22rpx;
   border-radius: 18rpx;
   border: 1rpx solid rgba(234, 88, 12, 0.16);
@@ -557,15 +558,34 @@
   font-size: 21rpx;
 }
 
+.test-record-text {
+  display: block;
+  margin-top: 8rpx;
+  color: #1f352e;
+  font-size: 23rpx;
+  line-height: 1.45;
+}
+
 .test-record-right {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 10rpx;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .test-record-arrow {
   color: rgba(45, 75, 64, 0.34);
   font-size: 32rpx;
   font-weight: 300;
+}
+
+.test-record-media {
+  width: 100%;
+  display: flex;
+  gap: 10rpx;
+  flex-wrap: wrap;
+  padding-top: 10rpx;
+  border-top: 1rpx solid rgba(83, 117, 91, 0.08);
 }

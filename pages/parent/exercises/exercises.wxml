@@ -192,11 +192,13 @@
               <text class="record-detail-date">{{item.createdAt}}</text>
               <text class="record-detail-teacher">{{item.teacherName}}</text>
             </view>
-            <text class="record-detail-text">{{item.text || '（图片/语音反馈）'}}</text>
+            <text class="record-detail-text">{{item.text || '（图片/视频/语音反馈）'}}</text>
 
             <!-- Media badges -->
-            <view class="record-detail-tags" wx:if="{{item.imageCount || item.voiceCount}}">
+            <view class="record-detail-tags" wx:if="{{item.imageCount || item.videoCount || item.voiceCount}}">
+              <text class="detail-tag">{{item.feedbackTypeText}}</text>
               <text wx:if="{{item.imageCount}}" class="detail-tag">📷 {{item.imageCount}} 张图片</text>
+              <text wx:if="{{item.videoCount}}" class="detail-tag">🎬 {{item.videoCount}} 个视频</text>
               <text wx:if="{{item.voiceCount}}" class="detail-tag">🎙️ {{item.voiceCount}} 条语音</text>
             </view>
 
@@ -212,6 +214,18 @@
               >📷 查看图片</button>
             </view>
 
+            <!-- Video play buttons -->
+            <view wx:if="{{item.videoFiles.length}}" class="record-detail-media">
+              <button
+                wx:for="{{item.videoFiles}}"
+                wx:for-item="video"
+                wx:key="id"
+                class="qf-btn ghost small media-btn"
+                data-id="{{video.id}}"
+                catchtap="previewRecordMedia"
+              >🎬 播放视频</button>
+            </view>
+
             <!-- Voice play buttons -->
             <view wx:if="{{item.voiceFiles.length}}" class="record-detail-media">
               <button
@@ -220,7 +234,7 @@
                 wx:key="id"
                 class="qf-btn ghost small media-btn"
                 data-id="{{voice.id}}"
-                catchtap="playVoice"
+                catchtap="previewRecordMedia"
               >🎙️ 播放语音</button>
             </view>
           </view>
@@ -277,9 +291,11 @@
                   <text class="all-record-date">{{item.createdAt}}</text>
                   <text class="all-record-teacher">{{item.teacherName}}</text>
                 </view>
-                <text class="all-record-text">{{item.text || '（图片/语音反馈）'}}</text>
-                <view class="all-record-tags" wx:if="{{item.imageCount || item.voiceCount}}">
+                <text class="all-record-text">{{item.text || '（图片/视频/语音反馈）'}}</text>
+                <view class="all-record-tags" wx:if="{{item.imageCount || item.videoCount || item.voiceCount}}">
+                  <text class="detail-tag">{{item.feedbackTypeText}}</text>
                   <text wx:if="{{item.imageCount}}" class="detail-tag">📷 {{item.imageCount}} 张</text>
+                  <text wx:if="{{item.videoCount}}" class="detail-tag">🎬 {{item.videoCount}} 个</text>
                   <text wx:if="{{item.voiceCount}}" class="detail-tag">🎙️ {{item.voiceCount}} 条</text>
                 </view>
                 <view wx:if="{{item.imageFiles.length}}" class="all-record-media">
@@ -292,6 +308,16 @@
                     catchtap="previewRecordMedia"
                   >📷 查看图片</button>
                 </view>
+                <view wx:if="{{item.videoFiles.length}}" class="all-record-media">
+                  <button
+                    wx:for="{{item.videoFiles}}"
+                    wx:for-item="video"
+                    wx:key="id"
+                    class="qf-btn ghost small"
+                    data-id="{{video.id}}"
+                    catchtap="previewRecordMedia"
+                  >🎬 播放视频</button>
+                </view>
                 <view wx:if="{{item.voiceFiles.length}}" class="all-record-media">
                   <button
                     wx:for="{{item.voiceFiles}}"
@@ -299,7 +325,7 @@
                     wx:key="id"
                     class="qf-btn ghost small"
                     data-id="{{voice.id}}"
-                    catchtap="playVoice"
+                    catchtap="previewRecordMedia"
                   >🎙️ 播放语音</button>
                 </view>
               </view>
@@ -319,7 +345,7 @@
       <view class="qf-top">
         <view class="qf-brand">
           <text class="qf-brand-title">{{testTypeLabel}}</text>
-          <text class="qf-brand-sub">{{courseName}} · {{sessionTests.length}} 次课</text>
+        <text class="qf-brand-sub">{{courseName}} · 按课次查看错题反馈</text>
         </view>
       </view>
 
@@ -362,28 +388,55 @@
           </view>
 
           <view class="test-records">
-            <view wx:if="{{item.tests.length}}" class="test-records-list">
+            <view wx:if="{{item.records.length}}" class="test-records-list">
               <view
-                wx:for="{{item.tests}}"
+                wx:for="{{item.records}}"
                 wx:key="id"
                 class="test-record-item"
                 data-id="{{item.id}}"
-                data-file-id="{{item.file ? item.file.id : ''}}"
                 bindtap="goTestDetail"
               >
                 <view class="test-record-left">
-                  <text class="test-record-title">{{item.title}}</text>
-                  <text class="test-record-meta">{{item.statusText}}</text>
+                  <text class="test-record-title">{{item.feedbackTypeText}}</text>
+                  <text class="test-record-meta">{{item.createdAt}} · {{item.teacherName}}</text>
+                  <text class="test-record-text">{{item.text || '媒体错题反馈'}}</text>
                 </view>
                 <view class="test-record-right">
-                  <text wx:if="{{item.hasFile}}" class="detail-tag ok">有资料</text>
-                  <text wx:else class="detail-tag muted">暂无资料</text>
+                  <text wx:if="{{item.imageCount}}" class="detail-tag ok">图 {{item.imageCount}}</text>
+                  <text wx:if="{{item.videoCount}}" class="detail-tag ok">视频 {{item.videoCount}}</text>
+                  <text wx:if="{{item.voiceCount}}" class="detail-tag ok">语音 {{item.voiceCount}}</text>
                   <text class="test-record-arrow">›</text>
+                </view>
+                <view wx:if="{{item.imageFiles.length || item.videoFiles.length || item.voiceFiles.length}}" class="test-record-media">
+                  <button
+                    wx:for="{{item.imageFiles}}"
+                    wx:for-item="media"
+                    wx:key="id"
+                    class="qf-btn ghost small media-btn"
+                    data-id="{{media.id}}"
+                    catchtap="previewRecordMedia"
+                  >查看图片</button>
+                  <button
+                    wx:for="{{item.videoFiles}}"
+                    wx:for-item="video"
+                    wx:key="id"
+                    class="qf-btn ghost small media-btn"
+                    data-id="{{video.id}}"
+                    catchtap="previewRecordMedia"
+                  >播放视频</button>
+                  <button
+                    wx:for="{{item.voiceFiles}}"
+                    wx:for-item="voice"
+                    wx:key="id"
+                    class="qf-btn ghost small media-btn"
+                    data-id="{{voice.id}}"
+                    catchtap="previewRecordMedia"
+                  >播放语音</button>
                 </view>
               </view>
             </view>
             <view wx:else class="records-empty">
-              <text>暂无{{testTypeLabel}}记录</text>
+              <text>暂无{{testTypeLabel}}错题反馈</text>
             </view>
           </view>
         </view>

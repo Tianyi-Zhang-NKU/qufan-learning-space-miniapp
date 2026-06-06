@@ -7,6 +7,8 @@ Page({
     session: {},
     courseId: '',
     courseName: '',
+    feedbackType: 'post',
+    feedbackTypeLabel: '课后测错题',
     courseInfo: {
       subject: '',
       grade: '',
@@ -19,12 +21,16 @@ Page({
   },
 
   onLoad(options) {
-    const { courseId, courseName } = options;
+    const { courseId, courseName, feedbackType } = options;
+    const type = ['pre', 'post', 'general'].includes(feedbackType) ? feedbackType : 'post';
+    const typeLabel = type === 'pre' ? '课前测错题' : type === 'post' ? '课后测错题' : '课程错题';
     this.setData({
       courseId: courseId || '',
-      courseName: decodeURIComponent(courseName || '')
+      courseName: decodeURIComponent(courseName || ''),
+      feedbackType: type,
+      feedbackTypeLabel: typeLabel
     });
-    wx.setNavigationBarTitle({ title: `课后反馈 - ${this.data.courseName}` });
+    wx.setNavigationBarTitle({ title: `${typeLabel} - ${this.data.courseName}` });
   },
 
   onShow() {
@@ -50,7 +56,9 @@ Page({
         };
 
         // 计算每个学生的反馈数量
-        const feedbacks = data.lessonFeedbacks || [];
+        const feedbacks = (data.lessonFeedbacks || []).filter(
+          (feedback) => (feedback.feedbackType || 'post') === this.data.feedbackType
+        );
         const totalFeedbackCount = feedbacks.length;
 
         const students = (data.students || []).map((student) => {
@@ -76,7 +84,7 @@ Page({
   goFeedbackDetail(event) {
     const { studentId, studentName } = event.currentTarget.dataset;
     wx.navigateTo({
-      url: `/pages/teacher/feedback-detail/feedback-detail?courseId=${this.data.courseId}&courseName=${encodeURIComponent(this.data.courseName)}&studentId=${studentId}&studentName=${encodeURIComponent(studentName)}`
+      url: `/pages/teacher/feedback-detail/feedback-detail?courseId=${this.data.courseId}&courseName=${encodeURIComponent(this.data.courseName)}&studentId=${studentId}&studentName=${encodeURIComponent(studentName)}&feedbackType=${this.data.feedbackType}`
     });
   }
 });
