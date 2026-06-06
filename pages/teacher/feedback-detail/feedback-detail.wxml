@@ -1,0 +1,106 @@
+<view class="qf-page qf-page-fixed">
+  <z-bg mode="dark"></z-bg>
+
+  <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
+    <!-- 顶部标题 -->
+    <view class="qf-top">
+      <view class="qf-brand">
+        <text class="qf-brand-title">{{studentName}} · 课后反馈</text>
+        <text class="qf-brand-sub">{{courseName}} · 选择课次填写反馈</text>
+      </view>
+    </view>
+
+    <!-- 课次横向滑动导航栏 -->
+    <view class="session-nav-wrapper">
+      <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="session-nav-scroll">
+        <view class="session-nav-inner">
+          <view
+            wx:for="{{sessions}}"
+            wx:key="id"
+            class="session-tab {{activeSessionId === item.id ? 'active' : ''}}"
+            data-session-id="{{item.id}}"
+            bindtap="selectSession"
+          >
+            <text class="session-tab-title">{{item.sessionTitle || item.displayTitle}}</text>
+            <text class="session-tab-date">{{item.date}}</text>
+            <text class="session-tab-status-dot {{item.status}}">{{item.statusText || '未开始'}}</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 当前课次已有反馈展示 -->
+    <view wx:if="{{existingFeedback}}" class="qf-card existing-feedback">
+      <view class="existing-header">
+        <text class="qf-h3">📋 已有反馈</text>
+        <text class="qf-muted">{{existingFeedback.createdAt}}</text>
+      </view>
+      <text class="existing-text">{{existingFeedback.text}}</text>
+      <view wx:if="{{existingFeedback.imageFiles.length || existingFeedback.voiceFiles.length}}" class="existing-media-tags">
+        <text wx:for="{{existingFeedback.imageFiles}}" wx:key="id" class="media-tag">🖼 图片</text>
+        <text wx:for="{{existingFeedback.voiceFiles}}" wx:key="id" class="media-tag">🎤 语音</text>
+      </view>
+    </view>
+
+    <!-- 反馈文本输入 -->
+    <view class="qf-section">反馈留言</view>
+    <view class="qf-card tight">
+      <textarea
+        class="feedback-textarea"
+        value="{{feedbackText}}"
+        placeholder="请输入课后反馈内容，如：课堂表现、知识薄弱点、建议等…"
+        placeholder-style="color: #9aada2;"
+        maxlength="2000"
+        auto-height
+        bindinput="onTextInput"
+      ></textarea>
+    </view>
+
+    <!-- 图片上传 -->
+    <view class="qf-section">图片上传</view>
+    <view class="qf-card tight">
+      <view wx:if="{{imageFiles.length}}" class="image-preview-list">
+        <view wx:for="{{imageFiles}}" wx:key="id" class="image-preview-item">
+          <image wx:if="{{item.tempPath}}" class="preview-thumb" src="{{item.tempPath}}" mode="aspectFill"></image>
+          <view wx:else class="preview-thumb-placeholder">🖼</view>
+          <text class="preview-name">{{item.name}}</text>
+          <button class="remove-btn" data-id="{{item.id}}" data-type="image" bindtap="removeMedia">✕</button>
+        </view>
+      </view>
+      <button class="upload-btn" bindtap="chooseImage">
+        <text class="upload-btn-icon">📷</text>
+        <text>添加图片</text>
+      </button>
+    </view>
+
+    <!-- PDF/Word 文件上传 -->
+    <view class="qf-section">资料文件上传（PDF / Word）</view>
+    <view class="qf-card tight">
+      <view wx:if="{{attachFiles.length}}" class="file-preview-list">
+        <view wx:for="{{attachFiles}}" wx:key="id" class="file-preview-item">
+          <text class="file-preview-icon">{{item.ext === 'pdf' ? '📄' : '📃'}}</text>
+          <view class="file-preview-info">
+            <text class="file-preview-name">{{item.name}}</text>
+            <text class="file-preview-size">{{item.sizeText}}</text>
+          </view>
+          <button class="remove-btn" data-id="{{item.id}}" data-type="file" bindtap="removeMedia">✕</button>
+        </view>
+      </view>
+      <button class="upload-btn" bindtap="chooseAttachFile">
+        <text class="upload-btn-icon">📎</text>
+        <text>添加 PDF / Word 文件</text>
+      </button>
+    </view>
+
+    <!-- 提交按钮 -->
+    <view class="submit-area">
+      <button class="qf-btn full submit-btn" bindtap="submitFeedback" disabled="{{submitting}}">
+        {{submitting ? '提交中…' : '提交反馈'}}
+      </button>
+    </view>
+
+    <view class="qf-safe-bottom"></view>
+  </scroll-view>
+
+  <qf-role-tabbar role="teacher" current="/pages/teacher/home/home" fixed="{{false}}"></qf-role-tabbar>
+</view>

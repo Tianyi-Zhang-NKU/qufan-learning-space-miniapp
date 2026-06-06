@@ -1,72 +1,301 @@
+/* ===== Admin Manage — 数据管理 ===== */
+
 .admin-entry-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   max-width: 620rpx;
 }
 
-.admin-loose-card {
+/* 确保两个入口按钮大小一致 */
+.admin-entry-grid .qf-entry-card {
+  min-height: 156rpx;
+  height: 156rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+/* ---- Shared Form Styles ---- */
+.import-card {
   max-width: 660rpx;
   margin-left: auto;
   margin-right: auto;
 }
 
-.admin-filterbar {
-  display: flex;
-  flex-direction: column;
-  gap: 20rpx;
-  margin-bottom: 28rpx;
+.form-group {
+  margin-bottom: 24rpx;
 }
 
-.admin-search {
-  margin-top: 0;
-  border-width: 2rpx;
-  border-color: rgba(23, 58, 50, 0.28);
-  background: rgba(255, 255, 255, 0.88);
+.form-label {
+  display: block;
+  margin-bottom: 10rpx;
+  font-size: 23rpx;
+  font-weight: 650;
+  color: #173a32;
 }
 
-.admin-picker {
+.required {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.optional {
+  color: #8a9d92;
+  font-weight: 400;
+  font-size: 20rpx;
+}
+
+.import-picker {
   margin-top: 0;
   border-width: 2rpx;
   border-color: rgba(23, 58, 50, 0.26);
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.88), rgba(255, 250, 238, 0.68)),
-    rgba(255, 250, 238, 0.86);
+  background: rgba(255, 255, 255, 0.82);
+  min-height: 80rpx;
 }
 
-.centered-wrap {
-  justify-content: center;
+/* ---- Form Row (2-column) ---- */
+.form-row {
+  display: flex;
+  gap: 20rpx;
 }
 
-.center-text {
-  text-align: center;
+.form-half {
+  flex: 1;
+  min-width: 0;
 }
 
-.relation-course {
-  margin-top: 18rpx;
-  padding-top: 18rpx;
-  border-top: 1rpx solid rgba(83, 117, 91, 0.12);
+/* ---- Form Inputs ---- */
+.form-input {
+  margin-top: 0;
+  min-height: 80rpx;
+  padding: 0 20rpx;
+  border-width: 2rpx;
+  border-color: rgba(23, 58, 50, 0.26);
+  background: rgba(255, 255, 255, 0.82);
+  font-size: 25rpx;
+  border-radius: 22rpx;
 }
 
-.detail-list {
-  margin-top: 26rpx;
+.form-textarea {
+  margin-top: 0;
+  min-height: 140rpx;
+  padding: 18rpx 20rpx;
+  border-width: 2rpx;
+  border-color: rgba(23, 58, 50, 0.26);
+  background: rgba(255, 255, 255, 0.82);
+  font-size: 25rpx;
+  border-radius: 22rpx;
+  line-height: 1.5;
 }
 
-.feedback-mini {
-  margin-top: 12rpx;
-  padding: 16rpx;
+/* ---- Selected preview cards ---- */
+.selected-preview {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 22rpx;
+  margin-bottom: 8rpx;
   border-radius: 20rpx;
-  background: rgba(255, 255, 255, 0.42);
+  background: rgba(255, 255, 255, 0.52);
+  border: 1rpx solid rgba(83, 117, 91, 0.14);
 }
 
-.relation-actions {
+.selected-preview.course-preview {
+  margin-bottom: 24rpx;
+}
+
+.preview-avatar {
+  width: 66rpx;
+  height: 66rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.preview-avatar.student-avatar-bg {
+  background: linear-gradient(145deg, #0d9488, #0f766e);
+}
+
+.preview-avatar.course-avatar-bg {
+  background: linear-gradient(145deg, #f97316, #ea580c);
+}
+
+.preview-avatar-text {
+  color: #fff;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.preview-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.preview-name {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 650;
+  color: #173a32;
+}
+
+.preview-meta {
+  display: block;
+  margin-top: 4rpx;
+  font-size: 21rpx;
+  color: #65756b;
+}
+
+.preview-courses {
+  display: block;
+  margin-top: 4rpx;
+  font-size: 20rpx;
+  color: #0d9488;
+  font-weight: 600;
+}
+
+/* ---- Import arrow ---- */
+.import-arrow {
+  display: flex;
+  justify-content: center;
+  padding: 12rpx 0;
+  margin-bottom: 8rpx;
+}
+
+.arrow-down {
+  font-size: 36rpx;
+  color: #f97316;
+  animation: bounceDown 800ms ease-in-out infinite;
+}
+
+@keyframes bounceDown {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6rpx); }
+}
+
+/* ---- Import button ---- */
+.import-btn {
+  margin-top: 28rpx;
+  min-height: 88rpx;
+  font-size: 28rpx;
+  border-radius: 26rpx;
+}
+
+.import-btn[disabled] {
+  opacity: 0.55;
+}
+
+/* ---- Result banner ---- */
+.result-banner {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
   margin-top: 24rpx;
-  justify-content: flex-start;
+  padding: 20rpx 24rpx;
+  border-radius: 18rpx;
+  animation: fadeSlideIn 200ms ease-out both;
 }
 
-.compact-empty {
-  margin-top: 22rpx;
-  padding: 24rpx 16rpx;
+.result-banner.success {
+  background: rgba(22, 163, 74, 0.08);
+  border: 1rpx solid rgba(22, 163, 74, 0.2);
 }
 
-.course-session-detail {
-  padding-bottom: 10rpx;
+.result-banner.error {
+  background: rgba(220, 38, 38, 0.06);
+  border: 1rpx solid rgba(220, 38, 38, 0.18);
+}
+
+.result-icon {
+  font-size: 28rpx;
+}
+
+.result-text {
+  font-size: 23rpx;
+  font-weight: 600;
+  color: #173a32;
+  line-height: 1.4;
+}
+
+/* ---- Help card ---- */
+.help-card {
+  max-width: 660rpx;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 28rpx;
+}
+
+.help-title {
+  display: block;
+  font-size: 24rpx;
+  font-weight: 650;
+  color: #173a32;
+  margin-bottom: 14rpx;
+}
+
+.help-text {
+  display: block;
+  font-size: 21rpx;
+  color: #65756b;
+  line-height: 1.7;
+}
+
+/* ---- Recent Courses ---- */
+.recent-courses-card {
+  max-width: 660rpx;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.recent-course-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid rgba(83, 117, 91, 0.1);
+}
+
+.recent-course-row:last-child {
+  border-bottom: 0;
+}
+
+.rc-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.rc-name {
+  display: block;
+  font-size: 25rpx;
+  font-weight: 650;
+  color: #173a32;
+}
+
+.rc-meta {
+  display: block;
+  margin-top: 4rpx;
+  font-size: 20rpx;
+  color: #65756b;
+}
+
+/* ===== Animations ===== */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== Panel ===== */
+.qf-panel {
+  max-width: 660rpx;
+  margin-left: auto;
+  margin-right: auto;
 }

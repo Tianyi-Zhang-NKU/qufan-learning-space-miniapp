@@ -1,68 +1,148 @@
-<view class="qf-page qf-page-fixed admin-home">
+<view class="qf-page qf-page-fixed">
   <z-bg mode="dark"></z-bg>
 
   <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
+    <!-- ===== 顶部：标题 ===== -->
     <view class="qf-top">
       <view class="qf-brand">
-        <text class="qf-brand-title">管理首页</text>
-        <text class="qf-brand-sub">课程关系、反馈和直播配置一屏入口化</text>
-      </view>
-      <button class="qf-btn ghost small" bindtap="goManage">数据管理</button>
-    </view>
-
-    <view class="qf-card qf-hero admin-hero">
-      <text class="qf-h2">先看概览，再进细节</text>
-      <text class="qf-muted">减少管理端信息密度，保留课程、手机号、反馈、直播四类入口。</text>
-    </view>
-
-    <view class="qf-grid">
-      <view wx:for="{{overview.metrics}}" wx:key="label" class="qf-metric">
-        <text class="qf-metric-value">{{item.value}}</text>
-        <text class="qf-metric-label">{{item.label}}</text>
+        <text class="qf-brand-title">课程合集</text>
+        <text class="qf-brand-sub">共 {{courses.length}} 门课程 · 点击卡片查看老师与学生</text>
       </view>
     </view>
 
-    <view class="qf-entry-grid admin-entry-grid">
-      <button class="qf-entry-card {{activePanel === 'courses' ? 'active' : ''}}" data-panel="courses" bindtap="setPanel">
-        <text class="qf-entry-title">课程关系</text>
-        <text class="qf-entry-sub">老师 / 学生 / 反馈数</text>
-      </button>
-      <button class="qf-entry-card" bindtap="goManage">
-        <text class="qf-entry-title">教室关系</text>
-        <text class="qf-entry-sub">进入数据管理查看</text>
-      </button>
-      <button class="qf-entry-card {{activePanel === 'live' ? 'active' : ''}}" data-panel="live" bindtap="setPanel">
-        <text class="qf-entry-title">直播配置</text>
-        <text class="qf-entry-sub">15 间教室占位</text>
-      </button>
-      <button class="qf-entry-card" bindtap="goManage">
-        <text class="qf-entry-title">完整数据</text>
-        <text class="qf-entry-sub">进入管理面板</text>
-      </button>
-    </view>
-
-    <view wx:if="{{activePanel === 'courses'}}" class="qf-panel">
-      <view class="qf-section">课程关系总览</view>
-      <view class="qf-card tight admin-loose-card">
-        <view wx:if="{{overview.relationOverview.length}}" class="qf-list">
-          <view wx:for="{{overview.relationOverview}}" wx:key="courseId" class="qf-list-item">
-            <text class="qf-h3">{{item.courseName}}</text>
-            <text class="qf-muted">{{item.teacherName}} · {{item.classroomName}}</text>
-            <text class="qf-text">学生 {{item.studentCount}} 人 · 手机号映射 {{item.phoneAccountCount}} 个 · 反馈 {{item.feedbackCount}} 条</text>
+    <!-- ===== 课程合集卡片列表 ===== -->
+    <view wx:if="{{courses.length}}" class="course-collection-list">
+      <view
+        wx:for="{{courses}}"
+        wx:key="id"
+        class="qf-card collection-card {{expandedCourseId === item.id ? 'expanded' : ''}}"
+      >
+        <!-- 课程头部（可点击展开） -->
+        <view class="collection-header" data-course-id="{{item.id}}" bindtap="toggleCourse">
+          <view class="collection-header-top">
+            <view class="collection-icon">{{item.subject === '生物' ? '🧬' : item.subject === '数学' ? '📐' : item.subject === '英语' ? '📖' : '📚'}}</view>
+            <view class="collection-info">
+              <text class="collection-name">{{item.name}}</text>
+              <text class="collection-meta">{{item.courseMeta}}</text>
+            </view>
+            <view class="collection-arrow">
+              <text class="arrow-icon">{{expandedCourseId === item.id ? '▲' : '▼'}}</text>
+            </view>
+          </view>
+          <!-- 折叠态也显示简略信息 -->
+          <view wx:if="{{expandedCourseId !== item.id}}" class="collection-preview">
+            <text class="preview-teacher">👨‍🏫 {{item.teacherName}}</text>
+            <text class="preview-count">{{item.studentCount}} 名学生</text>
           </view>
         </view>
-        <view wx:else class="qf-empty">暂无课程关系</view>
-      </view>
-    </view>
 
-    <view wx:if="{{activePanel === 'live'}}" class="qf-panel">
-      <view class="qf-section">直播配置状态</view>
-      <view class="qf-card tight admin-loose-card">
-        <view class="qf-wrap live-chip-wrap">
-          <text wx:for="{{overview.liveRooms}}" wx:key="id" class="qf-tag warn">{{item.classroom.name}} ClassIn 待接入</text>
+        <!-- 展开后的详情区域 -->
+        <view wx:if="{{expandedCourseId === item.id}}" class="collection-detail">
+          <!-- ======== 授课老师信息 ======== -->
+          <view class="detail-section">
+            <view class="detail-section-title">
+              <text class="section-icon">👨‍🏫</text>
+              <text>授课老师</text>
+            </view>
+            <view class="teacher-card">
+              <view class="teacher-avatar">
+                <text class="teacher-avatar-text">{{item.teacherName[0] || '师'}}</text>
+              </view>
+              <view class="teacher-detail">
+                <text class="teacher-name">{{item.teacherFullName || item.teacherName}}</text>
+                <text class="teacher-meta">{{item.subject}} · {{item.grade}}</text>
+                <text class="teacher-subject">📚 {{item.subject}} 学科负责人</text>
+              </view>
+            </view>
+          </view>
+
+          <!-- ======== 课程学生列表 ======== -->
+          <view class="detail-section">
+            <view class="detail-section-title">
+              <text class="section-icon">👥</text>
+              <text>课程学生（{{item.mergedStudents.length}}人）</text>
+            </view>
+            <view wx:if="{{item.mergedStudents.length}}" class="student-list">
+              <view
+                wx:for="{{item.mergedStudents}}"
+                wx:for-item="student"
+                wx:key="id"
+                class="student-card"
+              >
+                <!-- 学生基本信息 -->
+                <view
+                  class="student-card-header"
+                  data-course-id="{{item.id}}"
+                  data-student-id="{{student.id}}"
+                  bindtap="toggleStudentDetail"
+                >
+                  <view class="student-avatar">
+                    <text class="student-avatar-text">{{student.name[0] || '生'}}</text>
+                  </view>
+                  <view class="student-info">
+                    <text class="student-name">{{student.name}}</text>
+                    <text class="student-grade">{{student.grade || '-'}} · {{student.phone || '未绑定手机'}}</text>
+                  </view>
+                  <view class="student-badges">
+                    <text class="badge-feedback">{{student.feedbackCount || 0}}条反馈</text>
+                    <text class="expand-badge">{{expandedStudents[item.id + '_' + student.id] ? '▲' : '▼'}}</text>
+                  </view>
+                </view>
+
+                <!-- 展开：学生在该课程下的反馈详情 -->
+                <view
+                  wx:if="{{expandedStudents[item.id + '_' + student.id]}}"
+                  class="student-feedback-detail"
+                >
+                  <view wx:if="{{student.feedbacks && student.feedbacks.length}}" class="feedback-list">
+                    <view wx:for="{{student.feedbacks}}" wx:for-item="fb" wx:key="id" class="feedback-item">
+                      <view class="fb-header">
+                        <text class="fb-teacher">{{fb.teacherName}}</text>
+                        <text class="fb-time">{{fb.createdAt}}</text>
+                      </view>
+                      <text class="fb-text">{{fb.text || '（无文字内容）'}}</text>
+                      <view wx:if="{{fb.imageCount || fb.voiceCount}}" class="fb-media-tags">
+                        <text wx:if="{{fb.imageCount}}" class="fb-media-tag">🖼{{fb.imageCount}}张图片</text>
+                        <text wx:if="{{fb.voiceCount}}" class="fb-media-tag">🎤{{fb.voiceCount}}条语音</text>
+                      </view>
+                    </view>
+                  </view>
+                  <view wx:else class="no-feedback-detail">
+                    <text>该学生在当前课程暂无反馈记录</text>
+                  </view>
+                </view>
+              </view>
+            </view>
+            <view wx:else class="qf-empty compact-empty">该课程暂无学生</view>
+          </view>
+
+          <!-- ======== 课次概览 ======== -->
+          <view class="detail-section">
+            <view class="detail-section-title">
+              <text class="section-icon">📅</text>
+              <text>课次安排（{{item.sessions.length}}次）</text>
+            </view>
+            <view wx:if="{{item.sessions.length}}" class="session-mini-list">
+              <view wx:for="{{item.sessions}}" wx:for-item="s" wx:key="id" class="session-mini-item">
+                <view class="session-mini-dot"></view>
+                <view class="session-mini-info">
+                  <text class="session-mini-title">{{s.displayTitle || s.sessionTitle}}</text>
+                  <text class="session-mini-meta">{{s.sessionMeta}} · {{s.classroomName}} · {{s.studentCount}}名学生</text>
+                </view>
+                <text class="qf-tag {{s.statusTone}}">{{s.statusText || '未开始'}}</text>
+              </view>
+            </view>
+            <view wx:else class="qf-empty compact-empty">暂无课次安排</view>
+          </view>
         </view>
       </view>
     </view>
+
+    <!-- 空状态 -->
+    <view wx:else class="qf-empty">暂无课程数据</view>
+
+    <!-- spacer -->
+    <view style="height: 32rpx;"></view>
   </scroll-view>
 
   <qf-role-tabbar role="admin" current="/pages/admin/home/home" fixed="{{false}}"></qf-role-tabbar>

@@ -1,15 +1,392 @@
-.admin-hero,
-.admin-loose-card {
+/* ===== Admin Home — 课程合集 ===== */
+
+.course-collection-list {
   max-width: 660rpx;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28rpx;
 }
 
-.admin-entry-grid {
-  max-width: 620rpx;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+/* ---- 合集卡片 ---- */
+.collection-card {
+  padding: 32rpx;
+  transition: all 200ms ease;
 }
 
-.live-chip-wrap {
+.collection-card.expanded {
+  border-color: rgba(249, 115, 22, 0.32);
+  box-shadow: 0 28rpx 64rpx rgba(74, 92, 68, 0.22);
+}
+
+/* ---- 卡片头部（可点击） ---- */
+.collection-header:active {
+  opacity: 0.85;
+}
+
+.collection-header-top {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.collection-icon {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 20rpx;
+  background: rgba(249, 115, 22, 0.08);
+  display: flex;
+  align-items: center;
   justify-content: center;
+  font-size: 34rpx;
+  flex-shrink: 0;
+}
+
+.collection-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.collection-name {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #173a32;
+  line-height: 1.25;
+}
+
+.collection-meta {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: #65756b;
+  line-height: 1.35;
+}
+
+.collection-arrow {
+  flex-shrink: 0;
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  background: rgba(23, 58, 50, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arrow-icon {
+  font-size: 20rpx;
+  color: #65756b;
+}
+
+/* ---- 折叠态预览 ---- */
+.collection-preview {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  margin-top: 16rpx;
+  padding-top: 16rpx;
+  border-top: 1rpx dashed rgba(83, 117, 91, 0.12);
+}
+
+.preview-teacher {
+  font-size: 23rpx;
+  color: #506157;
+}
+
+.preview-count {
+  font-size: 23rpx;
+  color: #f97316;
+  font-weight: 600;
+}
+
+/* ---- 展开详情区域 ---- */
+.collection-detail {
+  margin-top: 24rpx;
+  padding-top: 24rpx;
+  border-top: 2rpx solid rgba(249, 115, 22, 0.16);
+  animation: detailFadeIn 200ms ease-out both;
+}
+
+@keyframes detailFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.detail-section {
+  margin-bottom: 32rpx;
+}
+
+.detail-section:last-child {
+  margin-bottom: 0;
+}
+
+.detail-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  margin-bottom: 18rpx;
+  font-size: 25rpx;
+  font-weight: 650;
+  color: #173a32;
+}
+
+.section-icon {
+  font-size: 26rpx;
+}
+
+/* ---- 老师卡片 ---- */
+.teacher-card {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 24rpx;
+  border-radius: 20rpx;
+  background: linear-gradient(145deg, rgba(99, 102, 241, 0.06), rgba(255, 255, 255, 0.5));
+  border: 1rpx solid rgba(99, 102, 241, 0.14);
+}
+
+.teacher-avatar {
+  width: 68rpx;
+  height: 68rpx;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #6366f1, #4f46e5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.teacher-avatar-text {
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.teacher-detail {
+  min-width: 0;
+}
+
+.teacher-name {
+  display: block;
+  font-size: 27rpx;
+  font-weight: 650;
+  color: #173a32;
+}
+
+.teacher-meta {
+  display: block;
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  color: #65756b;
+}
+
+.teacher-subject {
+  display: block;
+  margin-top: 4rpx;
+  font-size: 21rpx;
+  color: #6366f1;
+}
+
+/* ---- 学生列表 ---- */
+.student-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+}
+
+.student-card {
+  border-radius: 18rpx;
+  background: rgba(255, 255, 255, 0.48);
+  border: 1rpx solid rgba(83, 117, 91, 0.1);
+  overflow: hidden;
+}
+
+.student-card-header {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 18rpx 20rpx;
+}
+
+.student-card-header:active {
+  background: rgba(249, 115, 22, 0.04);
+}
+
+.student-avatar {
+  width: 52rpx;
+  height: 52rpx;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #0d9488, #0f766e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.student-avatar-text {
+  color: #fff;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.student-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.student-name {
+  display: block;
+  font-size: 25rpx;
+  font-weight: 600;
+  color: #1f352e;
+}
+
+.student-grade {
+  display: block;
+  margin-top: 2rpx;
+  font-size: 20rpx;
+  color: #65756b;
+}
+
+.student-badges {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  flex-shrink: 0;
+}
+
+.badge-feedback {
+  display: inline-block;
+  padding: 4rpx 14rpx;
+  border-radius: 999rpx;
+  font-size: 19rpx;
+  color: #0d9488;
+  background: rgba(13, 148, 136, 0.08);
+}
+
+.expand-badge {
+  font-size: 18rpx;
+  color: #b5c4b8;
+  width: 28rpx;
+  text-align: center;
+}
+
+/* ---- 学生反馈详情 ---- */
+.student-feedback-detail {
+  padding: 0 20rpx 18rpx 88rpx;
+  animation: detailFadeIn 160ms ease-out both;
+}
+
+.feedback-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.feedback-item {
+  padding: 16rpx;
+  border-radius: 14rpx;
+  background: rgba(255, 250, 238, 0.6);
+  border: 1rpx solid rgba(83, 117, 91, 0.06);
+}
+
+.fb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6rpx;
+}
+
+.fb-teacher {
+  font-size: 20rpx;
+  font-weight: 600;
+  color: #6366f1;
+}
+
+.fb-time {
+  font-size: 18rpx;
+  color: #8a9d92;
+}
+
+.fb-text {
+  display: block;
+  font-size: 22rpx;
+  color: #1f352e;
+  line-height: 1.5;
+}
+
+.fb-media-tags {
+  margin-top: 10rpx;
+  display: flex;
+  gap: 14rpx;
+}
+
+.fb-media-tag {
+  font-size: 19rpx;
+  color: #65756b;
+}
+
+.no-feedback-detail {
+  padding: 16rpx 0;
+  font-size: 20rpx;
+  color: #8a9d92;
+  text-align: center;
+}
+
+/* ---- 课次概览 ---- */
+.session-mini-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.session-mini-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+  padding: 14rpx 16rpx;
+  border-radius: 14rpx;
+  background: rgba(255, 255, 255, 0.44);
+  border: 1rpx solid rgba(83, 117, 91, 0.08);
+}
+
+.session-mini-dot {
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+  background: #f97316;
+  margin-top: 10rpx;
+  flex-shrink: 0;
+}
+
+.session-mini-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.session-mini-title {
+  display: block;
+  font-size: 23rpx;
+  font-weight: 600;
+  color: #1f352e;
+}
+
+.session-mini-meta {
+  display: block;
+  margin-top: 4rpx;
+  font-size: 20rpx;
+  color: #65756b;
+}
+
+/* ===== Shared ===== */
+.compact-empty {
+  margin-top: 16rpx;
+  padding: 28rpx 16rpx;
 }

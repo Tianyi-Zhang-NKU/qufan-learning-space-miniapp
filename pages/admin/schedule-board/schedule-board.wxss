@@ -1,5 +1,370 @@
-.form-actions,
-.conflict-list,
-.time-grid {
+/* ===== Admin Schedule Board — 课程表 ===== */
+
+/* ---- Calendar Wrap ---- */
+.calendar-wrap {
+  max-width: 660rpx;
+  margin: 0 auto 20rpx;
+}
+
+/* ---- Calendar Navigation ---- */
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24rpx;
+  padding: 0 8rpx;
+}
+
+.nav-btn {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.32);
+  border: 1rpx solid rgba(83, 117, 91, 0.16);
+}
+
+.nav-btn:active {
+  background: rgba(249, 115, 22, 0.12);
+}
+
+.nav-arrow {
+  font-size: 24rpx;
+  color: #173a32;
+}
+
+.nav-label {
+  font-size: 26rpx;
+  font-weight: 650;
+  color: #173a32;
+}
+
+/* ---- 7-Day Calendar Strip ---- */
+.calendar-week {
+  display: flex;
+  gap: 10rpx;
+}
+
+.calendar-day {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6rpx;
+  padding: 18rpx 4rpx 14rpx;
+  border-radius: 22rpx;
+  background: rgba(255, 255, 255, 0.5);
+  border: 2rpx solid rgba(83, 117, 91, 0.1);
+  transition: all 160ms ease;
+  position: relative;
+}
+
+.calendar-day:active {
+  transform: scale(0.96);
+}
+
+.calendar-day.selected {
+  background: linear-gradient(145deg, #f97316, #ea580c);
+  border-color: rgba(234, 88, 12, 0.5);
+  box-shadow: 0 10rpx 28rpx rgba(249, 115, 22, 0.28);
+}
+
+.calendar-day.selected .cal-day-name,
+.calendar-day.selected .cal-day-num {
+  color: #fff9ec;
+}
+
+.calendar-day.today:not(.selected) {
+  border-color: rgba(249, 115, 22, 0.35);
+  background: rgba(255, 237, 213, 0.54);
+}
+
+.cal-day-name {
+  font-size: 20rpx;
+  color: #65756b;
+  font-weight: 500;
+}
+
+.cal-day-num {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #173a32;
+  line-height: 1;
+}
+
+.cal-dot {
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 50%;
+  background: #f97316;
+  margin-top: 2rpx;
+}
+
+.cal-dot.today-dot {
+  background: #6366f1;
+}
+
+.calendar-day.selected .cal-dot {
+  background: #fff9ec;
+}
+
+/* ---- Today Link ---- */
+.today-link {
+  display: flex;
+  justify-content: flex-end;
   margin-top: 16rpx;
+  padding-right: 4rpx;
+}
+
+.today-link-text {
+  font-size: 22rpx;
+  color: #f97316;
+  font-weight: 600;
+}
+
+.today-link:active .today-link-text {
+  opacity: 0.7;
+}
+
+/* ---- Classroom Schedule Cards ---- */
+.classroom-schedule-list {
+  max-width: 660rpx;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 22rpx;
+}
+
+.classroom-schedule-card {
+  padding: 28rpx;
+  transition: all 180ms ease;
+}
+
+.classroom-schedule-card.expanded {
+  border-color: rgba(249, 115, 22, 0.28);
+}
+
+/* ---- Classroom Header ---- */
+.classroom-schedule-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.classroom-schedule-header:active {
+  opacity: 0.82;
+}
+
+.cs-left {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  flex: 1;
+  min-width: 0;
+}
+
+.cs-room-icon {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 18rpx;
+  background: rgba(249, 115, 22, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30rpx;
+  flex-shrink: 0;
+}
+
+.cs-room-info {
+  min-width: 0;
+}
+
+.cs-room-name {
+  display: block;
+  font-size: 27rpx;
+  font-weight: 650;
+  color: #173a32;
+}
+
+.cs-room-meta {
+  display: block;
+  margin-top: 4rpx;
+  font-size: 21rpx;
+  color: #65756b;
+}
+
+.cs-right {
+  flex-shrink: 0;
+}
+
+.cs-expand-icon {
+  font-size: 20rpx;
+  color: #b5c4b8;
+  width: 44rpx;
+  height: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(23, 58, 50, 0.04);
+}
+
+/* ---- Preview Chips (collapsed) ---- */
+.classroom-sessions-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-top: 18rpx;
+  padding-top: 18rpx;
+  border-top: 1rpx dashed rgba(83, 117, 91, 0.1);
+}
+
+.session-preview-chip {
+  display: inline-block;
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+  font-weight: 500;
+}
+
+.session-preview-chip.ok {
+  color: #14532d;
+  background: rgba(187, 247, 208, 0.5);
+}
+
+.session-preview-chip.warn {
+  color: #9a4b00;
+  background: rgba(255, 237, 213, 0.64);
+}
+
+.session-preview-chip.muted {
+  color: #506157;
+  background: rgba(226, 232, 222, 0.5);
+}
+
+/* ---- Expanded Sessions Detail ---- */
+.classroom-sessions-detail {
+  margin-top: 22rpx;
+  padding-top: 22rpx;
+  border-top: 2rpx solid rgba(249, 115, 22, 0.16);
+  animation: fadeSlideIn 200ms ease-out both;
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.session-item {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+}
+
+.session-item:last-child {
+  margin-bottom: 0;
+}
+
+/* ---- Time Bar ---- */
+.session-time-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 20rpx;
+}
+
+.time-dot {
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  background: #f97316;
+  margin-top: 8rpx;
+  flex-shrink: 0;
+}
+
+.time-dot.ok {
+  background: #16a34a;
+}
+
+.time-dot.warn {
+  background: #f97316;
+}
+
+.time-dot.muted {
+  background: #b5c4b8;
+}
+
+.time-line {
+  flex: 1;
+  width: 2rpx;
+  background: linear-gradient(180deg, rgba(249, 115, 22, 0.3), rgba(249, 115, 22, 0.05));
+  margin-top: 8rpx;
+  min-height: 40rpx;
+}
+
+.session-item:last-child .time-line {
+  display: none;
+}
+
+/* ---- Session Card ---- */
+.session-card {
+  flex: 1;
+  min-width: 0;
+  padding: 18rpx 22rpx;
+  border-radius: 18rpx;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1rpx solid rgba(83, 117, 91, 0.1);
+}
+
+.session-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+  margin-bottom: 8rpx;
+}
+
+.session-course-name {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #173a32;
+  flex: 1;
+  min-width: 0;
+}
+
+.session-title {
+  display: block;
+  font-size: 23rpx;
+  font-weight: 600;
+  color: #1f352e;
+  margin-bottom: 10rpx;
+}
+
+.session-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  margin-bottom: 6rpx;
+}
+
+.session-meta {
+  font-size: 21rpx;
+  color: #65756b;
+}
+
+.session-note {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 20rpx;
+  color: #8a9d92;
+  font-style: italic;
 }

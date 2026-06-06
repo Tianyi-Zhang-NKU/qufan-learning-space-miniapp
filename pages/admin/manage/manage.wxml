@@ -5,203 +5,207 @@
     <view class="qf-top">
       <view class="qf-brand">
         <text class="qf-brand-title">数据管理</text>
-        <text class="qf-brand-sub">教室、课程、学生与反馈分层查看</text>
+        <text class="qf-brand-sub">学生导入 · 课程创建</text>
       </view>
     </view>
 
-    <view class="qf-card qf-hero admin-hero">
-      <text class="qf-h2">课程与教室关系优先</text>
-      <text class="qf-muted">先看教室承载，再进入课程、学生和反馈详情。</text>
-    </view>
-
+    <!-- ===== 标签切换 ===== -->
     <view class="qf-entry-grid admin-entry-grid">
-      <button class="qf-entry-card {{activePanel === 'classrooms' ? 'active' : ''}}" data-panel="classrooms" bindtap="setPanel">
-        <text class="qf-entry-title">教室关系</text>
-        <text class="qf-entry-sub">教室 -> 课次 -> 课程</text>
+      <button class="qf-entry-card {{activeTab === 'import-student' ? 'active' : ''}}" data-tab="import-student" bindtap="switchTab">
+        <text class="qf-entry-title">📥 导入学生</text>
+        <text class="qf-entry-sub">将学生加入已有课程</text>
       </button>
-      <button class="qf-entry-card {{activePanel === 'teachers' ? 'active' : ''}}" data-panel="teachers" bindtap="setPanel">
-        <text class="qf-entry-title">老师关系</text>
-        <text class="qf-entry-sub">手机号 -> 课程 -> 学生</text>
-      </button>
-      <button class="qf-entry-card {{activePanel === 'students' ? 'active' : ''}}" data-panel="students" bindtap="setPanel">
-        <text class="qf-entry-title">学生关系</text>
-        <text class="qf-entry-sub">点击学生看反馈</text>
-      </button>
-      <button class="qf-entry-card {{activePanel === 'courses' ? 'active' : ''}}" data-panel="courses" bindtap="setPanel">
-        <text class="qf-entry-title">课程课次</text>
-        <text class="qf-entry-sub">点击课程看详情</text>
-      </button>
-      <button class="qf-entry-card {{activePanel === 'phones' ? 'active' : ''}}" data-panel="phones" bindtap="setPanel">
-        <text class="qf-entry-title">手机号映射</text>
-        <text class="qf-entry-sub">登录身份维护</text>
-      </button>
-      <button class="qf-entry-card {{activePanel === 'live' ? 'active' : ''}}" data-panel="live" bindtap="setPanel">
-        <text class="qf-entry-title">直播配置</text>
-        <text class="qf-entry-sub">数据流接入占位</text>
+      <button class="qf-entry-card {{activeTab === 'import-course' ? 'active' : ''}}" data-tab="import-course" bindtap="switchTab">
+        <text class="qf-entry-title">📖 导入课程</text>
+        <text class="qf-entry-sub">创建新课程与排课</text>
       </button>
     </view>
 
-    <view wx:if="{{activePanel === 'classrooms'}}" class="qf-panel">
-      <view class="qf-section">传统课程表</view>
-      <scroll-view class="qf-week-scroll" scroll-x enhanced show-scrollbar="{{true}}">
-        <view class="qf-week-table">
-          <view class="qf-week-row head">
-            <view class="qf-week-time">时间</view>
-            <view wx:for="{{weekDays}}" wx:key="*this" class="qf-week-cell">{{item}}</view>
-          </view>
-          <view wx:for="{{weekRows}}" wx:key="time" class="qf-week-row">
-            <view class="qf-week-time">{{item.time}}</view>
-            <view wx:for="{{item.cells}}" wx:for-item="cell" wx:key="day" class="qf-week-cell">
-              <block wx:if="{{cell.sessions.length}}">
-                <view wx:for="{{cell.sessions}}" wx:for-item="session" wx:key="id" class="qf-week-course">
-                  <text class="qf-week-title">{{session.courseName}}</text>
-                  <text class="qf-week-meta">{{session.lesson}}</text>
-                  <text class="qf-week-meta">{{session.teacherName}} · {{session.classroomName}}</text>
-                </view>
-              </block>
-              <text wx:else class="qf-week-empty">空</text>
-            </view>
-          </view>
-        </view>
-      </scroll-view>
+    <!-- ============ 导入学生面板 ============ -->
+    <view wx:if="{{activeTab === 'import-student'}}" class="qf-panel">
+      <view class="qf-section">将学生导入已有课程</view>
 
-      <view class="qf-section">教室 -> 课次 -> 课程</view>
-      <view class="qf-card tight admin-loose-card">
-        <view wx:if="{{relations.classrooms.length}}" class="qf-list">
-          <view wx:for="{{relations.classrooms}}" wx:key="id" class="qf-list-item">
-            <text class="qf-h3">{{item.name}} · {{item.cameraStatusText}}</text>
-            <text class="qf-muted">{{item.campus}} · 容量 {{item.capacity}} 人</text>
-            <view wx:for="{{item.sessions}}" wx:for-item="session" wx:key="id" class="relation-course">
-              <text class="qf-text">{{session.date}} {{session.startTime}} · {{session.courseName}} · {{session.displayTitle}}</text>
-            </view>
-          </view>
-        </view>
-        <view wx:else class="qf-empty">暂无教室关系</view>
-      </view>
-    </view>
-
-    <view wx:if="{{activePanel === 'teachers'}}" class="qf-panel">
-      <view class="qf-section">老师手机号 -> 课程 -> 学生</view>
-      <view class="qf-card tight admin-loose-card">
-        <view class="admin-filterbar">
-          <input class="qf-input admin-search" placeholder="按老师姓名 / 手机号 / 学科搜索" value="{{filters.teacherKeyword}}" data-field="teacherKeyword" bindinput="onFilterInput" />
-          <picker wx:if="{{teacherOptions.length}}" range="{{teacherOptions}}" bindchange="pickTeacher">
-            <view class="qf-picker admin-picker">
-              <text class="qf-picker-label">选择老师</text>
-              <text class="qf-picker-value">{{selectedTeacher.name}} · {{selectedTeacher.subject}}</text>
-            </view>
-          </picker>
-        </view>
-        <view wx:if="{{selectedTeacher}}" class="qf-list detail-list">
-          <view class="qf-list-item">
-            <text class="qf-h3">{{selectedTeacher.name}}</text>
-            <text class="qf-muted">{{selectedTeacher.phone}} · {{selectedTeacher.subject}} · {{selectedTeacher.courses.length}} 门课程</text>
-            <view wx:for="{{selectedTeacher.courses}}" wx:for-item="course" wx:key="id" class="relation-course">
-              <text class="qf-text">{{course.name}} · 学生 {{course.studentCount}} 人</text>
-              <text class="qf-muted">学生：{{course.studentsText}}</text>
-            </view>
-          </view>
-        </view>
-        <view wx:else class="qf-empty">没有匹配的老师</view>
-      </view>
-    </view>
-
-    <view wx:if="{{activePanel === 'students'}}" class="qf-panel">
-      <view class="qf-section">学生详情与反馈</view>
-      <view class="qf-card tight admin-loose-card">
-        <view class="admin-filterbar">
-          <input class="qf-input admin-search" placeholder="按学生姓名 / 手机号搜索" value="{{filters.studentKeyword}}" data-field="studentKeyword" bindinput="onFilterInput" />
-          <picker wx:if="{{studentOptions.length}}" range="{{studentOptions}}" bindchange="pickStudent">
-            <view class="qf-picker admin-picker">
-              <text class="qf-picker-label">选择学生</text>
-              <text class="qf-picker-value">{{selectedStudent.name}} · {{selectedStudent.loginPhone}}</text>
+      <view class="qf-card import-card">
+        <!-- 选择学生 -->
+        <view class="form-group">
+          <text class="form-label">选择学生</text>
+          <picker range="{{studentOptions}}" value="{{selectedStudentIndex}}" bindchange="pickStudent">
+            <view class="qf-picker import-picker">
+              <text class="qf-picker-label">学生</text>
+              <text class="qf-picker-value">{{studentOptions[selectedStudentIndex] || '请选择学生'}}</text>
             </view>
           </picker>
         </view>
 
-        <view wx:if="{{selectedStudent}}" class="qf-list detail-list">
-          <view class="qf-list-item">
-            <text class="qf-h3">{{selectedStudent.name}} · {{selectedStudent.loginPhone}}</text>
-            <text class="qf-muted">{{selectedStudent.grade}} · 课程 {{selectedStudent.courses.length}} 门 · 反馈 {{selectedStudent.feedbackCount}} 条</text>
-            <view class="qf-wrap relation-actions">
-              <button wx:for="{{selectedStudent.courses}}" wx:for-item="course" wx:key="id" class="qf-btn small {{selectedStudentCourseId === course.id ? '' : 'ghost'}}" data-id="{{course.id}}" bindtap="selectStudentCourse">{{course.name}}</button>
-            </view>
+        <view wx:if="{{studentList[selectedStudentIndex]}}" class="selected-preview">
+          <view class="preview-avatar student-avatar-bg">
+            <text class="preview-avatar-text">{{studentList[selectedStudentIndex].name[0] || '生'}}</text>
           </view>
-
-          <view wx:if="{{selectedStudentCourse}}" class="qf-list-item">
-            <text class="qf-h3">{{selectedStudentCourse.name}}</text>
-            <text class="qf-muted">{{selectedStudentCourse.teacherName}} · {{selectedStudentCourse.classroomName}} · 反馈 {{selectedStudentCourse.feedbackCount}} 条</text>
-            <view wx:if="{{selectedStudentCourse.feedbacks.length}}" class="detail-list">
-              <view wx:for="{{selectedStudentCourse.feedbacks}}" wx:for-item="feedback" wx:key="id" class="feedback-mini">
-                <text class="qf-muted">{{feedback.courseSessionTitle}} · {{feedback.createdAt}}</text>
-                <text class="qf-text">{{feedback.text}}</text>
-              </view>
-            </view>
-            <view wx:else class="qf-empty compact-empty">当前课程暂无反馈</view>
+          <view class="preview-info">
+            <text class="preview-name">{{studentList[selectedStudentIndex].name}}</text>
+            <text class="preview-meta">{{studentList[selectedStudentIndex].grade}} · {{studentList[selectedStudentIndex].phone || '未绑定手机'}}</text>
+            <text class="preview-courses">已加入 {{studentList[selectedStudentIndex].courseIds.length}} 门课程</text>
           </view>
         </view>
-        <view wx:else class="qf-empty">没有匹配的学生</view>
-      </view>
-    </view>
 
-    <view wx:if="{{activePanel === 'courses'}}" class="qf-panel">
-      <view class="qf-section">课程课次详情</view>
-      <view class="qf-card tight admin-loose-card">
-        <view class="admin-filterbar">
-          <input class="qf-input admin-search" placeholder="按课程 / 老师 / 教室搜索" value="{{filters.courseKeyword}}" data-field="courseKeyword" bindinput="onFilterInput" />
-          <picker wx:if="{{courseOptions.length}}" range="{{courseOptions}}" bindchange="pickCourse">
-            <view class="qf-picker admin-picker">
-              <text class="qf-picker-label">选择课程</text>
-              <text class="qf-picker-value">{{selectedCourse.name}}</text>
+        <!-- 分隔箭头 -->
+        <view class="import-arrow">
+          <text class="arrow-down">⬇</text>
+        </view>
+
+        <!-- 选择课程 -->
+        <view class="form-group">
+          <text class="form-label">目标课程</text>
+          <picker range="{{courseOptions}}" value="{{selectedCourseIndex}}" bindchange="pickCourse">
+            <view class="qf-picker import-picker">
+              <text class="qf-picker-label">课程</text>
+              <text class="qf-picker-value">{{courseOptions[selectedCourseIndex] || '请选择课程'}}</text>
             </view>
           </picker>
         </view>
 
-        <view wx:if="{{selectedCourse}}" class="qf-list detail-list">
-          <view class="qf-list-item">
-            <text class="qf-h3">{{selectedCourse.name}}</text>
-            <text class="qf-muted">{{selectedCourse.teacherName}} · {{selectedCourse.classroomName}} · 共 {{selectedCourse.sessions.length}} 次课 · 学生 {{selectedCourse.studentCount}} 人</text>
-            <view wx:for="{{selectedCourse.sessions}}" wx:for-item="session" wx:key="id" class="relation-course course-session-detail">
-              <text class="qf-text">{{session.displayTitle}} · {{session.date}} {{session.startTime}}-{{session.endTime}} · 反馈 {{session.feedbackCount}} 条</text>
-              <view wx:for="{{session.students}}" wx:for-item="student" wx:key="id" class="feedback-mini">
-                <text class="qf-muted">{{student.name}} · 反馈 {{student.feedbackCount}} 条</text>
-                <text wx:for="{{student.feedbacks}}" wx:for-item="feedback" wx:key="id" class="qf-text">{{feedback.text}}</text>
-              </view>
-            </view>
+        <view wx:if="{{courseList[selectedCourseIndex]}}" class="selected-preview course-preview">
+          <view class="preview-avatar course-avatar-bg">
+            <text class="preview-avatar-text">📖</text>
+          </view>
+          <view class="preview-info">
+            <text class="preview-name">{{courseList[selectedCourseIndex].name}}</text>
+            <text class="preview-meta">{{courseList[selectedCourseIndex].subject}} · {{courseList[selectedCourseIndex].grade}} · 当前{{courseList[selectedCourseIndex].studentIds.length}}名学生</text>
           </view>
         </view>
-        <view wx:else class="qf-empty">没有匹配的课程</view>
+
+        <button class="qf-btn full import-btn" bindtap="doImportStudent" disabled="{{importingStudent}}">
+          <text wx:if="{{!importingStudent}}">确认导入</text>
+          <text wx:else>导入中...</text>
+        </button>
+
+        <!-- 操作结果 -->
+        <view wx:if="{{studentResult}}" class="result-banner {{studentResult.success ? 'success' : 'error'}}">
+          <text class="result-icon">{{studentResult.success ? '✅' : '❌'}}</text>
+          <text class="result-text">{{studentResult.message}}</text>
+        </view>
+      </view>
+
+      <view class="qf-card tight help-card">
+        <text class="help-title">💡 使用说明</text>
+        <text class="help-text">1. 在上方选择一名学生和一门目标课程</text>
+        <text class="help-text">2. 点击「确认导入」将该学生加入该课程</text>
+        <text class="help-text">3. 如需创建新课程，请切换到「导入课程」标签</text>
       </view>
     </view>
 
-    <view wx:if="{{activePanel === 'phones'}}" class="qf-panel">
-      <view class="qf-section">登录手机号映射</view>
-      <view class="qf-card tight admin-loose-card">
-        <view class="admin-filterbar">
-          <input class="qf-input admin-search" placeholder="按手机号 / 姓名搜索" value="{{filters.phoneKeyword}}" data-field="phoneKeyword" bindinput="onFilterInput" />
-          <picker range="{{phoneRoleOptions}}" value="{{phoneRoleIndex}}" bindchange="pickPhoneRole">
-            <view class="qf-picker admin-picker">
-              <text class="qf-picker-label">身份类型</text>
-              <text class="qf-picker-value">{{phoneRoleOptions[phoneRoleIndex]}}</text>
+    <!-- ============ 导入课程面板 ============ -->
+    <view wx:if="{{activeTab === 'import-course'}}" class="qf-panel">
+      <view class="qf-section">创建新课程</view>
+
+      <view class="qf-card import-card">
+        <!-- 课程名称 -->
+        <view class="form-group">
+          <text class="form-label">课程名称 <text class="required">*</text></text>
+          <input
+            class="qf-input form-input"
+            placeholder="例如：初三物理提高班"
+            value="{{courseForm.name}}"
+            data-field="name"
+            bindinput="onCourseFormInput"
+          />
+        </view>
+
+        <!-- 学科 + 年级 双列 -->
+        <view class="form-row">
+          <view class="form-group form-half">
+            <text class="form-label">学科 <text class="required">*</text></text>
+            <input
+              class="qf-input form-input"
+              placeholder="例如：物理"
+              value="{{courseForm.subject}}"
+              data-field="subject"
+              bindinput="onCourseFormInput"
+            />
+          </view>
+          <view class="form-group form-half">
+            <text class="form-label">适用年级 <text class="required">*</text></text>
+            <input
+              class="qf-input form-input"
+              placeholder="例如：初三"
+              value="{{courseForm.grade}}"
+              data-field="grade"
+              bindinput="onCourseFormInput"
+            />
+          </view>
+        </view>
+
+        <!-- 授课老师 -->
+        <view class="form-group">
+          <text class="form-label">授课老师 <text class="required">*</text></text>
+          <picker range="{{teacherOptions}}" value="{{selectedTeacherIndex}}" bindchange="pickCourseTeacher">
+            <view class="qf-picker import-picker">
+              <text class="qf-picker-label">老师</text>
+              <text class="qf-picker-value">{{teacherOptions[selectedTeacherIndex] || '请选择老师'}}</text>
             </view>
           </picker>
         </view>
-        <view wx:if="{{filteredPhoneAccounts.length}}" class="qf-wrap centered-wrap">
-          <text wx:for="{{filteredPhoneAccounts}}" wx:key="id" class="qf-tag">{{item.phone}} · {{item.nickname}}</text>
+
+        <!-- 上课教室 -->
+        <view class="form-group">
+          <text class="form-label">上课教室 <text class="required">*</text></text>
+          <picker range="{{classroomOptions}}" value="{{selectedClassroomIndex}}" bindchange="pickCourseClassroom">
+            <view class="qf-picker import-picker">
+              <text class="qf-picker-label">教室</text>
+              <text class="qf-picker-value">{{classroomOptions[selectedClassroomIndex] || '请选择教室'}}</text>
+            </view>
+          </picker>
         </view>
-        <view wx:else class="qf-empty">没有匹配的手机号</view>
+
+        <!-- 课程描述 -->
+        <view class="form-group">
+          <text class="form-label">课程描述 <text class="optional">(选填)</text></text>
+          <textarea
+            class="qf-textarea form-textarea"
+            placeholder="简要描述课程内容、教学目标等..."
+            value="{{courseForm.description}}"
+            data-field="description"
+            bindinput="onCourseFormInput"
+            maxlength="200"
+          />
+        </view>
+
+        <!-- 创建按钮 -->
+        <button class="qf-btn full import-btn" bindtap="doCreateCourse" disabled="{{importingCourse}}">
+          <text wx:if="{{!importingCourse}}">创建课程</text>
+          <text wx:else>创建中...</text>
+        </button>
+
+        <!-- 操作结果 -->
+        <view wx:if="{{courseResult}}" class="result-banner {{courseResult.success ? 'success' : 'error'}}">
+          <text class="result-icon">{{courseResult.success ? '✅' : '❌'}}</text>
+          <text class="result-text">{{courseResult.message}}</text>
+        </view>
+      </view>
+
+      <!-- 已有课程速览 -->
+      <view wx:if="{{recentCourses.length}}" class="qf-section">📋 现有课程</view>
+      <view wx:if="{{recentCourses.length}}" class="qf-card tight recent-courses-card">
+        <view wx:for="{{recentCourses}}" wx:key="id" class="recent-course-row">
+          <view class="rc-left">
+            <text class="rc-name">{{item.name}}</text>
+            <text class="rc-meta">{{item.subject}} · {{item.grade}} · {{item.teacherName}} · {{item.classroomName}} · {{item.studentCount}}名学生</text>
+          </view>
+          <text class="qf-tag {{item.sessions && item.sessions.length > 0 ? 'ok' : 'warn'}}">{{item.sessions && item.sessions.length || 0}}次课</text>
+        </view>
+      </view>
+
+      <view class="qf-card tight help-card">
+        <text class="help-title">💡 使用说明</text>
+        <text class="help-text">1. 填写课程名称、学科、适用年级</text>
+        <text class="help-text">2. 选择授课老师和上课教室</text>
+        <text class="help-text">3. 点击「创建课程」完成课程创建</text>
+        <text class="help-text">4. 创建后可在课表页面为该课程排课</text>
       </view>
     </view>
 
-    <view wx:if="{{activePanel === 'live'}}" class="qf-panel">
-      <view class="qf-section">直播接口配置占位</view>
-      <view class="qf-card tight admin-loose-card">
-        <text class="qf-text center-text">ClassIn 入口由后端或云函数签发。接入真实 `classinEntryUrl` 或播放流后，本界面可直接展示可用状态。</text>
-        <view class="qf-wrap centered-wrap">
-          <text wx:for="{{overview.liveRooms}}" wx:key="id" class="qf-tag warn">{{item.classroom.name}} 待接入</text>
-        </view>
-      </view>
-    </view>
+    <!-- spacer -->
+    <view style="height: 32rpx;"></view>
   </scroll-view>
 
   <qf-role-tabbar role="admin" current="/pages/admin/manage/manage" fixed="{{false}}"></qf-role-tabbar>

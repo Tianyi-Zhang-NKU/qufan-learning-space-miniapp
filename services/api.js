@@ -198,6 +198,7 @@ function feedbackWithMedia(item) {
   const courseSession = findCourseSession(item.courseSessionId) || {};
   const imageFiles = (item.imageFileIds || []).map(findMedia).filter(Boolean).map(decorateMedia);
   const voiceFiles = (item.voiceFileIds || []).map(findMedia).filter(Boolean).map(decorateMedia);
+  const attachFiles = (item.attachFileIds || []).map(findOptionalFile).filter(Boolean);
   return {
     ...item,
     studentName: student.name || '',
@@ -206,9 +207,11 @@ function feedbackWithMedia(item) {
     courseSessionTitle: courseSession.displayTitle || courseSession.title || '',
     imageFiles,
     voiceFiles,
+    attachFiles,
     mediaFiles: imageFiles.concat(voiceFiles),
     imageCount: imageFiles.length,
-    voiceCount: voiceFiles.length
+    voiceCount: voiceFiles.length,
+    attachFileCount: attachFiles.length
   };
 }
 
@@ -252,6 +255,7 @@ function decorateCourse(item, options = {}) {
     recentSession: sessions[0] || null,
     recentSessionTitle: sessions[0] ? sessions[0].displayTitle : '',
     feedbackCount: feedbacks.length,
+    feedbackStudentCount: new Set(feedbacks.map((f) => f.studentId)).size,
     assignments: getCourseAssignments(item.id),
     wrongRecords: [],
     liveStatusText: 'ClassIn 接口待接入',
@@ -589,6 +593,7 @@ const mockApi = {
     }
     const imageFileIds = payload.imageFileIds || [];
     const voiceFileIds = payload.voiceFileIds || [];
+    const attachFileIds = payload.attachFileIds || [];
     imageFileIds.forEach((id) => {
       const file = findMedia(id);
       if (!file || file.type !== 'image') throw makeError('VALIDATION_ERROR', '图片媒体不存在。');
@@ -597,8 +602,12 @@ const mockApi = {
       const file = findMedia(id);
       if (!file || file.type !== 'voice') throw makeError('VALIDATION_ERROR', '语音媒体不存在。');
     });
-    if (!String(payload.text || '').trim() && !imageFileIds.length && !voiceFileIds.length) {
-      throw makeError('VALIDATION_ERROR', '请填写文字反馈或添加图片/语音。');
+    attachFileIds.forEach((id) => {
+      const file = findOptionalFile(id);
+      if (!file) throw makeError('VALIDATION_ERROR', '附件文件不存在。');
+    });
+    if (!String(payload.text || '').trim() && !imageFileIds.length && !voiceFileIds.length && !attachFileIds.length) {
+      throw makeError('VALIDATION_ERROR', '请填写文字反馈或添加图片/语音/文件。');
     }
     const record = {
       id: nextId('feedback', db.lessonFeedbacks),
@@ -609,6 +618,7 @@ const mockApi = {
       text: String(payload.text || '').trim(),
       imageFileIds: imageFileIds.slice(),
       voiceFileIds: voiceFileIds.slice(),
+      attachFileIds: attachFileIds.slice(),
       createdAt: nowLabel(),
       visibleToStudent: payload.visibleToStudent !== false
     };
@@ -1301,6 +1311,50 @@ const mockApi = {
     };
     db.courseSessions.push(courseSession);
     return delay(decorateSession(courseSession));
+  },
+
+  addStudentToCourse(payload = {}) {
+    requireRole('admin');
+    const student = findStudent(payload.studentId);
+    const course = findCourse(payload.courseId);
+    if (!student) throw makeError('NOT_FOUND', '学生不存在。');
+    if (!course) throw makeError('NOT_FOUND', '课程不存在。');
+    if (course.studentIds.includes(student.id)) throw makeError('ALREADY_EXISTS', '学生已在该课程中。');
+    course.studentIds.push(student.id);
+    student.courseIds.push(course.id);
+    const classItem = findClass(course.classId);
+    if (classItem && !classItem.studentIds.includes(student.id)) {
+      classItem.studentIds.push(student.id);
+    }
+    db.courseSessions.forEach((session) => {
+      if (session.courseId === course.id && !session.studentIds.includes(student.id)) {
+        session.studentIds.push(student.id);
+      }
+    });
+    pushAudit(getSession().identityId, 'add_student_to_course', 'course', course.id, `将 ${student.name} 导入课程 ${course.name}`);
+    return delay({ student, course: decorateCourse(course) });
+  },
+
+  removeStudentFromCourse(payload = {}) {
+    requireRole('admin');
+    const student = findStudent(payload.studentId);
+    const course = findCourse(payload.courseId);
+    if (!student) throw makeError('NOT_FOUND', '学生不存在。');
+    if (!course) throw makeError('NOT_FOUND', '课程不存在。');
+    if (!course.studentIds.includes(student.id)) throw makeError('NOT_FOUND', '学生不在该课程中。');
+    course.studentIds = course.studentIds.filter((id) => id !== student.id);
+    student.courseIds = student.courseIds.filter((id) => id !== course.id);
+    const classItem = findClass(course.classId);
+    if (classItem) {
+      classItem.studentIds = classItem.studentIds.filter((id) => id !== student.id);
+    }
+    db.courseSessions.forEach((session) => {
+      if (session.courseId === course.id) {
+        session.studentIds = session.studentIds.filter((id) => id !== student.id);
+      }
+    });
+    pushAudit(getSession().identityId, 'remove_student_from_course', 'course', course.id, `将 ${student.name} 移出课程 ${course.name}`);
+    return delay({ student, course: decorateCourse(course) });
   },
 
   createInvite() {

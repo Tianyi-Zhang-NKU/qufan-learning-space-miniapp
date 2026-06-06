@@ -2,217 +2,272 @@ const Api = require('../../../services/api');
 const Guard = require('../../../utils/page-guard');
 const Notice = require('../../../utils/notice');
 
-const WEEK_DAYS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-const PHONE_ROLE_OPTIONS = ['全部身份', '学生/家长', '老师', '管理员'];
-
-function dayIndex(date) {
-  const day = new Date(`${date}T00:00:00`).getDay();
-  return day === 0 ? 6 : day - 1;
-}
-
-function matchesKeyword(item, keyword, fields) {
-  const query = String(keyword || '').trim().toLowerCase();
-  if (!query) return true;
-  return fields.some((field) => String(item[field] || '').toLowerCase().includes(query));
-}
-
-function roleName(role) {
-  if (role === 'teacher') return '老师';
-  if (role === 'admin') return '管理员';
-  return '学生/家长';
-}
-
-function buildWeekRows(courseTree) {
-  const sessions = courseTree.flatMap((course) => (course.sessions || []).map((session) => ({
-    id: session.id,
-    date: session.date,
-    day: dayIndex(session.date),
-    time: `${session.startTime}-${session.endTime}`,
-    courseName: course.name,
-    lesson: session.sessionTitle || session.displayTitle,
-    teacherName: course.teacherName,
-    classroomName: session.classroomName || course.classroomName,
-    feedbackCount: session.feedbackCount || 0
-  })));
-  const slots = Array.from(new Set(sessions.map((item) => item.time))).sort();
-  return slots.map((slot) => ({
-    time: slot,
-    cells: WEEK_DAYS.map((dayName, day) => ({
-      day: dayName,
-      sessions: sessions
-        .filter((item) => item.time === slot && item.day === day)
-        .sort((a, b) => a.date.localeCompare(b.date))
-    }))
-  }));
-}
-
 Page({
   data: {
-    bootstrap: {
-      phoneAccounts: [],
-      mediaFiles: [],
-      lessonFeedbacks: []
-    },
-    relations: {
-      courseTree: [],
-      teachers: [],
-      students: [],
-      classrooms: []
-    },
-    overview: {
-      liveRooms: []
-    },
-    weekDays: WEEK_DAYS,
-    weekRows: [],
-    activePanel: 'classrooms',
-    filters: {
-      teacherKeyword: '',
-      studentKeyword: '',
-      courseKeyword: '',
-      phoneKeyword: ''
-    },
-    phoneRoleOptions: PHONE_ROLE_OPTIONS,
-    phoneRoleIndex: 0,
-    filteredTeachers: [],
-    filteredStudents: [],
-    filteredCourseTree: [],
-    filteredPhoneAccounts: [],
-    teacherOptions: [],
+    // 原始数据
+    bootstrap: { students: [], courses: [], teachers: [], classrooms: [] },
+
+    // ===== 导入学生表单 =====
     studentOptions: [],
+    studentList: [],
     courseOptions: [],
-    phoneOptions: [],
-    selectedTeacherId: '',
+    courseList: [],
+    selectedStudentIndex: 0,
+    selectedCourseIndex: 0,
     selectedStudentId: '',
     selectedCourseId: '',
-    selectedStudentCourseId: '',
-    selectedTeacher: null,
-    selectedStudent: null,
-    selectedCourse: null,
-    selectedStudentCourse: null
+    importingStudent: false,
+    studentResult: null,
+
+    // ===== 导入课程表单 =====
+    teacherOptions: [],
+    classroomOptions: [],
+    courseForm: {
+      name: '',
+      subject: '',
+      grade: '',
+      teacherId: '',
+      classroomId: '',
+      description: ''
+    },
+    selectedTeacherIndex: 0,
+    selectedClassroomIndex: 0,
+    importingCourse: false,
+    courseResult: null,
+
+    // ===== 标签 =====
+    activeTab: 'import-student',   // 'import-student' | 'import-course'
+    recentCourses: []              // 最近创建的课程
   },
 
   onShow() {
     if (!Guard.ensureLogin('admin')) return;
-    this.load();
+    this.loadAll();
   },
 
-  load() {
+  loadAll() {
     Promise.all([
       Api.getBootstrap(),
-      Api.getAdminCourseTree(),
-      Api.getAdminTeacherRelations(),
-      Api.getAdminStudentRelations(),
-      Api.getAdminClassroomRelations(),
-      Api.getAdminOverview()
+      Api.getAdminCourseTree()
     ])
-      .then(([bootstrap, courseTree, teachers, students, classrooms, overview]) => {
+      .then(([bootstrap, courseTree]) => {
+        // ---- 为学生导入准备数据 ----
+        const studentList = (bootstrap.students || []).map((s) => ({
+          ...s,
+          displayLabel: s.name + ' · ' + s.grade + ' · ' + (s.phone || '无手机号')
+        }));
+        const studentOptions = studentList.map((s) => s.displayLabel);
+
+        const courseList = (bootstrap.courses || []).map((c) => {
+          const teacher = (bootstrap.teachers || []).find((t) => t.id === c.teacherId) || {};
+          return {
+            ...c,
+            displayLabel: c.name + ' · ' + (teacher.name || '未知老师') + ' · ' + c.studentIds.length + '名学生'
+          };
+        });
+        const courseOptions = courseList.map((c) => c.displayLabel);
+
+        // ---- 为课程导入准备数据 ----
+        const teacherOptions = (bootstrap.teachers || []).map((t) =>
+          t.fullName + ' · ' + (t.subject || '')
+        );
+        const classroomOptions = (bootstrap.classrooms || []).map((r) =>
+          r.name + ' · ' + r.campus + ' · ' + r.capacity + '人'
+        );
+
+        // 默认课程表单选中第一个老师/教室
+        const defaultTeacherId = (bootstrap.teachers || [])[0] ? bootstrap.teachers[0].id : '';
+        const defaultClassroomId = (bootstrap.classrooms || [])[0] ? bootstrap.classrooms[0].id : '';
+
+        const selectedStudentId = studentList.length > 0 ? studentList[0].id : '';
+        const selectedCourseId = courseList.length > 0 ? courseList[0].id : '';
+
         this.setData({
           bootstrap,
-          relations: { courseTree, teachers, students, classrooms },
-          overview,
-          weekRows: buildWeekRows(courseTree),
-          selectedTeacherId: teachers[0] ? teachers[0].id : '',
-          selectedStudentId: students[0] ? students[0].id : '',
-          selectedCourseId: courseTree[0] ? courseTree[0].id : '',
-          selectedStudentCourseId: students[0] && students[0].courses[0] ? students[0].courses[0].id : ''
-        }, () => {
-          this.applyFilters();
+          studentOptions,
+          studentList,
+          courseOptions,
+          courseList,
+          selectedStudentIndex: 0,
+          selectedCourseIndex: 0,
+          selectedStudentId,
+          selectedCourseId,
+          teacherOptions,
+          classroomOptions,
+          selectedTeacherIndex: 0,
+          selectedClassroomIndex: 0,
+          'courseForm.teacherId': defaultTeacherId,
+          'courseForm.classroomId': defaultClassroomId,
+          studentResult: null,
+          courseResult: null,
+          recentCourses: (courseTree || []).slice(0, 5)
         });
       })
       .catch((error) => Notice.alert(error.message || '数据加载失败'));
   },
 
-  setPanel(event) {
-    this.setData({ activePanel: event.currentTarget.dataset.panel });
-  },
-
-  onFilterInput(event) {
-    const field = event.currentTarget.dataset.field;
-    this.setData({ [`filters.${field}`]: event.detail.value }, () => {
-      this.applyFilters();
-    });
-  },
-
-  pickTeacher(event) {
-    const index = Number(event.detail.value || 0);
-    const teacher = this.data.filteredTeachers[index];
-    if (!teacher) return;
-    this.setData({ selectedTeacherId: teacher.id }, () => this.applyFilters());
-  },
+  // ============ 导入学生 ============
 
   pickStudent(event) {
     const index = Number(event.detail.value || 0);
-    const student = this.data.filteredStudents[index];
+    const student = this.data.studentList[index];
     if (!student) return;
     this.setData({
+      selectedStudentIndex: index,
       selectedStudentId: student.id,
-      selectedStudentCourseId: student.courses[0] ? student.courses[0].id : ''
-    }, () => this.applyFilters());
+      studentResult: null
+    });
   },
 
   pickCourse(event) {
     const index = Number(event.detail.value || 0);
-    const course = this.data.filteredCourseTree[index];
+    const course = this.data.courseList[index];
     if (!course) return;
-    this.setData({ selectedCourseId: course.id }, () => this.applyFilters());
-  },
-
-  pickPhoneRole(event) {
-    this.setData({ phoneRoleIndex: Number(event.detail.value || 0) }, () => {
-      this.applyFilters();
+    this.setData({
+      selectedCourseIndex: index,
+      selectedCourseId: course.id,
+      studentResult: null
     });
   },
 
-  selectStudent(event) {
-    const student = this.data.relations.students.find((item) => item.id === event.currentTarget.dataset.id);
+  doImportStudent() {
+    const { selectedStudentId, selectedCourseId, studentList, courseList } = this.data;
+    if (!selectedStudentId || !selectedCourseId) {
+      Notice.toast('请先选择学生和课程');
+      return;
+    }
+
+    const course = courseList.find((c) => c.id === selectedCourseId);
+    if (course && course.studentIds && course.studentIds.includes(selectedStudentId)) {
+      const student = studentList.find((s) => s.id === selectedStudentId);
+      Notice.alert((student ? student.name : '该学生') + '已在课程「' + (course.name || '') + '」中，无需重复导入。');
+      return;
+    }
+
+    this.setData({ importingStudent: true, studentResult: null });
+
+    Api.addStudentToCourse({ studentId: selectedStudentId, courseId: selectedCourseId })
+      .then(() => {
+        const student = studentList.find((s) => s.id === selectedStudentId);
+        const course = courseList.find((c) => c.id === selectedCourseId);
+        Notice.toast('导入成功', 'success');
+        this.setData({
+          importingStudent: false,
+          studentResult: { success: true, message: '成功将 ' + (student ? student.name : '学生') + ' 导入课程「' + (course ? course.name : '') + '」' }
+        });
+        this.loadAll();
+      })
+      .catch((error) => {
+        Notice.toast(error.message || '导入失败');
+        this.setData({
+          importingStudent: false,
+          studentResult: { success: false, message: error.message || '导入失败' }
+        });
+      });
+  },
+
+  // ============ 导入课程（创建课程） ============
+
+  onCourseFormInput(event) {
+    const field = event.currentTarget.dataset.field;
+    this.setData({ ['courseForm.' + field]: event.detail.value, courseResult: null });
+  },
+
+  pickCourseTeacher(event) {
+    const index = Number(event.detail.value || 0);
+    const teacher = this.data.bootstrap.teachers[index];
+    if (!teacher) return;
     this.setData({
-      selectedStudentId: event.currentTarget.dataset.id,
-      selectedStudentCourseId: student && student.courses[0] ? student.courses[0].id : ''
-    }, () => this.applyFilters());
-  },
-
-  selectCourse(event) {
-    this.setData({ selectedCourseId: event.currentTarget.dataset.id }, () => this.applyFilters());
-  },
-
-  selectStudentCourse(event) {
-    this.setData({ selectedStudentCourseId: event.currentTarget.dataset.id }, () => this.applyFilters());
-  },
-
-  applyFilters() {
-    const { relations, bootstrap, filters, selectedTeacherId, selectedStudentId, selectedCourseId, selectedStudentCourseId, phoneRoleIndex } = this.data;
-    const filteredTeachers = relations.teachers.filter((item) => matchesKeyword(item, filters.teacherKeyword, ['name', 'fullName', 'phone', 'subject']));
-    const filteredStudents = relations.students.filter((item) => matchesKeyword(item, filters.studentKeyword, ['name', 'phone', 'loginPhone', 'grade']));
-    const filteredCourseTree = relations.courseTree.filter((item) => matchesKeyword(item, filters.courseKeyword, ['name', 'subject', 'teacherName', 'classroomName']));
-    const roleFilter = PHONE_ROLE_OPTIONS[phoneRoleIndex];
-    const filteredPhoneAccounts = bootstrap.phoneAccounts
-      .filter((item) => roleFilter === '全部身份' || roleName(item.role) === roleFilter)
-      .filter((item) => matchesKeyword(item, filters.phoneKeyword, ['phone', 'nickname', 'role']));
-
-    const selectedTeacher = filteredTeachers.find((item) => item.id === selectedTeacherId) || filteredTeachers[0] || null;
-    const selectedStudent = filteredStudents.find((item) => item.id === selectedStudentId) || filteredStudents[0] || null;
-    const selectedCourse = filteredCourseTree.find((item) => item.id === selectedCourseId) || filteredCourseTree[0] || null;
-    const selectedStudentCourse = selectedStudent
-      ? (selectedStudent.courses.find((item) => item.id === selectedStudentCourseId) || selectedStudent.courses[0] || null)
-      : null;
-
-    this.setData({
-      filteredTeachers,
-      filteredStudents,
-      filteredCourseTree,
-      filteredPhoneAccounts,
-      teacherOptions: filteredTeachers.map((item) => `${item.name} · ${item.phone} · ${item.subject}`),
-      studentOptions: filteredStudents.map((item) => `${item.name} · ${item.loginPhone}`),
-      courseOptions: filteredCourseTree.map((item) => `${item.name} · ${item.teacherName}`),
-      phoneOptions: filteredPhoneAccounts.map((item) => `${item.phone} · ${item.nickname}`),
-      selectedTeacherId: selectedTeacher ? selectedTeacher.id : '',
-      selectedStudentId: selectedStudent ? selectedStudent.id : '',
-      selectedCourseId: selectedCourse ? selectedCourse.id : '',
-      selectedStudentCourseId: selectedStudentCourse ? selectedStudentCourse.id : '',
-      selectedTeacher,
-      selectedStudent,
-      selectedCourse,
-      selectedStudentCourse
+      selectedTeacherIndex: index,
+      'courseForm.teacherId': teacher.id,
+      courseResult: null
     });
+  },
+
+  pickCourseClassroom(event) {
+    const index = Number(event.detail.value || 0);
+    const classroom = this.data.bootstrap.classrooms[index];
+    if (!classroom) return;
+    this.setData({
+      selectedClassroomIndex: index,
+      'courseForm.classroomId': classroom.id,
+      courseResult: null
+    });
+  },
+
+  doCreateCourse() {
+    const { courseForm, bootstrap } = this.data;
+
+    // 验证必填字段
+    if (!String(courseForm.name || '').trim()) {
+      Notice.toast('请输入课程名称');
+      return;
+    }
+    if (!String(courseForm.subject || '').trim()) {
+      Notice.toast('请输入课程学科');
+      return;
+    }
+    if (!String(courseForm.grade || '').trim()) {
+      Notice.toast('请输入适用年级');
+      return;
+    }
+    if (!courseForm.teacherId) {
+      Notice.toast('请选择授课老师');
+      return;
+    }
+    if (!courseForm.classroomId) {
+      Notice.toast('请选择上课教室');
+      return;
+    }
+
+    this.setData({ importingCourse: true, courseResult: null });
+
+    const payload = {
+      name: String(courseForm.name || '').trim(),
+      subject: String(courseForm.subject || '').trim(),
+      grade: String(courseForm.grade || '').trim(),
+      teacherId: courseForm.teacherId,
+      classroomId: courseForm.classroomId,
+      description: String(courseForm.description || '').trim(),
+      studentIds: []
+    };
+
+    Api.createCourse(payload)
+      .then((createdCourse) => {
+        const teacher = bootstrap.teachers.find((t) => t.id === payload.teacherId) || {};
+        const classroom = bootstrap.classrooms.find((r) => r.id === payload.classroomId) || {};
+        Notice.toast('课程创建成功', 'success');
+        this.setData({
+          importingCourse: false,
+          courseResult: {
+            success: true,
+            message: '课程「' + payload.name + '」已创建 · ' + (teacher.fullName || teacher.name || '') + ' · ' + (classroom.name || '')
+          },
+          courseForm: {
+            name: '',
+            subject: '',
+            grade: '',
+            teacherId: bootstrap.teachers[0] ? bootstrap.teachers[0].id : '',
+            classroomId: bootstrap.classrooms[0] ? bootstrap.classrooms[0].id : '',
+            description: ''
+          },
+          selectedTeacherIndex: 0,
+          selectedClassroomIndex: 0
+        });
+        this.loadAll();
+      })
+      .catch((error) => {
+        Notice.toast(error.message || '创建失败');
+        this.setData({
+          importingCourse: false,
+          courseResult: { success: false, message: error.message || '创建失败' }
+        });
+      });
+  },
+
+  // ============ 标签切换 ============
+  switchTab(event) {
+    const tab = event.currentTarget.dataset.tab;
+    this.setData({ activeTab: tab, studentResult: null, courseResult: null });
   }
 });
