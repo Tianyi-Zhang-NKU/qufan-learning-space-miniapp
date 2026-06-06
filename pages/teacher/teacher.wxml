@@ -23,7 +23,7 @@
 
   <z-card>
     <z-section-title title="当前课次" right="待上传反馈" right-type-alias="status"></z-section-title>
-    <z-list-item time="18:30" title="初三生物1班" sub="2 名学生 · ClassIn 入口预留"></z-list-item>
+    <z-list-item time="18:30" title="初三生物1班" sub="2 名学生 · 课程直播"></z-list-item>
   </z-card>
 
   <z-card mode="light">

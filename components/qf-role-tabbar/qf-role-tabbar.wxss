@@ -4,17 +4,18 @@
   right: 0;
   bottom: 0;
   z-index: 9999;
-  min-height: calc(132rpx + env(safe-area-inset-bottom));
+  width: 100vw;
+  min-height: calc(136rpx + env(safe-area-inset-bottom));
   display: flex;
   align-items: flex-start;
   justify-content: space-around;
-  padding: 18rpx 38rpx calc(18rpx + env(safe-area-inset-bottom));
-  border-radius: 34rpx 34rpx 0 0;
-  background: rgba(255, 252, 244, 0.96);
-  border-top: 1rpx solid rgba(15, 23, 42, 0.08);
-  box-shadow: 0 -16rpx 48rpx rgba(17, 24, 39, 0.12);
-  -webkit-backdrop-filter: blur(24rpx) saturate(1.08);
-  backdrop-filter: blur(24rpx) saturate(1.08);
+  padding: 18rpx 0 calc(18rpx + env(safe-area-inset-bottom));
+  border-radius: 0;
+  background: rgba(255, 253, 246, 0.98);
+  border-top: 1rpx solid rgba(16, 34, 74, 0.08);
+  box-shadow: 0 -14rpx 36rpx rgba(35, 39, 55, 0.12);
+  -webkit-backdrop-filter: blur(18rpx) saturate(1.04);
+  backdrop-filter: blur(18rpx) saturate(1.04);
   overflow: visible;
   transform: translateZ(0);
 }
@@ -25,83 +26,72 @@
   right: auto !important;
   bottom: auto !important;
   z-index: 1;
+  width: 100vw;
   flex-shrink: 0;
-  margin: 16rpx -34rpx 0;
+  margin: 16rpx 0 0;
+  left: 50% !important;
+  transform: translateX(-50%);
 }
 
 .qf-role-tab {
   position: relative;
   flex: 1;
   min-width: 0;
-  min-height: 100rpx;
+  min-height: 104rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  color: rgba(15, 23, 42, 0.46);
+  color: rgba(49, 64, 95, 0.52);
   transition: color 180ms ease, transform 180ms ease;
 }
 
 .qf-role-mark {
-  width: 58rpx;
-  height: 58rpx;
+  width: 66rpx;
+  height: 66rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 22rpx;
   color: inherit;
-  font-size: 34rpx;
-  line-height: 1;
-  font-weight: 500;
   background: transparent;
-  transition: transform 180ms ease, color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+  transition: transform 180ms ease, color 180ms ease, background 180ms ease;
+}
+
+.qf-role-icon {
+  width: 40rpx;
+  height: 40rpx;
+  opacity: 0.66;
 }
 
 .qf-role-text {
   margin-top: 8rpx;
-  font-size: 22rpx;
+  font-size: 24rpx;
   line-height: 1;
   color: inherit;
-}
-
-.qf-role-tab.primary .qf-role-mark {
-  width: 108rpx;
-  height: 108rpx;
-  margin-top: -56rpx;
-  border-radius: 50%;
-  color: #fffaf0;
-  font-size: 58rpx;
-  font-weight: 300;
-  background: #08133a;
-  box-shadow: 0 18rpx 34rpx rgba(8, 19, 58, 0.28);
-}
-
-.qf-role-tab.primary .qf-role-text {
-  margin-top: 10rpx;
-  color: rgba(15, 23, 42, 0.5);
+  font-weight: 650;
 }
 
 .qf-role-tab.active {
-  color: #08133a;
+  color: #10224A;
 }
 
-.qf-role-tab.active:not(.primary) .qf-role-mark {
-  color: #365fa8;
-  background: #f0f3dd;
+.qf-role-tab.active .qf-role-mark {
+  color: #2F6FAE;
+  background: #E8EEFF;
 }
 
-.qf-role-tab.active:not(.primary)::after {
+.qf-role-tab.active .qf-role-icon {
+  opacity: 1;
+}
+
+.qf-role-tab.active::after {
   content: '';
   width: 8rpx;
   height: 8rpx;
-  margin-top: 8rpx;
+  margin-top: 7rpx;
   border-radius: 50%;
-  background: #365fa8;
-}
-
-.qf-role-tab.primary.active .qf-role-mark {
-  transform: translateY(-4rpx);
-  box-shadow: 0 22rpx 42rpx rgba(8, 19, 58, 0.34);
+  background: #2F6FAE;
 }
 
 .qf-role-tab:active {

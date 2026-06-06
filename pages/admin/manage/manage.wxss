@@ -299,3 +299,66 @@
   margin-left: auto;
   margin-right: auto;
 }
+
+/* Light paper management overrides */
+.form-label,
+.preview-name,
+.result-text,
+.help-title,
+.rc-name {
+  color: #10224A;
+}
+
+.optional,
+.preview-meta,
+.help-text,
+.rc-meta {
+  color: #8A8D88;
+}
+
+.import-picker,
+.form-input,
+.form-textarea,
+.selected-preview {
+  border-color: rgba(16, 34, 74, 0.1);
+  background: #FFFCF2;
+}
+
+.selected-preview {
+  background: #F6F3E8;
+}
+
+.preview-avatar.student-avatar-bg {
+  background: #EEF5DD;
+}
+
+.preview-avatar.course-avatar-bg {
+  background: #FFE8BF;
+}
+
+.preview-avatar-text {
+  color: #10224A;
+}
+
+.preview-courses,
+.result-banner.success .result-text {
+  color: #3E8B68;
+}
+
+.arrow-down {
+  color: #F59A23;
+}
+
+.result-banner.success {
+  background: #EEF5DD;
+  border-color: rgba(62, 139, 104, 0.18);
+}
+
+.result-banner.error {
+  background: rgba(255, 232, 224, 0.86);
+  border-color: rgba(163, 58, 58, 0.16);
+}
+
+.recent-course-row {
+  border-bottom-color: rgba(16, 34, 74, 0.08);
+}

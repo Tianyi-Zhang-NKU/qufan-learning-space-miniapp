@@ -1,11 +1,19 @@
-const Api = require('../../services/api');
 const config = require('../../services/config');
 const Guard = require('../../utils/page-guard');
 const Notice = require('../../utils/notice');
 
+let apiModule = null;
+
+function getApi() {
+  if (!apiModule) {
+    apiModule = require('../../services/api');
+  }
+  return apiModule;
+}
+
 Page({
   data: {
-    phone: config.demoPhones.student,
+    phone: '',
     logging: false,
     showDemo: false,
     demoPhones: [
@@ -41,22 +49,31 @@ Page({
       return;
     }
     this.setData({ logging: true });
+    let Api;
+    try {
+      Api = getApi();
+    } catch (error) {
+      Notice.alert(error.message || '登录服务加载失败，请重新编译。');
+      this.setData({ logging: false });
+      return;
+    }
     Api.loginByPhone({ phone })
       .then((session) => {
         getApp().setSession(session);
         wx.redirectTo({ url: Guard.roleHome(session.role) });
+        this.setData({ logging: false });
       })
-      .catch((error) => Notice.alert(error.message || '登录失败，请确认手机号。'))
-      .finally(() => {
+      .catch((error) => {
+        Notice.alert(error.message || '登录失败，请确认手机号。');
         this.setData({ logging: false });
       });
   },
 
   onGetPhoneNumber() {
-    Notice.toast('微信手机号授权待接入后端');
+    Notice.toast('请使用报班手机号登录');
   },
 
   smsPlaceholder() {
-    Notice.toast('短信验证码登录待接入');
+    Notice.toast('请使用报班手机号登录');
   }
 });

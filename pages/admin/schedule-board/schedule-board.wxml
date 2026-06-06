@@ -15,11 +15,11 @@
       <!-- 周导航 -->
       <view class="calendar-nav">
         <view class="nav-btn" bindtap="prevWeek">
-          <text class="nav-arrow">◀</text>
+          <image class="nav-icon" src="/assets/icons/chevron-left.svg" mode="aspectFit"></image>
         </view>
         <text class="nav-label">{{weekLabel}}</text>
         <view class="nav-btn" bindtap="nextWeek">
-          <text class="nav-arrow">▶</text>
+          <image class="nav-icon" src="/assets/icons/chevron-right.svg" mode="aspectFit"></image>
         </view>
       </view>
 
@@ -41,7 +41,8 @@
 
       <!-- 回到今天 -->
       <view class="today-link" bindtap="goToday">
-        <text class="today-link-text">📅 回到今天</text>
+        <image class="today-link-icon" src="/assets/icons/calendar.svg" mode="aspectFit"></image>
+        <text class="today-link-text">回到今天</text>
       </view>
     </view>
 
@@ -64,14 +65,20 @@
           bindtap="toggleClassroom"
         >
           <view class="cs-left">
-            <view class="cs-room-icon">🏫</view>
+            <view class="cs-room-icon">
+              <image class="cs-room-icon-img" src="/assets/icons/classroom.svg" mode="aspectFit"></image>
+            </view>
             <view class="cs-room-info">
               <text class="cs-room-name">{{item.classroomName}}</text>
               <text class="cs-room-meta">{{item.campus || '主校区'}} · 容量{{item.capacity || '-'}}人 · {{item.sessions.length}}节课</text>
             </view>
           </view>
           <view class="cs-right">
-            <text class="cs-expand-icon">{{expandedClassroomId === item.classroomId ? '▲' : '▼'}}</text>
+            <image
+              class="cs-expand-icon"
+              src="{{expandedClassroomId === item.classroomId ? '/assets/icons/chevron-up.svg' : '/assets/icons/chevron-down.svg'}}"
+              mode="aspectFit"
+            ></image>
           </view>
         </view>
 
@@ -90,14 +97,29 @@
               </view>
               <text class="session-title">{{session.displayTitle || session.title}}</text>
               <view class="session-meta-row">
-                <text class="session-meta">⏰ {{session.startTime}} - {{session.endTime}}</text>
-                <text class="session-meta">👨‍🏫 {{session.teacherName}}</text>
+                <view class="session-meta">
+                  <image class="session-meta-icon" src="/assets/icons/clock.svg" mode="aspectFit"></image>
+                  <text>{{session.startTime}} - {{session.endTime}}</text>
+                </view>
+                <view class="session-meta">
+                  <image class="session-meta-icon" src="/assets/icons/teacher.svg" mode="aspectFit"></image>
+                  <text>{{session.teacherName}}</text>
+                </view>
               </view>
               <view class="session-meta-row">
-                <text class="session-meta">📖 {{session.courseSubject || '-'}}</text>
-                <text class="session-meta">👥 {{session.studentIds.length}}名学生</text>
+                <view class="session-meta">
+                  <image class="session-meta-icon" src="/assets/icons/course.svg" mode="aspectFit"></image>
+                  <text>{{session.courseSubject || '-'}}</text>
+                </view>
+                <view class="session-meta">
+                  <image class="session-meta-icon" src="/assets/icons/users.svg" mode="aspectFit"></image>
+                  <text>{{session.studentIds.length}}名学生</text>
+                </view>
               </view>
-              <text wx:if="{{session.note}}" class="session-note">📝 {{session.note}}</text>
+              <view wx:if="{{session.note}}" class="session-note">
+                <image class="session-note-icon" src="/assets/icons/note.svg" mode="aspectFit"></image>
+                <text>{{session.note}}</text>
+              </view>
             </view>
           </view>
         </view>

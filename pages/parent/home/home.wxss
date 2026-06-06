@@ -107,7 +107,8 @@
 
 .course-info-icon {
   flex-shrink: 0;
-  font-size: 26rpx;
+  width: 28rpx;
+  height: 28rpx;
 }
 
 .course-info-label {
@@ -129,7 +130,14 @@
 
 /* Schedule lines */
 .course-schedule {
+  padding-right: 6rpx;
+}
+
+.course-schedule-scroll {
+  max-height: 138rpx;
   margin-bottom: 28rpx;
+  border-radius: 18rpx;
+  background: #F6F3E8;
 }
 
 .schedule-line {
@@ -161,6 +169,21 @@
   display: flex;
   gap: 20rpx;
   margin-top: 6rpx;
+}
+
+.course-actions + .course-actions {
+  margin-top: 18rpx;
+}
+
+.tests-row .test-btn {
+  width: calc((100% - 20rpx) / 2);
+}
+
+.live-row .test-btn {
+  width: 100%;
+  justify-content: center;
+  padding-left: 22rpx;
+  padding-right: 22rpx;
 }
 
 .test-btn {
@@ -208,9 +231,23 @@
     #2d5a3f;
 }
 
+.live-test-btn {
+  background:
+    linear-gradient(145deg, #4d71bc, #365fa8),
+    #365fa8;
+  box-shadow: 0 16rpx 34rpx rgba(54, 95, 168, 0.26);
+}
+
+.live-test-btn:active {
+  background:
+    linear-gradient(145deg, #2f5596, #213f73),
+    #2f5596;
+}
+
 .test-btn-icon {
   flex-shrink: 0;
-  font-size: 32rpx;
+  width: 44rpx;
+  height: 44rpx;
 }
 
 .test-btn-text {
@@ -236,4 +273,78 @@
 .qf-empty {
   max-width: 620rpx;
   margin: 0 auto;
+}
+
+/* Light paper management overrides */
+.home-summary-strip {
+  border-color: rgba(16, 34, 74, 0.08);
+  background: #FFFDF6;
+  box-shadow: 0 16rpx 38rpx rgba(35, 39, 55, 0.09);
+}
+
+.home-summary-item + .home-summary-item {
+  border-left-color: rgba(16, 34, 74, 0.08);
+}
+
+.home-summary-value,
+.course-name,
+.course-info-value,
+.test-btn-title {
+  color: #10224A;
+}
+
+.home-summary-label,
+.course-grade,
+.course-info-label,
+.schedule-text,
+.test-btn-sub {
+  color: #8A8D88;
+}
+
+.course-card {
+  border-color: rgba(16, 34, 74, 0.08);
+  background: #FFFDF6;
+}
+
+.course-info {
+  border-color: rgba(16, 34, 74, 0.08);
+  background: #F6F3E8;
+}
+
+.course-info-row + .course-info-row {
+  border-top-color: rgba(16, 34, 74, 0.08);
+}
+
+.schedule-dot {
+  background: #F59A23;
+  box-shadow: 0 0 0 4rpx rgba(245, 154, 35, 0.16);
+}
+
+.test-btn {
+  color: #10224A;
+  border: 1rpx solid rgba(16, 34, 74, 0.08);
+  background: #F6F3E8;
+  box-shadow: none;
+}
+
+.pre-test-btn {
+  background: #FFE8BF;
+}
+
+.post-test-btn {
+  background: #EEF5DD;
+}
+
+.live-test-btn {
+  background: #E8EEFF;
+}
+
+.test-btn:active,
+.post-test-btn:active,
+.live-test-btn:active {
+  background: #FFFCF2;
+}
+
+.test-btn-icon {
+  opacity: 0.88;
 }

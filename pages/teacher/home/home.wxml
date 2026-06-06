@@ -1,83 +1,189 @@
-<view class="qf-page qf-page-fixed">
+<view class="qf-page qf-page-fixed teacher-home">
   <z-bg mode="dark"></z-bg>
 
   <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
-    <view class="qf-top">
-      <view class="qf-brand">
-        <text class="qf-brand-title">{{teacherName}} 老师的课程</text>
-        <text class="qf-brand-sub">共 {{courses.length}} 门课程 · 课前/课后错题反馈</text>
-      </view>
-    </view>
-
-    <!-- 课程列表卡片 -->
-    <view wx:if="{{courses.length}}" class="course-list">
-      <view wx:for="{{courses}}" wx:key="id" class="course-card qf-card">
-        <!-- 课程头部信息 -->
-        <view class="course-header">
-          <text class="course-name">{{item.name}}</text>
-          <view class="course-tags">
-            <text class="course-tag">{{item.subject}}</text>
-            <text class="course-tag">{{item.grade}}</text>
-          </view>
-        </view>
-
-        <!-- 课程详细信息 -->
-        <view class="course-info">
-          <view class="info-row">
-            <text class="info-icon">🏫</text>
-            <text class="info-label">教室：</text>
-            <text class="info-value">{{item.classroomName}}</text>
-          </view>
-          <view class="info-row">
-            <text class="info-icon">👨‍🏫</text>
-            <text class="info-label">教师：</text>
-            <text class="info-value">{{item.teacherName}}</text>
-          </view>
-          <view class="info-row">
-            <text class="info-icon">📅</text>
-            <text class="info-label">最近课次：</text>
-            <text class="info-value">{{item.recentSessionTitle || '暂无课次'}}</text>
-          </view>
-          <view wx:if="{{item.nextSessionTime}}" class="info-row">
-            <text class="info-icon">⏰</text>
-            <text class="info-label">上课时间：</text>
-            <text class="info-value">{{item.nextSessionTime}}</text>
-          </view>
-          <view class="info-row">
-            <text class="info-icon">👥</text>
-            <text class="info-label">学生人数：</text>
-            <text class="info-value">{{item.studentCount}} 人</text>
-          </view>
-          <view class="info-row">
-            <text class="info-icon">📝</text>
-            <text class="info-label">已反馈人数：</text>
-            <text class="info-value">{{item.feedbackStudentCount || item.feedbackCount}} 人</text>
-          </view>
-        </view>
-
-        <!-- 操作按钮区 -->
-        <view class="course-actions">
-          <button class="action-btn pre-test-btn" data-course-id="{{item.id}}" data-course-name="{{item.name}}" bindtap="goPreTest">
-            <text class="action-icon">📋</text>
-            <text class="action-label">课前错题</text>
-          </button>
-          <button class="action-btn post-test-btn" data-course-id="{{item.id}}" data-course-name="{{item.name}}" bindtap="goPostTest">
-            <text class="action-icon">📝</text>
-            <text class="action-label">课后错题</text>
-          </button>
-          <button class="action-btn feedback-btn" data-course-id="{{item.id}}" data-course-name="{{item.name}}" bindtap="goFeedback">
-            <text class="action-icon">💬</text>
-            <text class="action-label">课程错题</text>
-          </button>
+    <block wx:if="{{viewMode === 'overview'}}">
+      <view class="qf-top">
+        <view class="qf-brand">
+          <text class="qf-brand-title">{{teacherName}} 老师</text>
+          <text class="qf-brand-sub">今日提醒 · 课程合集 · 错题反馈</text>
         </view>
       </view>
-    </view>
 
-    <!-- 空状态 -->
-    <view wx:else class="qf-empty">
-      <text>暂无课程数据</text>
-      <text class="qf-muted">请联系管理员分配课程</text>
-    </view>
+      <view class="qf-section">今日课程提醒</view>
+      <view wx:if="{{todayCourses.length}}" class="today-reminder-list">
+        <view wx:for="{{todayCourses}}" wx:key="id" class="qf-card today-reminder-card">
+          <view class="today-reminder-main">
+            <image class="today-reminder-icon" src="/assets/icons/calendar.svg" mode="aspectFit"></image>
+            <view class="today-reminder-copy">
+              <text class="today-reminder-title">{{item.startTime}} {{item.courseName}}</text>
+              <text class="today-reminder-meta">{{item.displayTitle || item.title}} · {{item.courseMeta}}</text>
+            </view>
+          </view>
+          <navigator class="mini-live" url="/pages/live-player/live-player?sessionId={{item.id}}">
+            <image class="qf-inline-icon" src="/assets/icons/live.svg" mode="aspectFit"></image>直播
+          </navigator>
+        </view>
+      </view>
+      <view wx:else class="qf-empty">今天暂无课程安排</view>
+
+      <view class="qf-section">课程合集</view>
+      <view class="collection-launch" bindtap="openCourseCollection">
+        <image class="launch-icon" src="/assets/icons/course.svg" mode="aspectFit"></image>
+        <view class="launch-body">
+          <text class="launch-title">我的课程合集</text>
+          <text class="launch-sub">按课程进入课次合集，或按学生路径录入错题反馈</text>
+        </view>
+        <view class="launch-meta">
+          <text class="launch-count">{{courses.length}}</text>
+          <image class="qf-inline-icon qf-icon-lg" src="/assets/icons/chevron-right.svg" mode="aspectFit"></image>
+        </view>
+      </view>
+    </block>
+
+    <block wx:elif="{{viewMode === 'courses'}}">
+      <view class="detail-top">
+        <view class="back-btn" bindtap="backOverview">
+          <image class="qf-inline-icon qf-icon-lg" src="/assets/icons/chevron-left.svg" mode="aspectFit"></image>
+        </view>
+        <view class="detail-title-block">
+          <text class="qf-brand-title">课程合集</text>
+          <text class="qf-brand-sub">课次合集 / 学生路径双入口</text>
+        </view>
+      </view>
+
+      <view class="search-card">
+        <image class="search-icon" src="/assets/icons/search.svg" mode="aspectFit"></image>
+        <input
+          class="search-input"
+          value="{{courseSearchQuery}}"
+          placeholder="搜索课程、学科、年级、教室或学生"
+          confirm-type="search"
+          bindinput="onCourseSearchInput"
+        />
+        <view wx:if="{{courseSearchQuery}}" class="search-clear" bindtap="clearCourseSearch">×</view>
+      </view>
+
+      <view class="result-line">共 {{filteredCourses.length}} 门课程</view>
+
+      <view wx:if="{{filteredCourses.length}}" class="detail-list">
+        <view wx:for="{{filteredCourses}}" wx:key="id" class="qf-card collection-card {{expandedCourseKey === item.id ? 'expanded' : ''}}">
+          <view class="item-head" data-id="{{item.id}}" bindtap="toggleCourse">
+            <image class="item-icon" src="/assets/icons/course.svg" mode="aspectFit"></image>
+            <view class="item-main">
+              <text class="item-title">{{item.name}}</text>
+              <text class="item-sub">{{item.subject}} · {{item.grade}} · {{item.classroomName}} · {{item.nextSessionTime}}</text>
+            </view>
+            <view class="item-side">
+              <text class="side-number">{{item.sessionTotal}}</text>
+              <text class="side-label">课次</text>
+            </view>
+            <image
+              class="qf-inline-icon qf-icon-lg"
+              src="{{expandedCourseKey === item.id ? '/assets/icons/chevron-up.svg' : '/assets/icons/chevron-down.svg'}}"
+              mode="aspectFit"
+            ></image>
+          </view>
+
+          <view wx:if="{{expandedCourseKey === item.id}}" class="item-detail">
+            <view class="detail-row">
+              <text class="detail-label">学生人数</text>
+              <text class="detail-value">{{item.studentTotal}} 人</text>
+            </view>
+            <view class="detail-row">
+              <text class="detail-label">默认教室</text>
+              <text class="detail-value">{{item.classroomName || '待定'}}</text>
+            </view>
+
+            <view class="mini-section">课次合集</view>
+            <view wx:if="{{item.sessions.length}}" class="mini-list">
+              <view wx:for="{{item.sessions}}" wx:for-item="session" wx:key="id" class="mini-row">
+                <view class="mini-row-main">
+                  <text class="mini-title">{{session.displayTitle || session.title}}</text>
+                  <text class="mini-meta">{{session.sessionMeta}} · {{session.statusText}}</text>
+                </view>
+                <view class="mini-row-actions">
+                  <button
+                    class="mini-action"
+                    data-course-id="{{item.id}}"
+                    data-course-name="{{item.name}}"
+                    data-session-id="{{session.id}}"
+                    data-feedback-type="pre"
+                    bindtap="goFeedbackStudents"
+                  >课前</button>
+                  <button
+                    class="mini-action"
+                    data-course-id="{{item.id}}"
+                    data-course-name="{{item.name}}"
+                    data-session-id="{{session.id}}"
+                    data-feedback-type="post"
+                    bindtap="goFeedbackStudents"
+                  >课后</button>
+                  <button
+                    class="mini-action"
+                    data-course-id="{{item.id}}"
+                    data-course-name="{{item.name}}"
+                    data-session-id="{{session.id}}"
+                    data-feedback-type="general"
+                    bindtap="goFeedbackStudents"
+                  >其他</button>
+                  <navigator class="mini-live" url="/pages/live-player/live-player?sessionId={{session.id}}">
+                    <image class="qf-inline-icon" src="/assets/icons/live.svg" mode="aspectFit"></image>
+                  </navigator>
+                </view>
+              </view>
+            </view>
+            <view wx:else class="empty-inline">暂无课次安排</view>
+
+            <view class="mini-section">学生路径</view>
+            <view class="student-path-search">
+              <image class="search-icon" src="/assets/icons/search.svg" mode="aspectFit"></image>
+              <input
+                class="student-path-input"
+                value="{{studentSearchQuery}}"
+                placeholder="搜索学生姓名、年级或手机号"
+                confirm-type="search"
+                bindinput="onStudentSearchInput"
+              />
+              <view wx:if="{{studentSearchQuery}}" class="search-clear" bindtap="clearStudentSearch">×</view>
+            </view>
+            <view wx:if="{{filteredStudents.length}}" class="mini-list student-path-list">
+              <view wx:for="{{filteredStudents}}" wx:for-item="student" wx:key="id" class="mini-row">
+                <view class="mini-row-main">
+                  <text class="mini-title">{{student.name}}</text>
+                  <text class="mini-meta">{{student.grade || '-'}} · {{student.phone || '未留手机号'}}</text>
+                </view>
+                <button
+                  class="mini-action primary"
+                  data-course-id="{{item.id}}"
+                  data-course-name="{{item.name}}"
+                  data-student-id="{{student.id}}"
+                  data-student-name="{{student.name}}"
+                  data-feedback-type="post"
+                  bindtap="goFeedbackDetail"
+                >选课次</button>
+              </view>
+            </view>
+            <view wx:else class="empty-inline">暂无匹配学生</view>
+          </view>
+        </view>
+      </view>
+      <view wx:else class="qf-empty">没有找到匹配课程</view>
+    </block>
+
+    <block wx:elif="{{viewMode === 'students'}}">
+      <view class="detail-top">
+        <view class="back-btn" bindtap="backCourses">
+          <image class="qf-inline-icon qf-icon-lg" src="/assets/icons/chevron-left.svg" mode="aspectFit"></image>
+        </view>
+        <view class="detail-title-block">
+          <text class="qf-brand-title">学生路径</text>
+          <text class="qf-brand-sub">{{activeCourse.name}} · 先选学生，再选课次和错题类型</text>
+        </view>
+      </view>
+    </block>
+
+    <view class="qf-safe-bottom"></view>
   </scroll-view>
 
   <qf-role-tabbar role="teacher" current="/pages/teacher/home/home" fixed="{{false}}"></qf-role-tabbar>

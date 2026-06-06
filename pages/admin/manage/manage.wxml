@@ -5,28 +5,14 @@
     <view class="qf-top">
       <view class="qf-brand">
         <text class="qf-brand-title">数据管理</text>
-        <text class="qf-brand-sub">学生导入 · 课程创建</text>
+        <text class="qf-brand-sub">将学生加入已有课程</text>
       </view>
     </view>
 
-    <!-- ===== 标签切换 ===== -->
-    <view class="qf-entry-grid admin-entry-grid">
-      <button class="qf-entry-card {{activeTab === 'import-student' ? 'active' : ''}}" data-tab="import-student" bindtap="switchTab">
-        <text class="qf-entry-title">📥 导入学生</text>
-        <text class="qf-entry-sub">将学生加入已有课程</text>
-      </button>
-      <button class="qf-entry-card {{activeTab === 'import-course' ? 'active' : ''}}" data-tab="import-course" bindtap="switchTab">
-        <text class="qf-entry-title">📖 导入课程</text>
-        <text class="qf-entry-sub">创建新课程与排课</text>
-      </button>
-    </view>
-
-    <!-- ============ 导入学生面板 ============ -->
-    <view wx:if="{{activeTab === 'import-student'}}" class="qf-panel">
-      <view class="qf-section">将学生导入已有课程</view>
+    <view class="qf-panel">
+      <view class="qf-section">导入学生</view>
 
       <view class="qf-card import-card">
-        <!-- 选择学生 -->
         <view class="form-group">
           <text class="form-label">选择学生</text>
           <picker range="{{studentOptions}}" value="{{selectedStudentIndex}}" bindchange="pickStudent">
@@ -48,12 +34,10 @@
           </view>
         </view>
 
-        <!-- 分隔箭头 -->
         <view class="import-arrow">
-          <text class="arrow-down">⬇</text>
+          <text class="arrow-down">↓</text>
         </view>
 
-        <!-- 选择课程 -->
         <view class="form-group">
           <text class="form-label">目标课程</text>
           <picker range="{{courseOptions}}" value="{{selectedCourseIndex}}" bindchange="pickCourse">
@@ -66,7 +50,7 @@
 
         <view wx:if="{{courseList[selectedCourseIndex]}}" class="selected-preview course-preview">
           <view class="preview-avatar course-avatar-bg">
-            <text class="preview-avatar-text">📖</text>
+            <text class="preview-avatar-text">课</text>
           </view>
           <view class="preview-info">
             <text class="preview-name">{{courseList[selectedCourseIndex].name}}</text>
@@ -79,132 +63,20 @@
           <text wx:else>导入中...</text>
         </button>
 
-        <!-- 操作结果 -->
         <view wx:if="{{studentResult}}" class="result-banner {{studentResult.success ? 'success' : 'error'}}">
-          <text class="result-icon">{{studentResult.success ? '✅' : '❌'}}</text>
+          <text class="result-icon">{{studentResult.success ? '✓' : '!'}}</text>
           <text class="result-text">{{studentResult.message}}</text>
         </view>
       </view>
 
       <view class="qf-card tight help-card">
-        <text class="help-title">💡 使用说明</text>
-        <text class="help-text">1. 在上方选择一名学生和一门目标课程</text>
-        <text class="help-text">2. 点击「确认导入」将该学生加入该课程</text>
-        <text class="help-text">3. 如需创建新课程，请切换到「导入课程」标签</text>
+        <text class="help-title">使用说明</text>
+        <text class="help-text">1. 选择一名学生和一门目标课程</text>
+        <text class="help-text">2. 点击“确认导入”将该学生加入课程</text>
+        <text class="help-text">3. 课程新建和排课请回到管理端课程合集处理</text>
       </view>
     </view>
 
-    <!-- ============ 导入课程面板 ============ -->
-    <view wx:if="{{activeTab === 'import-course'}}" class="qf-panel">
-      <view class="qf-section">创建新课程</view>
-
-      <view class="qf-card import-card">
-        <!-- 课程名称 -->
-        <view class="form-group">
-          <text class="form-label">课程名称 <text class="required">*</text></text>
-          <input
-            class="qf-input form-input"
-            placeholder="例如：初三物理提高班"
-            value="{{courseForm.name}}"
-            data-field="name"
-            bindinput="onCourseFormInput"
-          />
-        </view>
-
-        <!-- 学科 + 年级 双列 -->
-        <view class="form-row">
-          <view class="form-group form-half">
-            <text class="form-label">学科 <text class="required">*</text></text>
-            <input
-              class="qf-input form-input"
-              placeholder="例如：物理"
-              value="{{courseForm.subject}}"
-              data-field="subject"
-              bindinput="onCourseFormInput"
-            />
-          </view>
-          <view class="form-group form-half">
-            <text class="form-label">适用年级 <text class="required">*</text></text>
-            <input
-              class="qf-input form-input"
-              placeholder="例如：初三"
-              value="{{courseForm.grade}}"
-              data-field="grade"
-              bindinput="onCourseFormInput"
-            />
-          </view>
-        </view>
-
-        <!-- 授课老师 -->
-        <view class="form-group">
-          <text class="form-label">授课老师 <text class="required">*</text></text>
-          <picker range="{{teacherOptions}}" value="{{selectedTeacherIndex}}" bindchange="pickCourseTeacher">
-            <view class="qf-picker import-picker">
-              <text class="qf-picker-label">老师</text>
-              <text class="qf-picker-value">{{teacherOptions[selectedTeacherIndex] || '请选择老师'}}</text>
-            </view>
-          </picker>
-        </view>
-
-        <!-- 上课教室 -->
-        <view class="form-group">
-          <text class="form-label">上课教室 <text class="required">*</text></text>
-          <picker range="{{classroomOptions}}" value="{{selectedClassroomIndex}}" bindchange="pickCourseClassroom">
-            <view class="qf-picker import-picker">
-              <text class="qf-picker-label">教室</text>
-              <text class="qf-picker-value">{{classroomOptions[selectedClassroomIndex] || '请选择教室'}}</text>
-            </view>
-          </picker>
-        </view>
-
-        <!-- 课程描述 -->
-        <view class="form-group">
-          <text class="form-label">课程描述 <text class="optional">(选填)</text></text>
-          <textarea
-            class="qf-textarea form-textarea"
-            placeholder="简要描述课程内容、教学目标等..."
-            value="{{courseForm.description}}"
-            data-field="description"
-            bindinput="onCourseFormInput"
-            maxlength="200"
-          />
-        </view>
-
-        <!-- 创建按钮 -->
-        <button class="qf-btn full import-btn" bindtap="doCreateCourse" disabled="{{importingCourse}}">
-          <text wx:if="{{!importingCourse}}">创建课程</text>
-          <text wx:else>创建中...</text>
-        </button>
-
-        <!-- 操作结果 -->
-        <view wx:if="{{courseResult}}" class="result-banner {{courseResult.success ? 'success' : 'error'}}">
-          <text class="result-icon">{{courseResult.success ? '✅' : '❌'}}</text>
-          <text class="result-text">{{courseResult.message}}</text>
-        </view>
-      </view>
-
-      <!-- 已有课程速览 -->
-      <view wx:if="{{recentCourses.length}}" class="qf-section">📋 现有课程</view>
-      <view wx:if="{{recentCourses.length}}" class="qf-card tight recent-courses-card">
-        <view wx:for="{{recentCourses}}" wx:key="id" class="recent-course-row">
-          <view class="rc-left">
-            <text class="rc-name">{{item.name}}</text>
-            <text class="rc-meta">{{item.subject}} · {{item.grade}} · {{item.teacherName}} · {{item.classroomName}} · {{item.studentCount}}名学生</text>
-          </view>
-          <text class="qf-tag {{item.sessions && item.sessions.length > 0 ? 'ok' : 'warn'}}">{{item.sessions && item.sessions.length || 0}}次课</text>
-        </view>
-      </view>
-
-      <view class="qf-card tight help-card">
-        <text class="help-title">💡 使用说明</text>
-        <text class="help-text">1. 填写课程名称、学科、适用年级</text>
-        <text class="help-text">2. 选择授课老师和上课教室</text>
-        <text class="help-text">3. 点击「创建课程」完成课程创建</text>
-        <text class="help-text">4. 创建后可在课表页面为该课程排课</text>
-      </view>
-    </view>
-
-    <!-- spacer -->
     <view style="height: 32rpx;"></view>
   </scroll-view>
 

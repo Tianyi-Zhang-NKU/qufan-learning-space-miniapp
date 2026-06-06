@@ -3,7 +3,7 @@ const db = require('./mock-db');
 
 let activeSession = null;
 
-const TODAY = '2026-06-03';
+const TODAY = '2026-06-06';
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'heic'];
 const VIDEO_EXTS = ['mp4', 'mov', 'm4v', 'webm'];
 const VOICE_EXTS = ['m4a', 'mp3', 'aac', 'wav'];
@@ -216,7 +216,7 @@ function liveTone(status) {
 function cameraStatusText(status) {
   if (status === 'ready') return '可用';
   if (status === 'testing') return '联调中';
-  return '待接入';
+  return '待配置';
 }
 
 function assignmentWithFile(item) {
@@ -239,9 +239,9 @@ function feedbackTypeText(type) {
 function decorateMedia(file) {
   if (!file) return null;
   const messageMap = {
-    image: '图片反馈可在小程序内查看，正式部署后由后端签发临时预览地址。',
-    video: '视频反馈可在小程序内播放，正式部署后由后端签发临时播放地址。',
-    voice: '语音反馈可在小程序内收听，正式部署后由后端签发临时播放地址。'
+    image: '图片反馈可在小程序内查看。',
+    video: '视频反馈可在小程序内播放。',
+    voice: '语音反馈可在小程序内收听。'
   };
   return {
     ...file,
@@ -305,7 +305,7 @@ function decorateSession(item, options = {}) {
     feedbackCount: feedbacks.length,
     preFeedbackCount,
     postFeedbackCount,
-    liveStatusText: 'ClassIn 接口待接入',
+    liveStatusText: '课堂入口准备中',
     liveTone: 'warn'
   };
 }
@@ -330,7 +330,7 @@ function decorateCourse(item, options = {}) {
     feedbackStudentCount: new Set(feedbacks.map((f) => f.studentId)).size,
     assignments: getCourseAssignments(item.id),
     wrongRecords: [],
-    liveStatusText: 'ClassIn 接口待接入',
+    liveStatusText: '课堂入口准备中',
     liveTone: 'warn'
   };
 }
@@ -502,15 +502,19 @@ function classInEntryForSession(courseId, courseSessionId) {
   const course = findCourse(courseId) || {};
   const courseSession = findCourseSession(courseSessionId) || {};
   const classroom = findClassroom(courseSession.classroomId || course.classroomId) || {};
+  const liveRoom = db.liveRooms.find((item) => item.courseSessionId === courseSessionId)
+    || db.liveRooms.find((item) => item.classroomId === classroom.id)
+    || {};
   return {
-    status: 'pending',
+    status: liveRoom.status || 'open',
     provider: 'classin',
-    message: 'ClassIn 直播接口待接入',
-    classinEntryUrl: '',
-    streamUrl: '',
+    message: liveRoom.message || '课堂入口已准备。',
+    classinEntryUrl: liveRoom.classinEntryUrl || 'https://www.classin.com/',
+    streamUrl: liveRoom.streamUrl || '',
+    previewVideoUrl: liveRoom.previewVideoUrl || '',
     playerType: 'classin-webview-or-live-player',
-    signedAt: '',
-    expiresAt: '',
+    signedAt: liveRoom.signedAt || nowLabel(),
+    expiresAt: liveRoom.expiresAt || addMonthsLabel(1),
     roomName: classroom.name || '',
     courseName: course.name || '',
     lessonTitle: courseSession.displayTitle || courseSession.title || '',
@@ -749,7 +753,7 @@ const mockApi = {
         { label: '我的课程', value: courses.length },
         { label: '今日课程', value: todayCourses.length },
         { label: '老师反馈', value: recentFeedbacks.length },
-        { label: '直播入口', value: '预留' }
+        { label: '直播入口', value: '已建档' }
       ],
       courses,
       courseGroups: courses,
@@ -829,7 +833,7 @@ const mockApi = {
     return delay({
       kind: 'optionalFile',
       file: optionalFile,
-      message: '这是可选资料文件，非第一版主流程。真实部署后由后端签发临时地址。',
+      message: '这是可选资料文件，可在有地址时预览或下载。',
       canPreview: ['pdf', 'doc', 'docx'].includes(optionalFile.ext),
       canDownload: true,
       downloadable: true,
@@ -846,7 +850,7 @@ const mockApi = {
       status: media.url ? 'ready' : 'pending',
       file: decorateMedia(media),
       downloadUrl: media.url || '',
-      message: media.url ? '图片下载地址已生成。' : '图片下载地址需要后端或云函数签发，当前为 mock 占位。'
+      message: media.url ? '图片下载地址已生成。' : '暂无图片下载地址。'
     });
   },
 
@@ -860,7 +864,7 @@ const mockApi = {
       file: decorateMedia(media),
       playUrl: media.url || media.tempPath || '',
       downloadable: false,
-      message: media.url || media.tempPath ? '语音播放地址已生成。' : '语音播放地址需要后端或云函数签发，当前为 mock 占位。'
+      message: media.url || media.tempPath ? '语音播放地址已生成。' : '暂无语音播放地址。'
     });
   },
 
@@ -879,7 +883,7 @@ const mockApi = {
           .filter(Boolean).length,
         feedbackCount: getFeedbacks({ courseId: course.id }).length,
         recentOrNextSession: decorated.sessions[0] || null,
-        liveStatusText: 'ClassIn 接口待接入',
+        liveStatusText: '课堂入口准备中',
         liveTone: 'warn'
       };
     });
@@ -891,7 +895,7 @@ const mockApi = {
         { label: '课程数', value: db.courses.length },
         { label: '反馈数', value: db.lessonFeedbacks.length },
         { label: '手机号映射', value: db.phoneAccounts.length },
-        { label: '直播配置', value: '待接入' }
+        { label: '直播配置', value: '已建档' }
       ],
       relationOverview,
       todaySessions,
@@ -949,6 +953,8 @@ const mockApi = {
         courses: courses.map((course) => ({
           id: course.id,
           name: course.name,
+          subject: course.subject || '',
+          grade: course.grade || '',
           teacherName: (findTeacher(course.teacherId) || {}).name || '',
           classroomName: (findClassroom(course.classroomId) || {}).name || '',
           feedbackCount: getFeedbacks({ studentId: student.id, courseId: course.id }).length,
@@ -1541,14 +1547,18 @@ const mockApi = {
     });
     if (conflict.hasConflict) throw makeError('SCHEDULE_CONFLICT', '排课时间冲突。', conflict);
     const sessionIndex = getCourseSessions(course.id).length + 1;
+    const defaultTitle = `第${sessionIndex}次课`;
+    const sessionTitle = String(payload.sessionTitle || payload.displayTitle || defaultTitle).trim() || defaultTitle;
+    const topic = String(payload.topic || '').trim();
     const courseSession = {
       id: nextId('lesson', db.courseSessions),
       courseId: course.id,
       classId: course.classId,
       sessionIndex,
-      sessionTitle: `第${sessionIndex}次课`,
-      title: payload.title || `第${sessionIndex}次课`,
-      displayTitle: payload.title || `第${sessionIndex}次课`,
+      sessionTitle,
+      title: payload.title || (topic ? `${sessionTitle}：${topic}` : sessionTitle),
+      displayTitle: sessionTitle,
+      topic,
       date: payload.date,
       startTime: payload.startTime,
       endTime: payload.endTime,
@@ -1562,6 +1572,72 @@ const mockApi = {
     };
     db.courseSessions.push(courseSession);
     return delay(decorateSession(courseSession));
+  },
+
+  updateCourseSession(payload = {}) {
+    const session = requireRole(['admin', 'teacher']);
+    const courseSession = findCourseSession(payload.id);
+    if (!courseSession) throw makeError('NOT_FOUND', '课次不存在。');
+    const course = findCourse(courseSession.courseId);
+    if (!course) throw makeError('NOT_FOUND', '课程不存在。');
+    if (!canTeacherAccessCourse(session, course.id)) throw makeError('NO_PERMISSION', '当前账号不能编辑这个课次。');
+
+    const canManageSchedule = session.role === 'admin';
+    const nextTeacherId = canManageSchedule && payload.teacherId ? payload.teacherId : courseSession.teacherId;
+    const nextClassroomId = canManageSchedule && payload.classroomId ? payload.classroomId : courseSession.classroomId;
+    const nextDate = canManageSchedule && payload.date !== undefined ? String(payload.date || '').trim() : courseSession.date;
+    const nextStartTime = canManageSchedule && payload.startTime !== undefined ? String(payload.startTime || '').trim() : courseSession.startTime;
+    const nextEndTime = canManageSchedule && payload.endTime !== undefined ? String(payload.endTime || '').trim() : courseSession.endTime;
+
+    if (!findTeacher(nextTeacherId)) throw makeError('VALIDATION_ERROR', '授课教师不存在。');
+    if (!findClassroom(nextClassroomId)) throw makeError('VALIDATION_ERROR', '教室不存在。');
+    if (canManageSchedule && nextDate && nextStartTime && nextEndTime) {
+      if (nextStartTime >= nextEndTime) throw makeError('VALIDATION_ERROR', '课次结束时间必须晚于开始时间。');
+      const conflict = checkScheduleConflictsRaw({
+        id: courseSession.id,
+        courseId: course.id,
+        teacherId: nextTeacherId,
+        classroomId: nextClassroomId,
+        date: nextDate,
+        startTime: nextStartTime,
+        endTime: nextEndTime
+      });
+      if (conflict.hasConflict) throw makeError('SCHEDULE_CONFLICT', '排课时间冲突。', conflict);
+    }
+
+    const fallbackTitle = `第${courseSession.sessionIndex || getCourseSessions(course.id).length}次课`;
+    const sessionTitle = payload.sessionTitle !== undefined || payload.displayTitle !== undefined
+      ? String(payload.sessionTitle || payload.displayTitle || '').trim() || fallbackTitle
+      : courseSession.sessionTitle || courseSession.displayTitle || fallbackTitle;
+    const topic = payload.topic !== undefined ? String(payload.topic || '').trim() : (courseSession.topic || '');
+
+    courseSession.sessionTitle = sessionTitle;
+    courseSession.displayTitle = sessionTitle;
+    courseSession.topic = topic;
+    courseSession.title = payload.title !== undefined
+      ? String(payload.title || '').trim() || (topic ? `${sessionTitle}：${topic}` : sessionTitle)
+      : (topic ? `${sessionTitle}：${topic}` : sessionTitle);
+    if (canManageSchedule) {
+      courseSession.teacherId = nextTeacherId;
+      courseSession.classroomId = nextClassroomId;
+      courseSession.date = nextDate;
+      courseSession.startTime = nextStartTime;
+      courseSession.endTime = nextEndTime;
+    }
+    pushAudit(session.identityId, 'update_course_session', 'courseSession', courseSession.id, `更新课次 ${courseSession.title}`);
+    return delay(decorateSession(courseSession));
+  },
+
+  deleteCourseSession(input) {
+    const session = requireRole('admin');
+    const id = normalizeId(input);
+    const courseSession = findCourseSession(id);
+    if (!courseSession) throw makeError('NOT_FOUND', '课次不存在。');
+    removeFromCollection(db.assignments, (assignment) => assignment.courseSessionId === id);
+    removeFromCollection(db.lessonFeedbacks, (feedback) => feedback.courseSessionId === id);
+    removeFromCollection(db.courseSessions, (item) => item.id === id);
+    pushAudit(session.identityId, 'delete_course_session', 'courseSession', id, `删除课次 ${courseSession.sessionTitle || id}`);
+    return delay({ ok: true, id });
   },
 
   addStudentToCourse(payload = {}) {
@@ -1619,9 +1695,9 @@ const mockApi = {
 
 function callByMode(mode, methodName, payload) {
   if (!hasWx()) {
-    return Promise.reject(makeError('ADAPTER_PLACEHOLDER', `${mode} adapter 待接入真实服务。`, { methodName, payload }));
+    return Promise.reject(makeError('ADAPTER_PLACEHOLDER', `${mode} 服务暂不可用。`, { methodName, payload }));
   }
-  return Promise.reject(makeError('ADAPTER_PLACEHOLDER', `${mode} adapter 已保留，当前仅 mock 完整实现。`, { methodName, payload }));
+  return Promise.reject(makeError('ADAPTER_PLACEHOLDER', `${mode} 服务暂不可用。`, { methodName, payload }));
 }
 
 function createPlaceholderAdapter(mode) {

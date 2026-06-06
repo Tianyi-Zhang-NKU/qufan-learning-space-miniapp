@@ -118,7 +118,8 @@
 }
 
 .file-icon {
-  font-size: 42rpx;
+  width: 46rpx;
+  height: 46rpx;
   flex-shrink: 0;
 }
 
@@ -168,7 +169,8 @@
 }
 
 .upload-icon {
-  font-size: 56rpx;
+  width: 62rpx;
+  height: 62rpx;
   margin-bottom: 6rpx;
 }
 

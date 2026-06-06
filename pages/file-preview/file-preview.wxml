@@ -15,7 +15,7 @@
 
     <view wx:if="{{preview.kind === 'image'}}" class="preview-block">
       <image wx:if="{{preview.file.previewUrl}}" class="preview-image" mode="widthFix" src="{{preview.file.previewUrl}}"></image>
-      <view wx:else class="qf-empty">当前为 mock 图片占位，真实部署后显示临时预览地址。</view>
+      <view wx:else class="qf-empty">暂无图片预览地址</view>
       <button class="qf-btn full" bindtap="previewImage">查看大图</button>
     </view>
 
@@ -28,12 +28,14 @@
         show-center-play-btn
         show-fullscreen-btn
       ></video>
-      <view wx:else class="qf-empty">当前为 mock 视频占位，真实部署后在这里直接播放。</view>
+      <view wx:else class="qf-empty">暂无视频播放地址</view>
     </view>
 
     <view wx:elif="{{preview.kind === 'voice'}}" class="preview-block">
       <view class="voice-panel">
-        <view class="voice-icon">声</view>
+        <view class="voice-icon">
+          <image class="voice-icon-img" src="/assets/icons/voice.svg" mode="aspectFit"></image>
+        </view>
         <view class="voice-copy">
           <text class="voice-title">语音反馈</text>
           <text class="voice-sub">不提供下载入口，直接在小程序内播放</text>

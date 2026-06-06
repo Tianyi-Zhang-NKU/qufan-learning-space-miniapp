@@ -39,10 +39,12 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: #fff9ec;
-  font-size: 24rpx;
-  font-weight: 800;
   background: #0b173d;
+}
+
+.voice-icon-img {
+  width: 42rpx;
+  height: 42rpx;
 }
 
 .voice-copy {

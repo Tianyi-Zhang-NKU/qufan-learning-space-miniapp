@@ -30,8 +30,8 @@
   ],
   "window": {
     "navigationBarTitleText": "趣帆学习空间",
-    "navigationBarBackgroundColor": "#173A32",
-    "navigationBarTextStyle": "white",
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "navigationBarTextStyle": "black",
     "backgroundColor": "#F7FAF6",
     "backgroundTextStyle": "dark"
   },

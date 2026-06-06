@@ -40,6 +40,19 @@ navigator {
   color: inherit;
 }
 
+.qf-inline-icon {
+  width: 28rpx;
+  height: 28rpx;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.qf-icon-lg {
+  width: 42rpx;
+  height: 42rpx;
+  flex-shrink: 0;
+}
+
 .qf-page {
   position: relative;
   min-height: 100vh;
@@ -1008,4 +1021,239 @@ navigator {
   flex: 1;
   min-height: 0;
   padding-bottom: 32rpx;  /* breathing room at bottom of scroll content */
+}
+
+/* ============================================
+   Light Paper Management Theme
+   ============================================ */
+page {
+  color: #10224A;
+  background: #E9E6DA;
+}
+
+input,
+textarea {
+  color: #10224A;
+  caret-color: #2F6FAE;
+}
+
+.qf-page,
+.qf-page.plain {
+  color: #10224A;
+  background: #E9E6DA;
+}
+
+.qf-page-fixed .qf-scroll-body {
+  background: transparent;
+}
+
+.qf-top {
+  color: #10224A;
+}
+
+.qf-brand-title,
+.qf-section,
+.qf-title,
+.qf-h2,
+.qf-h3 {
+  color: #10224A;
+  font-family: "HarmonyOS Sans SC", "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: 0;
+}
+
+.qf-brand-sub,
+.qf-muted {
+  color: #8A8D88;
+}
+
+.qf-text {
+  color: #31405F;
+}
+
+.qf-card,
+.qf-card.paper,
+.qf-card.light,
+.qf-card.qf-hero,
+.qf-list-item,
+.qf-metric,
+.qf-empty {
+  color: #10224A;
+  border: 1rpx solid rgba(16, 34, 74, 0.08);
+  background: #FFFDF6;
+  box-shadow: 0 18rpx 46rpx rgba(35, 39, 55, 0.1);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.qf-card {
+  border-radius: 28rpx;
+}
+
+.qf-card.qf-hero {
+  background:
+    linear-gradient(180deg, rgba(232, 238, 255, 0.72), rgba(255, 253, 246, 0.92)),
+    #FFFDF6;
+}
+
+.qf-card.tight {
+  padding: 32rpx;
+}
+
+.qf-list-item,
+.qf-metric,
+.qf-empty {
+  border-radius: 22rpx;
+  background: #FFFCF2;
+}
+
+.qf-list-item .qf-muted,
+.qf-metric .qf-muted,
+.qf-empty .qf-muted,
+.qf-card.paper .qf-muted,
+.qf-card.light .qf-muted {
+  color: #8A8D88;
+}
+
+.qf-metric-value {
+  color: #10224A;
+}
+
+.qf-metric-label {
+  color: #8A8D88;
+}
+
+.qf-tag {
+  color: #31405F;
+  border-color: rgba(16, 34, 74, 0.08);
+  background: #F6F3E8;
+}
+
+.qf-tag.ok {
+  color: #3E8B68;
+  border-color: rgba(62, 139, 104, 0.18);
+  background: #EEF5DD;
+}
+
+.qf-tag.warn {
+  color: #9A5B10;
+  border-color: rgba(245, 154, 35, 0.2);
+  background: #FFE8BF;
+}
+
+.qf-tag.danger {
+  color: #A33A3A;
+  border-color: rgba(163, 58, 58, 0.16);
+  background: rgba(255, 232, 224, 0.82);
+}
+
+.qf-tag.muted {
+  color: #8A8D88;
+  background: #F6F3E8;
+}
+
+.qf-btn {
+  min-height: 80rpx;
+  border: 1rpx solid rgba(47, 111, 174, 0.18);
+  border-radius: 22rpx;
+  color: #FFFFFF;
+  background: #2F6FAE;
+  box-shadow: 0 14rpx 30rpx rgba(47, 111, 174, 0.18);
+}
+
+.qf-btn:active {
+  background: #285F96;
+}
+
+.qf-btn.ghost {
+  color: #10224A;
+  border-color: rgba(16, 34, 74, 0.1);
+  background: #F6F3E8;
+  box-shadow: none;
+}
+
+.qf-btn.small {
+  min-height: 58rpx;
+  border-radius: 18rpx;
+}
+
+.qf-entry-card {
+  color: #10224A;
+  border-color: rgba(16, 34, 74, 0.08);
+  background: #FFFDF6;
+  box-shadow: 0 16rpx 38rpx rgba(35, 39, 55, 0.09);
+}
+
+.qf-entry-card.active {
+  color: #10224A;
+  border-color: rgba(47, 111, 174, 0.22);
+  background: #E8EEFF;
+  box-shadow: 0 16rpx 38rpx rgba(47, 111, 174, 0.12);
+}
+
+.qf-entry-card.active .qf-entry-sub,
+.qf-entry-sub {
+  color: #8A8D88;
+}
+
+.qf-input,
+.qf-textarea,
+.qf-picker {
+  color: #10224A;
+  border-color: rgba(16, 34, 74, 0.1);
+  background: #FFFCF2;
+}
+
+.qf-picker-label {
+  color: #8A8D88;
+}
+
+.qf-picker-value {
+  color: #10224A;
+}
+
+.qf-divider,
+.qf-list-item .qf-divider,
+.qf-card.paper .qf-divider,
+.qf-card.light .qf-divider {
+  background: rgba(16, 34, 74, 0.08);
+}
+
+.qf-link {
+  color: #2F6FAE;
+}
+
+.qf-week-table,
+.qf-timetable {
+  border-color: rgba(16, 34, 74, 0.08);
+  background: #FFFDF6;
+  box-shadow: 0 16rpx 38rpx rgba(35, 39, 55, 0.08);
+}
+
+.qf-week-row,
+.qf-table-row {
+  border-bottom-color: rgba(16, 34, 74, 0.08);
+}
+
+.qf-week-row.head,
+.qf-table-head {
+  color: #10224A;
+  background: #F6F3E8;
+}
+
+.qf-week-time,
+.qf-week-cell,
+.qf-table-cell {
+  color: #31405F;
+  border-right-color: rgba(16, 34, 74, 0.08);
+}
+
+.qf-week-course {
+  color: #10224A;
+  border-color: rgba(47, 111, 174, 0.16);
+  background: #E8EEFF;
+}
+
+.qf-week-meta,
+.qf-week-empty {
+  color: #8A8D88;
 }

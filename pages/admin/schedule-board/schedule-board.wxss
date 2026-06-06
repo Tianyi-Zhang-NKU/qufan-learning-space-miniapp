@@ -30,9 +30,9 @@
   background: rgba(249, 115, 22, 0.12);
 }
 
-.nav-arrow {
-  font-size: 24rpx;
-  color: #173a32;
+.nav-icon {
+  width: 34rpx;
+  height: 34rpx;
 }
 
 .nav-label {
@@ -113,9 +113,16 @@
 /* ---- Today Link ---- */
 .today-link {
   display: flex;
+  align-items: center;
+  gap: 8rpx;
   justify-content: flex-end;
   margin-top: 16rpx;
   padding-right: 4rpx;
+}
+
+.today-link-icon {
+  width: 26rpx;
+  height: 26rpx;
 }
 
 .today-link-text {
@@ -173,8 +180,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 30rpx;
   flex-shrink: 0;
+}
+
+.cs-room-icon-img {
+  width: 34rpx;
+  height: 34rpx;
 }
 
 .cs-room-info {
@@ -200,13 +211,8 @@
 }
 
 .cs-expand-icon {
-  font-size: 20rpx;
-  color: #b5c4b8;
   width: 44rpx;
   height: 44rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   border-radius: 50%;
   background: rgba(23, 58, 50, 0.04);
 }
@@ -352,19 +358,38 @@
 .session-meta-row {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 24rpx;
   margin-bottom: 6rpx;
 }
 
 .session-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6rpx;
   font-size: 21rpx;
   color: #65756b;
 }
 
+.session-meta-icon {
+  width: 22rpx;
+  height: 22rpx;
+  flex-shrink: 0;
+}
+
 .session-note {
-  display: block;
+  display: flex;
+  align-items: flex-start;
+  gap: 8rpx;
   margin-top: 8rpx;
   font-size: 20rpx;
   color: #8a9d92;
   font-style: italic;
+}
+
+.session-note-icon {
+  width: 22rpx;
+  height: 22rpx;
+  flex-shrink: 0;
+  margin-top: 2rpx;
 }

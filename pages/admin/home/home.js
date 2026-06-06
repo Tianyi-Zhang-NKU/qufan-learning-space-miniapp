@@ -2,18 +2,35 @@ const Api = require('../../../services/api');
 const Guard = require('../../../utils/page-guard');
 const Notice = require('../../../utils/notice');
 
+const GRADE_OPTIONS = [
+  '小学一年级', '小学二年级', '小学三年级', '小学四年级', '小学五年级', '小学六年级',
+  '初一', '初二', '初三',
+  '高一', '高二', '高三',
+  '其他'
+];
+
+const SUBJECT_OPTIONS = [
+  '语文', '数学', '英语', '物理', '化学', '生物', '历史', '地理', '道德与法治',
+  '科学', '信息科技', '体育', '音乐', '美术', '心理', '综合实践',
+  '小升初衔接', '中考冲刺', '高考冲刺', '其他'
+];
+
 const COLLECTIONS = {
-  courses: { title: '课程合集', subtitle: '按课程查看老师、学生、课次与反馈', icon: '课' },
-  students: { title: '学生合集', subtitle: '按学生检索课程、手机号和反馈', icon: '生' },
-  teachers: { title: '教师合集', subtitle: '按教师查看负责课程与学生', icon: '师' },
-  classrooms: { title: '教室合集', subtitle: '按教室查看容量、校区和排课', icon: '室' }
+  courses: { title: '课程合集', subtitle: '按课程查看老师、学生、课次与反馈', icon: '/assets/icons/course.svg' },
+  students: { title: '学生合集', subtitle: '按学生检索课程、手机号和反馈', icon: '/assets/icons/student.svg' },
+  teachers: { title: '教师合集', subtitle: '按教师查看负责课程与学生', icon: '/assets/icons/teacher.svg' },
+  classrooms: { title: '教室合集', subtitle: '按教室查看容量、校区和排课', icon: '/assets/icons/classroom.svg' }
 };
 
 const CAMERA_OPTIONS = [
-  { value: 'pending', label: '待接入' },
+  { value: 'pending', label: '待配置' },
   { value: 'testing', label: '联调中' },
   { value: 'ready', label: '可用' }
 ];
+
+const BASE_SESSION_DATE = '2026-06-06';
+const DEFAULT_START_TIME = '18:30';
+const DEFAULT_END_TIME = '20:00';
 
 function lower(value) {
   return String(value || '').toLowerCase();
@@ -26,6 +43,54 @@ function includesQuery(searchText, query) {
 
 function uniq(items) {
   return Array.from(new Set((items || []).filter(Boolean)));
+}
+
+function addDaysLabel(dateStr, days) {
+  const date = new Date(`${dateStr}T00:00:00`);
+  date.setDate(date.getDate() + days);
+  const pad = (value) => String(value).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+function clampSessionCount(value) {
+  const count = Number(value || 0);
+  if (!Number.isFinite(count) || count < 0) return 0;
+  return Math.min(40, Math.floor(count));
+}
+
+function classroomIndexOf(options, classroomId) {
+  return Math.max(0, (options || []).findIndex((option) => option.id === classroomId));
+}
+
+function buildSessionDraft(session, index, classroomOptions, fallbackClassroom) {
+  const fallback = fallbackClassroom || classroomOptions[0] || {};
+  const classroomId = session ? session.classroomId || fallback.id || '' : fallback.id || '';
+  const classroomIndex = classroomIndexOf(classroomOptions, classroomId);
+  const classroom = classroomOptions[classroomIndex] || fallback || {};
+  const sessionIndex = session ? session.sessionIndex || index : index;
+  return {
+    id: session ? session.id : '',
+    sessionIndex,
+    sessionTitle: session ? session.sessionTitle || session.displayTitle || `第${sessionIndex}次课` : `第${sessionIndex}次课`,
+    topic: session ? session.topic || '' : '',
+    date: session ? session.date || '' : addDaysLabel(BASE_SESSION_DATE, (index - 1) * 7),
+    startTime: session ? session.startTime || '' : DEFAULT_START_TIME,
+    endTime: session ? session.endTime || '' : DEFAULT_END_TIME,
+    classroomId: classroom.id || classroomId,
+    classroomName: classroom.name || (session && session.classroomName) || '',
+    classroomIndex
+  };
+}
+
+function gradeRank(grade) {
+  const value = String(grade || '');
+  if (value.includes('初一')) return 1;
+  if (value.includes('初二')) return 2;
+  if (value.includes('初三')) return 3;
+  if (value.includes('高一')) return 4;
+  if (value.includes('高二')) return 5;
+  if (value.includes('高三')) return 6;
+  return 99;
 }
 
 function mergeCourseStudents(course) {
@@ -47,7 +112,7 @@ function mergeCourseStudents(course) {
 }
 
 function buildCourses(courseTree) {
-  return (courseTree || []).map((course) => {
+  return (courseTree || []).map((course, index) => {
     const mergedStudents = mergeCourseStudents(course);
     const sessions = (course.sessions || []).map((session) => ({
       ...session,
@@ -64,6 +129,7 @@ function buildCourses(courseTree) {
     ].join(' ');
     return {
       ...course,
+      createdOrder: index,
       mergedStudents,
       sessions,
       studentTotal: mergedStudents.length,
@@ -72,12 +138,16 @@ function buildCourses(courseTree) {
       courseMeta: `${course.subject || '-'} · ${course.grade || '-'} · ${mergedStudents.length}名学生 · ${sessions.length}次课`,
       searchText
     };
-  });
+  }).sort((a, b) => b.createdOrder - a.createdOrder);
 }
 
 function buildStudents(studentRelations) {
-  return (studentRelations || []).map((student) => {
+  return (studentRelations || []).map((student, index) => {
     const courses = student.courses || [];
+    const subjectNames = uniq(courses.map((course) => course.subject).concat((student.courseNames || []).map((name) => {
+      const matched = courses.find((course) => course.name === name);
+      return matched ? matched.subject : '';
+    })));
     const searchText = [
       student.name,
       student.phone,
@@ -88,16 +158,22 @@ function buildStudents(studentRelations) {
     ].join(' ');
     return {
       ...student,
+      createdOrder: index,
+      subjectNames,
       courseTotal: courses.length,
       feedbackTotal: student.feedbackCount || 0,
       courses,
       searchText
     };
+  }).sort((a, b) => {
+    const gradeDiff = gradeRank(a.grade) - gradeRank(b.grade);
+    if (gradeDiff) return gradeDiff;
+    return b.createdOrder - a.createdOrder;
   });
 }
 
 function buildTeachers(teacherRelations) {
-  return (teacherRelations || []).map((teacher) => {
+  return (teacherRelations || []).map((teacher, index) => {
     const courses = teacher.courses || [];
     const studentNames = uniq(courses.flatMap((course) => (course.students || []).map((student) => student.name)));
     const searchText = [
@@ -110,12 +186,16 @@ function buildTeachers(teacherRelations) {
     ].join(' ');
     return {
       ...teacher,
+      createdOrder: index,
       displayName: teacher.fullName || teacher.name,
       courseTotal: courses.length,
       studentTotal: studentNames.length,
       courses,
       searchText
     };
+  }).sort((a, b) => {
+    const timeDiff = String(b.createdAt || '').localeCompare(String(a.createdAt || ''));
+    return timeDiff || (b.createdOrder - a.createdOrder);
   });
 }
 
@@ -175,6 +255,12 @@ Page({
     activeTitle: '',
     activeSubtitle: '',
     searchQuery: '',
+    activeGradeFilter: '',
+    activeSubjectFilter: '',
+    activeGradeLabel: '全部学年',
+    activeSubjectLabel: '全部学科',
+    gradeFilterOptions: [{ label: '全部学年', value: '' }].concat(GRADE_OPTIONS.map((value) => ({ label: value, value }))),
+    subjectFilterOptions: [{ label: '全部学科', value: '' }].concat(SUBJECT_OPTIONS.map((value) => ({ label: value, value }))),
     expandedKey: '',
 
     collections: [],
@@ -186,6 +272,15 @@ Page({
     filteredStudents: [],
     filteredTeachers: [],
     filteredClassrooms: [],
+    gradeFilters: [],
+    subjectFilters: [],
+    courseGradeFilters: [],
+    courseSubjectFilters: [],
+    studentGradeFilters: [],
+    studentSubjectFilters: [],
+    teacherSubjectFilters: [],
+    gradeOptions: GRADE_OPTIONS,
+    subjectOptions: SUBJECT_OPTIONS,
 
     teacherOptions: [],
     classroomOptions: [],
@@ -232,7 +327,14 @@ Page({
           filteredCourses: courses,
           filteredStudents: students,
           filteredTeachers: teachers,
-          filteredClassrooms: classrooms
+          filteredClassrooms: classrooms,
+          courseGradeFilters: GRADE_OPTIONS,
+          courseSubjectFilters: SUBJECT_OPTIONS,
+          studentGradeFilters: GRADE_OPTIONS,
+          studentSubjectFilters: SUBJECT_OPTIONS,
+          teacherSubjectFilters: SUBJECT_OPTIONS,
+          gradeFilters: GRADE_OPTIONS,
+          subjectFilters: SUBJECT_OPTIONS
         });
         this.applySearch(this.data.searchQuery);
       })
@@ -252,8 +354,13 @@ Page({
       activeTitle: meta.title,
       activeSubtitle: meta.subtitle,
       searchQuery: '',
+      activeGradeFilter: '',
+      activeSubjectFilter: '',
+      activeGradeLabel: '全部学年',
+      activeSubjectLabel: '全部学科',
       expandedKey: ''
     });
+    this.refreshActiveFilters(type);
     this.applySearch('');
   },
 
@@ -264,6 +371,10 @@ Page({
       activeTitle: '',
       activeSubtitle: '',
       searchQuery: '',
+      activeGradeFilter: '',
+      activeSubjectFilter: '',
+      activeGradeLabel: '全部学年',
+      activeSubjectLabel: '全部学科',
       expandedKey: ''
     });
     this.applySearch('');
@@ -281,12 +392,69 @@ Page({
   },
 
   applySearch(query) {
+    const { activeGradeFilter, activeSubjectFilter } = this.data;
     this.setData({
-      filteredCourses: this.data.courses.filter((item) => includesQuery(item.searchText, query)),
-      filteredStudents: this.data.students.filter((item) => includesQuery(item.searchText, query)),
-      filteredTeachers: this.data.teachers.filter((item) => includesQuery(item.searchText, query)),
+      filteredCourses: this.data.courses.filter((item) =>
+        includesQuery(item.searchText, query)
+        && (!activeGradeFilter || item.grade === activeGradeFilter)
+        && (!activeSubjectFilter || item.subject === activeSubjectFilter)
+      ),
+      filteredStudents: this.data.students.filter((item) =>
+        includesQuery(item.searchText, query)
+        && (!activeGradeFilter || item.grade === activeGradeFilter)
+        && (!activeSubjectFilter || (item.subjectNames || []).includes(activeSubjectFilter))
+      ),
+      filteredTeachers: this.data.teachers.filter((item) =>
+        includesQuery(item.searchText, query)
+        && (!activeSubjectFilter || item.subject === activeSubjectFilter)
+      ),
       filteredClassrooms: this.data.classrooms.filter((item) => includesQuery(item.searchText, query))
     });
+  },
+
+  refreshActiveFilters(type) {
+    if (type === 'courses') {
+      this.setData({
+        gradeFilters: this.data.courseGradeFilters,
+        subjectFilters: this.data.courseSubjectFilters
+      });
+      return;
+    }
+    if (type === 'students') {
+      this.setData({
+        gradeFilters: this.data.studentGradeFilters,
+        subjectFilters: this.data.studentSubjectFilters
+      });
+      return;
+    }
+    if (type === 'teachers') {
+      this.setData({
+        gradeFilters: [],
+        subjectFilters: this.data.teacherSubjectFilters
+      });
+      return;
+    }
+    this.setData({ gradeFilters: [], subjectFilters: [] });
+  },
+
+  onGradeFilterChange(event) {
+    const option = this.data.gradeFilterOptions[Number(event.detail.value || 0)] || this.data.gradeFilterOptions[0];
+    this.setData({
+      activeGradeFilter: option.value,
+      activeGradeLabel: option.label,
+      expandedKey: ''
+    });
+    this.applySearch(this.data.searchQuery);
+  },
+
+  onSubjectFilterChange(event) {
+    const option = this.data.subjectFilterOptions[Number(event.detail.value || 0)] || this.data.subjectFilterOptions[0];
+    this.setData({
+      activeSubjectFilter: option.value,
+      activeSubjectLabel: option.label,
+      expandedKey: ''
+    });
+    this.applySearch(this.data.searchQuery);
   },
 
   toggleDetail(event) {
@@ -330,26 +498,40 @@ Page({
     const teacherIndex = Math.max(0, this.data.teacherOptions.findIndex((option) => option.id === (item && item.teacherId)));
     const classroomIndex = Math.max(0, this.data.classroomOptions.findIndex((option) => option.id === (item && (item.classroomId || item.defaultClassroomId))));
     const cameraIndex = Math.max(0, CAMERA_OPTIONS.findIndex((option) => option.value === (item && item.cameraStatus)));
+    const subjectIndex = Math.max(0, SUBJECT_OPTIONS.findIndex((value) => value === (item && item.subject)));
+    const gradeIndex = Math.max(0, GRADE_OPTIONS.findIndex((value) => value === (item && item.grade)));
     if (type === 'courses') {
+      const fallbackClassroom = item
+        ? { id: item.classroomId || item.defaultClassroomId || '', name: item.classroomName || '' }
+        : this.data.classroomOptions[classroomIndex] || {};
+      const sessionDrafts = (item && item.sessions ? item.sessions : [])
+        .sort((a, b) => (a.sessionIndex || 0) - (b.sessionIndex || 0))
+        .map((session, index) => buildSessionDraft(session, index + 1, this.data.classroomOptions, fallbackClassroom));
       return {
         id: item ? item.id : '',
         name: item ? item.name : '',
-        subject: item ? item.subject : '',
-        grade: item ? item.grade : '',
+        subject: item ? item.subject : SUBJECT_OPTIONS[0],
+        subjectIndex,
+        grade: item ? item.grade : GRADE_OPTIONS[6],
+        gradeIndex: item ? gradeIndex : 6,
         teacherId: item ? item.teacherId : (this.data.teacherOptions[0] || {}).id || '',
         teacherName: item ? item.teacherFullName || item.teacherName : (this.data.teacherOptions[0] || {}).name || '',
         teacherIndex,
         classroomId: item ? item.classroomId || item.defaultClassroomId : (this.data.classroomOptions[0] || {}).id || '',
         classroomName: item ? item.classroomName : (this.data.classroomOptions[0] || {}).name || '',
         classroomIndex,
-        description: item ? item.description : ''
+        description: item ? item.description : '',
+        sessionCount: sessionDrafts.length,
+        sessionDrafts,
+        removedSessionIds: []
       };
     }
     if (type === 'students') {
       return {
         id: item ? item.id : '',
         name: item ? item.name : '',
-        grade: item ? item.grade : '',
+        grade: item ? item.grade : GRADE_OPTIONS[6],
+        gradeIndex: item ? gradeIndex : 6,
         phone: item ? item.loginPhone || item.phone : ''
       };
     }
@@ -358,7 +540,8 @@ Page({
         id: item ? item.id : '',
         fullName: item ? item.fullName || item.displayName || item.name : '',
         name: item ? item.name : '',
-        subject: item ? item.subject : '',
+        subject: item ? item.subject : SUBJECT_OPTIONS[0],
+        subjectIndex,
         phone: item ? item.phone : '',
         title: item ? item.title : ''
       };
@@ -377,6 +560,73 @@ Page({
   onEditorInput(event) {
     const field = event.currentTarget.dataset.field;
     this.setData({ [`editorForm.${field}`]: event.detail.value });
+  },
+
+  onSessionCountInput(event) {
+    const nextCount = clampSessionCount(event.detail.value);
+    const form = this.data.editorForm || {};
+    const currentDrafts = (form.sessionDrafts || []).slice();
+    const removedSessionIds = (form.removedSessionIds || []).slice();
+    const fallbackClassroom = {
+      id: form.classroomId || (this.data.classroomOptions[0] || {}).id || '',
+      name: form.classroomName || (this.data.classroomOptions[0] || {}).name || ''
+    };
+    let sessionDrafts = currentDrafts.slice(0, nextCount);
+    if (currentDrafts.length > nextCount) {
+      currentDrafts.slice(nextCount).forEach((draft) => {
+        if (draft.id && !removedSessionIds.includes(draft.id)) removedSessionIds.push(draft.id);
+      });
+    }
+    while (sessionDrafts.length < nextCount) {
+      sessionDrafts.push(buildSessionDraft(null, sessionDrafts.length + 1, this.data.classroomOptions, fallbackClassroom));
+    }
+    sessionDrafts = sessionDrafts.map((draft, index) => ({
+      ...draft,
+      sessionIndex: index + 1,
+      sessionTitle: draft.sessionTitle || `第${index + 1}次课`
+    }));
+    this.setData({
+      'editorForm.sessionCount': nextCount,
+      'editorForm.sessionDrafts': sessionDrafts,
+      'editorForm.removedSessionIds': removedSessionIds
+    });
+  },
+
+  onSessionDraftInput(event) {
+    const index = Number(event.currentTarget.dataset.index);
+    const field = event.currentTarget.dataset.field;
+    if (!field || !Number.isFinite(index)) return;
+    this.setData({ [`editorForm.sessionDrafts.${index}.${field}`]: event.detail.value });
+  },
+
+  onSessionClassroomChange(event) {
+    const index = Number(event.currentTarget.dataset.index);
+    const classroomIndex = Number(event.detail.value || 0);
+    const option = this.data.classroomOptions[classroomIndex] || {};
+    if (!Number.isFinite(index)) return;
+    this.setData({
+      [`editorForm.sessionDrafts.${index}.classroomIndex`]: classroomIndex,
+      [`editorForm.sessionDrafts.${index}.classroomId`]: option.id || '',
+      [`editorForm.sessionDrafts.${index}.classroomName`]: option.name || ''
+    });
+  },
+
+  onEditorSubjectChange(event) {
+    const index = Number(event.detail.value || 0);
+    const value = SUBJECT_OPTIONS[index] || SUBJECT_OPTIONS[0];
+    this.setData({
+      'editorForm.subjectIndex': index,
+      'editorForm.subject': value
+    });
+  },
+
+  onEditorGradeChange(event) {
+    const index = Number(event.detail.value || 0);
+    const value = GRADE_OPTIONS[index] || GRADE_OPTIONS[0];
+    this.setData({
+      'editorForm.gradeIndex': index,
+      'editorForm.grade': value
+    });
   },
 
   onTeacherChange(event) {
@@ -413,8 +663,11 @@ Page({
     const type = this.data.activeType;
     const form = this.data.editorForm;
     const isEdit = this.data.editorMode === 'edit';
+    if (type === 'courses') {
+      this.saveCourseEditor(form, isEdit);
+      return;
+    }
     const methodMap = {
-      courses: isEdit ? 'updateCourse' : 'createCourse',
       students: isEdit ? 'updateStudent' : 'createStudent',
       teachers: isEdit ? 'updateTeacher' : 'createTeacher',
       classrooms: isEdit ? 'updateClassroom' : 'createClassroom'
@@ -430,6 +683,53 @@ Page({
         this.loadAll();
       })
       .catch((error) => Notice.alert(error.message || '保存失败'));
+  },
+
+  saveCourseEditor(form, isEdit) {
+    const method = isEdit ? 'updateCourse' : 'createCourse';
+    const payload = {
+      id: form.id,
+      name: form.name,
+      subject: form.subject,
+      grade: form.grade,
+      teacherId: form.teacherId,
+      classroomId: form.classroomId,
+      description: form.description,
+      studentIds: form.studentIds
+    };
+    Api[method](payload)
+      .then((course) => this.syncCourseSessionsForEditor(course.id || form.id, form))
+      .then(() => {
+        Notice.toast(isEdit ? '修改成功' : '新增成功');
+        this.setData({ showEditor: false, editorForm: {}, expandedKey: '' });
+        this.loadAll();
+      })
+      .catch((error) => Notice.alert(error.message || '保存失败'));
+  },
+
+  syncCourseSessionsForEditor(courseId, form) {
+    const sessionCount = clampSessionCount(form.sessionCount);
+    const drafts = (form.sessionDrafts || []).slice(0, sessionCount);
+    const removedSessionIds = form.removedSessionIds || [];
+    const tasks = drafts.map((draft, index) => () => {
+      const payload = {
+        id: draft.id,
+        courseId,
+        sessionTitle: draft.sessionTitle || `第${index + 1}次课`,
+        topic: draft.topic || '',
+        date: draft.date || '',
+        startTime: draft.startTime || '',
+        endTime: draft.endTime || '',
+        classroomId: draft.classroomId || form.classroomId || ''
+      };
+      if (draft.id) return Api.updateCourseSession(payload);
+      if (!payload.date || !payload.startTime || !payload.endTime || !payload.classroomId) return Promise.resolve(null);
+      return Api.createCourseSession(payload);
+    });
+    removedSessionIds.forEach((id) => {
+      tasks.push(() => Api.deleteCourseSession(id));
+    });
+    return tasks.reduce((promise, task) => promise.then(task), Promise.resolve());
   },
 
   deleteItem(event) {

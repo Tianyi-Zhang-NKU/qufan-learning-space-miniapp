@@ -22,7 +22,8 @@
 
 .meta-icon {
   flex-shrink: 0;
-  font-size: 26rpx;
+  width: 28rpx;
+  height: 28rpx;
 }
 
 .meta-text {
@@ -556,6 +557,49 @@
   margin-top: 6rpx;
   color: rgba(45, 75, 64, 0.56);
   font-size: 21rpx;
+}
+
+.feedback-type-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+  margin-bottom: 22rpx;
+}
+
+.type-card {
+  min-width: 0;
+  min-height: 112rpx;
+  padding: 14rpx 8rpx;
+  border-radius: 18rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5rpx;
+  border: 1rpx solid rgba(83, 117, 91, 0.14);
+  background: rgba(240, 243, 221, 0.72);
+}
+
+.type-card:active {
+  transform: scale(0.98);
+}
+
+.type-icon {
+  width: 38rpx;
+  height: 38rpx;
+}
+
+.type-title {
+  color: #173a32;
+  font-size: 21rpx;
+  font-weight: 750;
+  line-height: 1.15;
+}
+
+.type-count {
+  color: rgba(45, 75, 64, 0.58);
+  font-size: 19rpx;
+  line-height: 1.1;
 }
 
 .test-record-text {

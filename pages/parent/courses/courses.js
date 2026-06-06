@@ -285,10 +285,16 @@ Page({
 
   /** Navigate to pre-test or post-test (opens session detail view) */
   goTest(event) {
-    const { sessionId, type } = event.currentTarget.dataset;
-    // Navigate to the session detail page which shows assignments (课前测/课后测)
+    const { courseId, sessionId, type } = event.currentTarget.dataset;
+    if (!courseId || !sessionId || !type) return;
     wx.navigateTo({
-      url: `/pages/course-detail/course-detail?id=${sessionId}&testType=${type}`
+      url: `/pages/parent/exercises/exercises?courseId=${courseId}&sessionId=${sessionId}&type=${type}`
     });
+  },
+
+  goLive(event) {
+    const { sessionId } = event.currentTarget.dataset;
+    if (!sessionId) return;
+    wx.navigateTo({ url: `/pages/live-player/live-player?id=${sessionId}` });
   }
 });

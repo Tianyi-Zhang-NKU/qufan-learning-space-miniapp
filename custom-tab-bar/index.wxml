@@ -7,7 +7,7 @@
     bindtap="switchTab"
   >
     <view class="tab-mark">
-      <text>{{item.mark}}</text>
+      <image class="tab-icon" src="{{item.icon}}" mode="aspectFit"></image>
     </view>
     <text class="tab-text">{{item.text}}</text>
   </view>

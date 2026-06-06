@@ -3,27 +3,21 @@ Component({
     selected: 0,
     list: [
       {
-        pagePath: "/pages/home/home",
+        pagePath: "/pages/parent/home/home",
         text: "首页",
-        mark: "趣",
+        icon: "/assets/icons/home.svg",
         className: "tab-item"
       },
       {
-        pagePath: "/pages/schedule/schedule",
+        pagePath: "/pages/parent/courses/courses",
         text: "课表",
-        mark: "表",
+        icon: "/assets/icons/calendar.svg",
         className: "tab-item"
       },
       {
-        pagePath: "/pages/live/live",
-        text: "直播",
-        mark: "看",
-        className: "tab-item"
-      },
-      {
-        pagePath: "/pages/wrongbook/wrongbook",
-        text: "反馈",
-        mark: "反",
+        pagePath: "/pages/profile/profile",
+        text: "我的",
+        icon: "/assets/icons/profile.svg",
         className: "tab-item"
       }
     ]
@@ -63,7 +57,7 @@ Component({
         list.push({
           pagePath: item.pagePath,
           text: item.text,
-          mark: item.mark,
+          icon: item.icon,
           className: index === selected ? "tab-item active" : "tab-item"
         })
       }
@@ -81,7 +75,7 @@ Component({
       const previous = this.data.selected
       this.updateSelected(index)
       const self = this
-      wx.switchTab({
+      wx.redirectTo({
         url: item.pagePath,
         fail: function() {
           self.updateSelected(previous)

@@ -1,5 +1,5 @@
-/* ===== 教师端头部 ===== */
-.teacher-header {
+/* ===== 通用身份头部 ===== */
+.profile-identity-header {
   position: relative;
   z-index: 1;
   display: flex;
@@ -64,7 +64,9 @@
 }
 
 .teacher-phone {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
   font-size: 22rpx;
   color: #8a9d92;
 }
@@ -152,8 +154,8 @@
 }
 
 /* ===== 通用：共享样式 ===== */
-.profile-hero,
-.profile-card {
+.profile-card,
+.collection-list {
   max-width: 660rpx;
   margin-left: auto;
   margin-right: auto;
@@ -164,4 +166,42 @@
   z-index: 1;
   max-width: 660rpx;
   margin: 44rpx auto 0;
+}
+
+/* Light paper management overrides */
+.avatar {
+  color: #10224A;
+  background: #E8EEFF;
+  box-shadow: 0 16rpx 36rpx rgba(35, 39, 55, 0.1);
+  border-color: #FFFDF6;
+}
+
+.avatar-text {
+  color: #10224A;
+}
+
+.avatar-badge {
+  color: #3E8B68;
+  background: #EEF5DD;
+  border-color: #FFFDF6;
+}
+
+.teacher-name,
+.collection-name {
+  color: #10224A;
+}
+
+.teacher-sub,
+.teacher-phone,
+.collection-meta,
+.collection-arrow {
+  color: #8A8D88;
+}
+
+.course-icon {
+  background: #E8EEFF;
+}
+
+.student-icon {
+  background: #EEF5DD;
 }

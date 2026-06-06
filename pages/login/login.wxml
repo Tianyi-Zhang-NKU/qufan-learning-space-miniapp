@@ -3,27 +3,17 @@
 
   <view class="login-shell">
     <view class="login-brand">
-      <view class="login-monogram">QF</view>
+      <view class="login-monogram login-logo-placeholder">LOGO</view>
       <text class="login-title">趣帆学习空间</text>
       <text class="login-sub">课后反馈看得见，学习进度不打扰</text>
     </view>
 
-    <view class="login-signal-row">
-      <view class="login-signal">
-        <text class="signal-num">01</text>
-        <text class="signal-text">手机号识别</text>
-      </view>
-      <view class="login-signal">
-        <text class="signal-num">02</text>
-        <text class="signal-text">老师上传反馈</text>
-      </view>
-      <view class="login-signal">
-        <text class="signal-num">03</text>
-        <text class="signal-text">家长查看</text>
-      </view>
-    </view>
-
     <view class="qf-card qf-hero login-panel">
+      <view class="login-card-head">
+        <text class="login-card-title">手机号登录</text>
+        <text class="login-card-sub">请输入报班时预留的手机号</text>
+      </view>
+
       <view class="qf-field">
         <text class="qf-label">报班手机号</text>
         <input
@@ -37,26 +27,17 @@
       </view>
 
       <button class="qf-btn full login-primary" loading="{{logging}}" bindtap="login">登录</button>
-
-      <view class="login-secondary">
-        <button class="qf-btn ghost small" open-type="getPhoneNumber" bindgetphonenumber="onGetPhoneNumber">微信手机号授权</button>
-        <button class="qf-btn ghost small" bindtap="smsPlaceholder">短信验证码</button>
-      </view>
     </view>
 
-    <view class="qf-card tight login-demo-entry">
-      <view class="qf-row">
-        <view>
-          <text class="qf-h3">演示账号</text>
-          <text class="qf-muted">收起默认账号，减少首屏杂乱。</text>
-        </view>
-        <button class="qf-btn ghost small" bindtap="toggleDemo">{{showDemo ? '收起' : '展开'}}</button>
-      </view>
-      <view wx:if="{{showDemo}}" class="qf-wrap demo-row">
+    <view class="login-helper">登录即代表已阅读并同意平台服务与隐私规则</view>
+
+    <view class="login-debug">
+      <button class="debug-login-toggle" bindtap="toggleDemo">{{showDemo ? '收起调试账号' : '调试账号'}}</button>
+      <view wx:if="{{showDemo}}" class="debug-login-panel">
         <button
           wx:for="{{demoPhones}}"
           wx:key="phone"
-          class="qf-btn ghost small"
+          class="debug-login-account"
           data-phone="{{item.phone}}"
           bindtap="useDemoPhone"
         >{{item.label}} {{item.phone}}</button>

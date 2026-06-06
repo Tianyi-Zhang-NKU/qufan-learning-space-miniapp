@@ -20,6 +20,12 @@ function buildFeedbackRecord(feedback) {
   };
 }
 
+function typeLabel(type) {
+  if (type === 'pre') return '课前测';
+  if (type === 'post') return '课后测';
+  return '其他题目';
+}
+
 Page({
   data: {
     session: {},
@@ -59,19 +65,31 @@ Page({
     const all = query.all || '';
 
     if (all === '1') {
-      // From profile page: 我的错题本
+      // Cross-course review entry now lives in the feedback page.
       this.setData({ mode: 'allRecords' });
-      wx.setNavigationBarTitle({ title: '我的错题本' });
-    } else if (courseId && type) {
-      // From home page: pre/post test buttons
+      wx.setNavigationBarTitle({ title: '全部错题反馈' });
+    } else if (courseId && sessionId && type) {
+      // From schedule page: one lesson's pre/post test records
       this.setData({
         mode: 'testList',
         testType: type,
-        testTypeLabel: type === 'pre' ? '课前测' : '课后测',
+        testTypeLabel: typeLabel(type),
+        courseId,
+        sessionId
+      });
+      wx.setNavigationBarTitle({
+        title: `${typeLabel(type)}错题`
+      });
+    } else if (courseId && type) {
+      // From home page: course-level pre/post test buttons
+      this.setData({
+        mode: 'testList',
+        testType: type,
+        testTypeLabel: typeLabel(type),
         courseId
       });
       wx.setNavigationBarTitle({
-        title: type === 'pre' ? '课前测记录' : '课后测记录'
+        title: `${typeLabel(type)}错题`
       });
     } else if (courseId && sessionId) {
       // From session list: single session's wrong records
@@ -140,10 +158,16 @@ Page({
       sessionIndex: s.sessionIndex,
       date: s.date || '',
       time: s.startTime ? `${s.startTime}-${s.endTime}` : '',
-      recordCount: s.feedbackCount || 0
+      recordCount: s.feedbackCount || 0,
+      preCount: s.preFeedbackCount || 0,
+      postCount: s.postFeedbackCount || 0,
+      generalCount: Math.max(0, (s.feedbackCount || 0) - (s.preFeedbackCount || 0) - (s.postFeedbackCount || 0))
     }));
 
     const totalRecords = sessionInfo.reduce((sum, s) => sum + s.recordCount, 0);
+    const preTotal = sessionInfo.reduce((sum, s) => sum + s.preCount, 0);
+    const postTotal = sessionInfo.reduce((sum, s) => sum + s.postCount, 0);
+    const generalTotal = sessionInfo.reduce((sum, s) => sum + s.generalCount, 0);
     const nextSession = sessions.find((s) => s.status === 'scheduled') || sessions[sessions.length - 1] || {};
 
     return {
@@ -156,6 +180,9 @@ Page({
       sessionCount: sessions.length,
       sessionInfo,
       totalRecords,
+      preTotal,
+      postTotal,
+      generalTotal,
       nextSessionTime: nextSession.startTime
         ? `${nextSession.date || ''} ${nextSession.startTime}-${nextSession.endTime || ''}`
         : ''
@@ -296,7 +323,10 @@ Page({
         );
         const feedbacks = detail.lessonFeedbacks || [];
 
-        const sessionTests = sessions.map((s) => {
+        const scopedSessions = this.data.sessionId
+          ? sessions.filter((session) => session.id === this.data.sessionId)
+          : sessions;
+        const sessionTests = scopedSessions.map((s) => {
           const records = feedbacks
             .filter((feedback) =>
               feedback.courseSessionId === s.id
@@ -338,6 +368,14 @@ Page({
         Notice.alert(content, feedback.feedbackTypeText || '错题反馈');
       })
       .catch((error) => Notice.alert(error.message || '详情加载失败'));
+  },
+
+  goTypeList(event) {
+    const { id, type } = event.currentTarget.dataset;
+    if (!id || !type) return;
+    wx.navigateTo({
+      url: `/pages/parent/exercises/exercises?courseId=${id}&type=${type}`
+    });
   },
 
   // ================================================================

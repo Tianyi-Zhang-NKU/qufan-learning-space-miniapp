@@ -63,38 +63,46 @@
         <!-- Course info: teacher, time, location -->
         <view class="course-info">
           <view class="course-info-row">
-            <text class="course-info-icon">👨‍🏫</text>
+            <image class="course-info-icon" src="/assets/icons/teacher.svg" mode="aspectFit"></image>
             <text class="course-info-label">任课教师</text>
             <text class="course-info-value">{{item.teacherName || '待分配'}}</text>
           </view>
           <view class="course-info-row">
-            <text class="course-info-icon">📍</text>
+            <image class="course-info-icon" src="/assets/icons/location.svg" mode="aspectFit"></image>
             <text class="course-info-label">上课地点</text>
             <text class="course-info-value">{{item.classroomName}}</text>
           </view>
           <view class="course-info-row" wx:if="{{item.nextSessionTime}}">
-            <text class="course-info-icon">🕐</text>
+            <image class="course-info-icon" src="/assets/icons/clock.svg" mode="aspectFit"></image>
             <text class="course-info-label">最近上课</text>
             <text class="course-info-value">{{item.nextSessionTime}}</text>
           </view>
         </view>
 
         <!-- Session schedule lines -->
-        <view class="course-schedule" wx:if="{{item.scheduleLines.length}}">
-          <view wx:for="{{item.scheduleLines}}" wx:key="*this" class="schedule-line">
-            <text class="schedule-dot"></text>
-            <text class="schedule-text">{{item}}</text>
+        <scroll-view
+          wx:if="{{item.scheduleLines.length}}"
+          scroll-y
+          enhanced
+          show-scrollbar="{{false}}"
+          class="course-schedule-scroll"
+        >
+          <view class="course-schedule">
+            <view wx:for="{{item.scheduleLines}}" wx:key="*this" class="schedule-line">
+              <text class="schedule-dot"></text>
+              <text class="schedule-text">{{item}}</text>
+            </view>
           </view>
-        </view>
+        </scroll-view>
 
         <!-- Action buttons: pre-test / post-test -->
-        <view class="course-actions">
+        <view class="course-actions tests-row">
           <button
             class="qf-btn test-btn pre-test-btn"
             data-id="{{item.id}}"
             bindtap="goPreTests"
           >
-            <text class="test-btn-icon">📝</text>
+            <image class="test-btn-icon" src="/assets/icons/pre-test.svg" mode="aspectFit"></image>
             <view class="test-btn-text">
               <text class="test-btn-title">课前测</text>
               <text class="test-btn-sub" wx:if="{{item.totalPreCount}}">{{item.totalPreCount}} 份记录</text>
@@ -107,11 +115,26 @@
             data-id="{{item.id}}"
             bindtap="goPostTests"
           >
-            <text class="test-btn-icon">✅</text>
+            <image class="test-btn-icon" src="/assets/icons/post-test.svg" mode="aspectFit"></image>
             <view class="test-btn-text">
               <text class="test-btn-title">课后测</text>
               <text class="test-btn-sub" wx:if="{{item.totalPostCount}}">{{item.totalPostCount}} 份记录</text>
               <text class="test-btn-sub" wx:else>暂无记录</text>
+            </view>
+          </button>
+        </view>
+
+        <view class="course-actions live-row">
+          <button
+            class="qf-btn test-btn live-test-btn"
+            data-session-id="{{item.nextSessionId}}"
+            data-url="/pages/live-player/live-player?id={{item.nextSessionId}}"
+            bindtap="goLive"
+          >
+            <image class="test-btn-icon" src="/assets/icons/live.svg" mode="aspectFit"></image>
+            <view class="test-btn-text">
+              <text class="test-btn-title">课程直播</text>
+              <text class="test-btn-sub">{{item.nextSessionTime || '暂无直播安排'}}</text>
             </view>
           </button>
         </view>

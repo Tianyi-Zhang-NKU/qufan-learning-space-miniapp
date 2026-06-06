@@ -35,7 +35,7 @@ Page({
     const file = this.data.preview && this.data.preview.file;
     const url = file ? (file.previewUrl || file.url || file.tempPath) : '';
     if (!url) {
-      Notice.toast('当前为 mock 图片占位');
+      Notice.toast('暂无图片预览地址');
       return;
     }
     wx.previewImage({ urls: [url], current: url });
@@ -45,7 +45,7 @@ Page({
     const file = this.data.preview && this.data.preview.file;
     const src = file ? (file.previewUrl || file.url || file.tempPath) : '';
     if (!src) {
-      Notice.toast('当前为 mock 语音占位');
+      Notice.toast('暂无语音播放地址');
       return;
     }
     if (this.data.audioPlaying && this.audioContext) {

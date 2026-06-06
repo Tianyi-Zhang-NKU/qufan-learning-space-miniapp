@@ -18,13 +18,13 @@
   </z-card>
 
   <view class="grid-2">
-    <view><z-tile icon="看" title="直播入口" desc="ClassIn 接口待接入" url="/pages/live/live" open-type-alias="switchTab"></z-tile></view>
+    <view><z-tile icon="看" title="课程直播" desc="查看课堂直播状态" url="/pages/live/live" open-type-alias="switchTab"></z-tile></view>
     <view><z-tile icon="反" title="老师反馈" desc="查看课后反馈" url="/pages/parent/exercises/exercises"></z-tile></view>
   </view>
 
   <z-card>
     <z-section-title title="今日课程" right="我的学习"></z-section-title>
     <z-list-item time="18:30" title="初三生物1班" sub="周明远老师 · 课后查看反馈"></z-list-item>
-    <z-list-item time="20:10" title="初二数学A班" sub="周明远老师 · 直播入口预留"></z-list-item>
+    <z-list-item time="20:10" title="初二数学A班" sub="周明远老师 · 课程直播"></z-list-item>
   </z-card>
 </view>

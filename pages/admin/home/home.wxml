@@ -46,7 +46,9 @@
             data-type="{{item.type}}"
             bindtap="openCollection"
           >
-            <view class="launch-icon">{{item.icon}}</view>
+            <view class="launch-icon">
+              <image class="qf-icon-lg" src="{{item.icon}}" mode="aspectFit"></image>
+            </view>
             <view class="launch-body">
               <text class="launch-title">{{item.title}}</text>
               <text class="launch-sub">{{item.subtitle}}</text>
@@ -71,7 +73,7 @@
       </view>
 
       <view class="search-card">
-        <text class="search-icon">⌕</text>
+        <image class="search-icon" src="/assets/icons/search.svg" mode="aspectFit"></image>
         <input
           class="search-input"
           value="{{searchQuery}}"
@@ -80,6 +82,21 @@
           bindinput="onSearchInput"
         />
         <view wx:if="{{searchQuery}}" class="search-clear" bindtap="clearSearch">×</view>
+      </view>
+
+      <view wx:if="{{activeType === 'courses' || activeType === 'students' || activeType === 'teachers'}}" class="filter-panel dropdown-filter-panel">
+        <view wx:if="{{activeType !== 'teachers'}}" class="filter-select">
+          <text class="filter-label">学年</text>
+          <picker range="{{gradeFilterOptions}}" range-key="label" bindchange="onGradeFilterChange">
+            <view class="filter-picker-value">{{activeGradeLabel}}</view>
+          </picker>
+        </view>
+        <view class="filter-select">
+          <text class="filter-label">{{activeType === 'teachers' ? '所教学科' : activeType === 'students' ? '所学学科' : '学科'}}</text>
+          <picker range="{{subjectFilterOptions}}" range-key="label" bindchange="onSubjectFilterChange">
+            <view class="filter-picker-value">{{activeSubjectLabel}}</view>
+          </picker>
+        </view>
       </view>
 
       <view class="result-line">
@@ -96,7 +113,9 @@
           class="qf-card collection-card {{expandedKey === item.id ? 'expanded' : ''}}"
         >
           <view class="item-head" data-key="{{item.id}}" bindtap="toggleDetail">
-            <view class="item-icon course-icon">{{item.subject ? item.subject[0] : '课'}}</view>
+            <view class="item-icon course-icon">
+              <image class="qf-icon-lg" src="/assets/icons/course.svg" mode="aspectFit"></image>
+            </view>
             <view class="item-main">
               <text class="item-title">{{item.name}}</text>
               <text class="item-sub">{{item.courseMeta}}</text>
@@ -127,8 +146,11 @@
             <view class="mini-section">课次</view>
             <view wx:if="{{item.sessions.length}}" class="mini-list">
               <view wx:for="{{item.sessions}}" wx:for-item="session" wx:key="id" class="mini-row">
-                <text class="mini-title">{{session.displayTitle || session.sessionTitle}}</text>
-                <text class="mini-meta">{{session.sessionMeta}} · {{session.studentCount}}名学生</text>
+                <view class="mini-row-main">
+                  <text class="mini-title">{{session.displayTitle || session.sessionTitle}}</text>
+                  <text class="mini-meta">{{session.sessionMeta}} · {{session.studentCount}}名学生</text>
+                </view>
+                <navigator class="mini-live" url="/pages/live-player/live-player?id={{session.id}}">直播</navigator>
               </view>
             </view>
             <view wx:else class="empty-inline">暂无课次</view>
@@ -143,7 +165,9 @@
           class="qf-card collection-card {{expandedKey === item.id ? 'expanded' : ''}}"
         >
           <view class="item-head" data-key="{{item.id}}" bindtap="toggleDetail">
-            <view class="item-icon student-icon">{{item.name[0] || '生'}}</view>
+            <view class="item-icon student-icon">
+              <image class="qf-icon-lg" src="/assets/icons/student.svg" mode="aspectFit"></image>
+            </view>
             <view class="item-main">
               <text class="item-title">{{item.name}}</text>
               <text class="item-sub">{{item.grade || '-'}} · {{item.loginPhone || item.phone || '未绑定手机号'}}</text>
@@ -181,7 +205,9 @@
           class="qf-card collection-card {{expandedKey === item.id ? 'expanded' : ''}}"
         >
           <view class="item-head" data-key="{{item.id}}" bindtap="toggleDetail">
-            <view class="item-icon teacher-icon">{{item.displayName[0] || '师'}}</view>
+            <view class="item-icon teacher-icon">
+              <image class="qf-icon-lg" src="/assets/icons/teacher.svg" mode="aspectFit"></image>
+            </view>
             <view class="item-main">
               <text class="item-title">{{item.displayName}}</text>
               <text class="item-sub">{{item.subject || '-'}} · {{item.phone || '未绑定手机号'}}</text>
@@ -219,7 +245,9 @@
           class="qf-card collection-card {{expandedKey === item.id ? 'expanded' : ''}}"
         >
           <view class="item-head" data-key="{{item.id}}" bindtap="toggleDetail">
-            <view class="item-icon room-icon">{{item.name[0] || '室'}}</view>
+            <view class="item-icon room-icon">
+              <image class="qf-icon-lg" src="/assets/icons/classroom.svg" mode="aspectFit"></image>
+            </view>
             <view class="item-main">
               <text class="item-title">{{item.name}}</text>
               <text class="item-sub">{{item.campus || '主校区'}} · 容量{{item.capacity || '-'}}人 · {{item.cameraStatus || '-'}}</text>
@@ -277,11 +305,15 @@
         <view class="editor-row">
           <view class="editor-field half">
             <text class="field-label">科目</text>
-            <input class="field-input" value="{{editorForm.subject}}" data-field="subject" bindinput="onEditorInput" placeholder="生物" />
+            <picker range="{{subjectOptions}}" value="{{editorForm.subjectIndex}}" bindchange="onEditorSubjectChange">
+              <view class="picker-value">{{editorForm.subject || '选择科目'}}</view>
+            </picker>
           </view>
           <view class="editor-field half">
             <text class="field-label">年级</text>
-            <input class="field-input" value="{{editorForm.grade}}" data-field="grade" bindinput="onEditorInput" placeholder="初三" />
+            <picker range="{{gradeOptions}}" value="{{editorForm.gradeIndex}}" bindchange="onEditorGradeChange">
+              <view class="picker-value">{{editorForm.grade || '选择年级'}}</view>
+            </picker>
           </view>
         </view>
         <view class="editor-field">
@@ -296,6 +328,48 @@
             <view class="picker-value">{{editorForm.classroomName || '选择教室'}}</view>
           </picker>
         </view>
+        <view class="editor-field session-count-stepper">
+          <text class="field-label">课次数量</text>
+          <input class="field-input" value="{{editorForm.sessionCount}}" type="number" bindinput="onSessionCountInput" placeholder="输入课次数量" />
+        </view>
+        <view wx:if="{{editorForm.sessionDrafts.length}}" class="session-draft-list">
+          <view wx:for="{{editorForm.sessionDrafts}}" wx:for-item="session" wx:for-index="index" wx:key="sessionIndex" class="session-draft-card">
+            <view class="session-draft-head">
+              <text class="session-draft-title">第{{session.sessionIndex}}次课</text>
+              <text class="session-draft-sub">{{session.date}} {{session.startTime}}-{{session.endTime}}</text>
+            </view>
+            <view class="editor-row">
+              <view class="editor-field half">
+                <text class="field-label">课次名称</text>
+                <input class="field-input" value="{{session.sessionTitle}}" data-index="{{index}}" data-field="sessionTitle" bindinput="onSessionDraftInput" placeholder="第x次课" />
+              </view>
+              <view class="editor-field half">
+                <text class="field-label">主题</text>
+                <input class="field-input" value="{{session.topic}}" data-index="{{index}}" data-field="topic" bindinput="onSessionDraftInput" placeholder="本次主题" />
+              </view>
+            </view>
+            <view class="editor-field">
+              <text class="field-label">日期</text>
+              <input class="field-input" value="{{session.date}}" data-index="{{index}}" data-field="date" bindinput="onSessionDraftInput" placeholder="YYYY-MM-DD" />
+            </view>
+            <view class="editor-row">
+              <view class="editor-field half">
+                <text class="field-label">开始时间</text>
+                <input class="field-input" value="{{session.startTime}}" data-index="{{index}}" data-field="startTime" bindinput="onSessionDraftInput" placeholder="18:30" />
+              </view>
+              <view class="editor-field half">
+                <text class="field-label">结束时间</text>
+                <input class="field-input" value="{{session.endTime}}" data-index="{{index}}" data-field="endTime" bindinput="onSessionDraftInput" placeholder="20:00" />
+              </view>
+            </view>
+            <view class="editor-field">
+              <text class="field-label">教室</text>
+              <picker range="{{classroomOptions}}" range-key="name" value="{{session.classroomIndex}}" data-index="{{index}}" bindchange="onSessionClassroomChange">
+                <view class="picker-value">{{session.classroomName || '选择教室'}}</view>
+              </picker>
+            </view>
+          </view>
+        </view>
         <view class="editor-field">
           <text class="field-label">备注</text>
           <textarea class="field-textarea" value="{{editorForm.description}}" data-field="description" bindinput="onEditorInput" placeholder="课程说明"></textarea>
@@ -309,7 +383,9 @@
         </view>
         <view class="editor-field">
           <text class="field-label">年级</text>
-          <input class="field-input" value="{{editorForm.grade}}" data-field="grade" bindinput="onEditorInput" placeholder="初一/初二/初三" />
+          <picker range="{{gradeOptions}}" value="{{editorForm.gradeIndex}}" bindchange="onEditorGradeChange">
+            <view class="picker-value">{{editorForm.grade || '选择年级'}}</view>
+          </picker>
         </view>
         <view class="editor-field">
           <text class="field-label">登录手机号</text>
@@ -329,7 +405,9 @@
         <view class="editor-row">
           <view class="editor-field half">
             <text class="field-label">科目</text>
-            <input class="field-input" value="{{editorForm.subject}}" data-field="subject" bindinput="onEditorInput" placeholder="数学" />
+            <picker range="{{subjectOptions}}" value="{{editorForm.subjectIndex}}" bindchange="onEditorSubjectChange">
+              <view class="picker-value">{{editorForm.subject || '选择科目'}}</view>
+            </picker>
           </view>
           <view class="editor-field half">
             <text class="field-label">职称</text>
@@ -360,7 +438,7 @@
         <view class="editor-field">
           <text class="field-label">摄像头状态</text>
           <picker range="{{cameraOptions}}" range-key="label" value="{{editorForm.cameraIndex}}" bindchange="onCameraChange">
-            <view class="picker-value">{{editorForm.cameraStatusText || '待接入'}}</view>
+            <view class="picker-value">{{editorForm.cameraStatusText || '待配置'}}</view>
           </picker>
         </view>
       </view>

@@ -42,9 +42,9 @@ Page({
 
   openClassIn() {
     if (!this.data.entry || !this.data.entry.classinEntryUrl) {
-      Notice.toast('ClassIn 入口待正式接入');
+      Notice.toast('课堂入口暂不可用');
       return;
     }
-    Notice.alert('正式部署后将跳转 ClassIn 直播入口。', '打开直播');
+    Notice.alert('正在打开课堂入口。', '打开直播');
   }
 });

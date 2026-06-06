@@ -33,7 +33,7 @@
             <view>
               <text class="qf-h3">{{item.sessionTitle}}</text>
               <text class="qf-muted">{{item.displayTitle}} · {{item.date}} {{item.startTime}}-{{item.endTime}}</text>
-              <text class="qf-muted">反馈 {{item.feedbackCount}} 条 · 直播入口预留</text>
+              <text class="qf-muted">反馈 {{item.feedbackCount}} 条 · 课程直播</text>
             </view>
             <button class="qf-btn small" data-id="{{item.id}}" bindtap="openSession">进入课次</button>
           </view>
@@ -48,7 +48,7 @@
       <text class="qf-h2">{{detail.courseSession.displayTitle}}</text>
       <text class="qf-muted">{{detail.course.name}} · {{detail.course.teacherFullName || detail.course.teacherName}}</text>
       <text class="qf-muted">{{detail.courseSession.date}} {{detail.courseSession.startTime}}-{{detail.courseSession.endTime}}</text>
-      <button class="qf-btn full detail-live" bindtap="goLive">直播入口预留</button>
+      <button class="qf-btn full detail-live" bindtap="goLive">课程直播</button>
     </view>
 
     <view class="qf-section">学生名单</view>

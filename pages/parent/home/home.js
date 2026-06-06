@@ -75,6 +75,7 @@ Page({
       teacherName,
       classroomName,
       scheduleLines,
+      nextSessionId: nextSession.id || '',
       nextSessionTime: nextSession.startTime
         ? `${nextSession.date || ''} ${nextSession.startTime}-${nextSession.endTime || ''}`
         : '',
@@ -107,5 +108,14 @@ Page({
     wx.navigateTo({
       url: `/pages/course-detail/course-detail?courseId=${courseId}`
     });
+  },
+
+  goLive(event) {
+    const sessionId = event.currentTarget.dataset.sessionId;
+    if (!sessionId) {
+      Notice.toast('暂无直播课次');
+      return;
+    }
+    wx.navigateTo({ url: `/pages/live-player/live-player?id=${sessionId}` });
   }
 });

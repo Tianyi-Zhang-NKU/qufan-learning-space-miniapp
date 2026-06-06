@@ -23,6 +23,10 @@ function readJson(file) {
   return JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
 }
 
+function readText(file) {
+  return fs.readFileSync(path.join(root, file), 'utf8');
+}
+
 function walkTextFiles(callback) {
   const exts = new Set(['.js', '.json', '.wxml', '.wxss', '.md', '.txt']);
   function walk(dir) {
@@ -38,6 +42,11 @@ function walkTextFiles(callback) {
     }
   }
   walk(root);
+}
+
+function profileWxssHasCalendarStyle() {
+  const profileWxss = readText('pages/profile/profile.wxss');
+  return profileWxss.includes('profile-schedule-board') && profileWxss.includes('schedule-day-card');
 }
 
 function assertPageFiles(appJson) {
@@ -111,6 +120,78 @@ async function run() {
   assertPageFiles(appJson);
   assert(!appJson.tabBar, 'app.json should not keep native tabBar');
   assert(appJson.usingComponents['qf-role-tabbar'], 'qf-role-tabbar should be registered');
+  assert(appJson.window.navigationBarBackgroundColor === '#FFFFFF', 'top navigation should use white background');
+  assert(appJson.window.navigationBarTextStyle === 'black', 'top navigation should use black title text');
+
+  const roleTabbarJs = readText('components/qf-role-tabbar/qf-role-tabbar.js');
+  const roleTabbarWxml = readText('components/qf-role-tabbar/qf-role-tabbar.wxml');
+  const roleTabbarWxss = readText('components/qf-role-tabbar/qf-role-tabbar.wxss');
+  assert(!roleTabbarJs.includes('mark:') && roleTabbarJs.includes('/assets/icons/'), 'role tabbar should use local vector icon assets instead of text marks');
+  assert(roleTabbarWxml.includes('<image') && roleTabbarWxml.includes('item.icon'), 'role tabbar should render icon images');
+  assert(!roleTabbarJs.includes("mark: '+'") && !roleTabbarJs.includes('primary: true'), 'role tabbar should not keep raised plus primary entry');
+  assert(!roleTabbarJs.includes('/pages/parent/exercises/exercises'), 'student tabbar should not expose standalone wrong-feedback page');
+  assert(roleTabbarJs.includes('/pages/parent/courses/courses') && roleTabbarJs.includes("text: '课表'"), 'student tabbar should expose schedule as a bottom tab');
+  assert(roleTabbarJs.includes('/pages/teacher/courses/courses') && roleTabbarJs.includes("text: '课程表'"), 'teacher schedule should be a standalone bottom tab');
+  assert(!roleTabbarWxss.includes('.qf-role-tab.primary'), 'role tabbar CSS should use unified item styling');
+  assert(roleTabbarWxss.includes('width: 100vw') && roleTabbarWxss.includes('border-radius: 0'), 'role tabbar should fill both screen edges without side gaps');
+  assert(readText('custom-tab-bar/index.wxss').includes('padding: 18rpx 0') && readText('custom-tab-bar/index.wxss').includes('border-radius: 0'), 'custom tabbar should fill both screen edges without side gaps');
+
+  const styleGuide = readText('docs/qufan-style-guide.md');
+  const componentContract = readText('docs/qufan-component-contract.md');
+  const appWxss = readText('app.wxss');
+  assert(styleGuide.includes('浅纸感管理风') && styleGuide.includes('#E9E6DA') && styleGuide.includes('#10224A'), 'style guide should document the light paper management theme');
+  assert(componentContract.includes('浅纸感管理风') && componentContract.includes('#FFFDF6'), 'component contract should document the updated shared component theme');
+  assert(appWxss.includes('#E9E6DA') && appWxss.includes('#10224A') && appWxss.includes('#FFFDF6'), 'app.wxss should expose the new paper theme colors');
+
+  const profileWxml = readText('pages/profile/profile.wxml');
+  const profileJs = readText('pages/profile/profile.js');
+  assert(profileWxml.includes('profile-identity-header') && profileWxml.includes('avatar-badge'), 'profile should use the unified role identity header for all roles');
+  assert(!profileWxml.includes('我的课表') && !profileJs.includes('parentSchedule') && !profileJs.includes('teacherSchedule'), 'profile should remove embedded schedule sections from student and teacher centers');
+  assert(!profileWxml.includes('我的错题本'), 'profile should not keep a separate wrongbook entry');
+  assert(!profileWxml.includes('查看完整课表'), 'profile schedules should be embedded directly instead of jump-only cards');
+  assert(!profileWxml.includes('今日课程提醒') && !profileJs.includes('todayTeacherSchedule'), 'teacher profile should remove today course reminder from personal center');
+  assert(!profileWxml.includes('profile-schedule-board') && !profileWxssHasCalendarStyle(), 'profile should not keep calendar board styling after schedule moves out');
+
+  const teacherHomeJs = readText('pages/teacher/home/home.js');
+  const teacherHomeWxml = readText('pages/teacher/home/home.wxml');
+  assert(teacherHomeJs.includes('courseSearchQuery') && teacherHomeJs.includes('studentSearchQuery'), 'teacher home should support course and student search');
+  assert(teacherHomeWxml.includes('今日课程提醒'), 'teacher home should show today course reminders');
+  assert(teacherHomeWxml.includes('课次合集') && teacherHomeWxml.includes('学生路径'), 'teacher course collection should expose session and student feedback paths');
+  assert(!teacherHomeWxml.includes('学生合集</text>'), 'teacher home overview should not keep standalone student collection');
+
+  const adminHomeJs = readText('pages/admin/home/home.js');
+  const adminHomeWxml = readText('pages/admin/home/home.wxml');
+  assert(adminHomeJs.includes('gradeFilters') && adminHomeJs.includes('subjectFilters') && adminHomeJs.includes('teacherSubjectFilters'), 'admin collections should expose grade and subject filters');
+  assert(adminHomeJs.includes('GRADE_OPTIONS') && adminHomeJs.includes('SUBJECT_OPTIONS'), 'admin filters should use full grade and subject option catalogs');
+  assert(adminHomeWxml.includes('bindchange="onGradeFilterChange"') && adminHomeWxml.includes('bindchange="onSubjectFilterChange"'), 'admin filters should be picker dropdowns');
+  assert(adminHomeWxml.includes('bindchange="onEditorSubjectChange"') && adminHomeWxml.includes('bindchange="onEditorGradeChange"'), 'course editor subject and grade should be picker dropdowns');
+
+  const adminManageWxml = readText('pages/admin/manage/manage.wxml');
+  assert(adminManageWxml.includes('导入学生') && !adminManageWxml.includes('导入课程'), 'admin data management should only keep import-student action');
+
+  assert(readText('pages/parent/home/home.wxml').includes('/pages/live-player/live-player'), 'student pages should expose course live entry');
+  assert(readText('pages/parent/home/home.wxml').includes('course-actions tests-row') && readText('pages/parent/home/home.wxml').includes('course-actions live-row'), 'student home should split test buttons and live entry into separate rows');
+  assert(readText('pages/parent/home/home.wxml').includes('scroll-view') && readText('pages/parent/home/home.wxml').includes('course-schedule-scroll'), 'student home schedule lines should be scrollable');
+  assert(readText('pages/parent/home/home.wxss').includes('course-schedule-scroll') && readText('pages/parent/home/home.wxss').includes('max-height'), 'student home schedule scroll should limit visible rows');
+  assert(!readText('pages/parent/home/home.wxss').includes('justify-content: flex-start') && !readText('pages/parent/home/home.wxss').includes('padding-left: 34rpx'), 'student live button should keep centered text');
+  assert(readText('pages/parent/courses/courses.js').includes('/pages/parent/exercises/exercises?courseId=') && !readText('pages/parent/courses/courses.js').includes('/pages/course-detail/course-detail?id=${sessionId}'), 'student schedule test buttons should navigate to the parent wrong-feedback page with course and session context');
+  assert(readText('pages/parent/exercises/exercises.js').includes('courseId && sessionId && type'), 'student wrong-feedback page should support session-scoped pre/post test entries');
+  assert(teacherHomeWxml.includes('/pages/live-player/live-player'), 'teacher home should expose course live entry');
+  assert(readText('pages/teacher/courses/courses.wxml').includes('current="/pages/teacher/courses/courses"'), 'teacher schedule page tabbar current should point to itself');
+  assert(readText('pages/teacher/courses/courses.wxml').includes('bindtap="editSession"') && readText('pages/teacher/courses/courses.wxml').includes('session-editor'), 'teacher schedule should expose lesson rename/topic editor');
+  assert(readText('pages/admin/home/home.wxml').includes('/pages/live-player/live-player'), 'admin course collection should expose course live entry');
+  assert(adminHomeWxml.includes('课次数量') && adminHomeWxml.includes('onSessionCountInput') && adminHomeWxml.includes('onSessionDraftInput') && adminHomeWxml.includes('onSessionClassroomChange'), 'admin course editor should expose editable session count, classroom and time fields');
+  assert(adminHomeJs.includes('syncCourseSessionsForEditor') && adminHomeJs.includes('saveCourseEditor'), 'admin course editor should persist course session count and lesson edits');
+
+  const loginWxss = readText('pages/login/login.wxss');
+  const loginWxml = readText('pages/login/login.wxml');
+  assert(loginWxml.includes('<z-bg mode="auth"'), 'login page should keep its own full-screen auth background');
+  assert(loginWxml.includes('LOGO') && !loginWxml.includes('QF'), 'login page should keep a formal LOGO placeholder instead of the old QF monogram');
+  assert(loginWxml.includes('login-card-title') && loginWxml.includes('login-helper'), 'login page should use a formal form card and weak helper copy');
+  assert(!loginWxml.includes('login-signal-row') && !loginWxml.includes('演示账号'), 'login page should remove large debug/explainer blocks');
+  assert(loginWxml.includes('debug-login-toggle') && loginWxss.includes('debug-login-toggle'), 'login page should keep only a small debug account entry');
+  assert(loginWxss.includes('animation: none') && loginWxss.includes('opacity: 1'), 'login page should not inherit global page entrance animation');
+  assert(!loginWxss.includes('calc(100vh'), 'login page should avoid calc viewport sizing that can collapse in miniapp renderers');
   assertNoOldBrand();
   assertNoDeprecatedMainCopy();
 
@@ -128,16 +209,21 @@ async function run() {
   assert(db.teachers.length >= 2, 'should model at least 2 teachers');
   assert(db.students.length >= 4, 'should model at least 4 students');
   assert(db.courses.length >= 3, 'should model at least 3 courses');
-  assert(db.teachers.every((teacher) => !teacher.subjects || teacher.subjects.length === 1), 'each teacher should map to one subject');
+  assert(db.teachers.some((teacher) => (teacher.courseIds || []).length >= 2), 'at least one teacher should teach multiple courses');
+  assert(db.courseSessions.filter((item) => item.courseId === 'course_bio_001').length >= 4, 'core demo course should model a multi-week term schedule');
+  assert(db.teachers.every((teacher) => !teacher.subjects || teacher.subjects.length >= 1), 'each teacher should expose subject metadata');
   assert(db.courses.every((course) => {
     const teacher = db.teachers.find((item) => item.id === course.teacherId);
     return teacher && teacher.subject === course.subject;
   }), 'course subject should match its teacher subject');
   assert(db.courses.every((course) => db.courseSessions.filter((item) => item.courseId === course.id).length >= 2), 'each course should have at least 2 lessons');
+  assert(db.courseSessions.every((item) => item.displayTitle === item.sessionTitle) && db.courseSessions.some((item) => item.topic), 'lesson default display title should be short 第x次课 while keeping editable topic metadata');
   assert(db.lessonFeedbacks.length >= 3, 'should include lesson feedback samples');
   assert(db.mediaFiles.some((item) => item.type === 'image' && item.downloadable === false), 'image media should preview in miniapp without download');
   assert(db.mediaFiles.some((item) => item.type === 'video' && item.downloadable === false), 'video media should preview in miniapp without download');
   assert(db.mediaFiles.some((item) => item.type === 'voice' && item.downloadable === false), 'voice media should not be downloadable');
+  assert(db.mediaFiles.every((item) => item.url), 'mock media should use realistic preview URLs instead of empty placeholders');
+  assert(db.liveRooms.some((item) => item.streamUrl || item.previewVideoUrl || item.classinEntryUrl), 'mock live room should expose a realistic demo entry or stream URL');
 
   const Api = require('../services/api');
   assert(typeof Api.loginByPhone === 'function', 'loginByPhone missing');
@@ -145,6 +231,7 @@ async function run() {
   assert(typeof Api.uploadFeedbackVideo === 'function', 'uploadFeedbackVideo missing');
   assert(typeof Api.requestClassInLiveEntry === 'function', 'requestClassInLiveEntry missing');
   assert(typeof Api.updateCourse === 'function' && typeof Api.deleteCourse === 'function', 'admin course CRUD missing');
+  assert(typeof Api.updateCourseSession === 'function' && typeof Api.deleteCourseSession === 'function', 'course session edit/delete APIs missing');
   assert(typeof Api.updateStudent === 'function' && typeof Api.deleteStudent === 'function', 'admin student CRUD missing');
   assert(typeof Api.updateTeacher === 'function' && typeof Api.deleteTeacher === 'function', 'admin teacher CRUD missing');
   assert(typeof Api.updateClassroom === 'function' && typeof Api.deleteClassroom === 'function', 'admin classroom CRUD missing');
@@ -164,6 +251,12 @@ async function run() {
   const lessonDetail = await Api.getTeacherLessonDetail('lesson_bio_001_01');
   assert(lessonDetail.students.length >= 2, 'teacher lesson should list students');
   assert(lessonDetail.students.some((item) => item.id === 'stu_001'), 'lesson should include target student');
+  const renamedLesson = await Api.updateCourseSession({
+    id: 'lesson_bio_001_02',
+    sessionTitle: '第2次课',
+    topic: 'Smoke 可编辑主题'
+  });
+  assert(renamedLesson.sessionTitle === '第2次课' && renamedLesson.topic === 'Smoke 可编辑主题', 'teacher should rename own lesson and add topic');
 
   const uploadedImage = await Api.uploadFeedbackImage({
     fileName: 'smoke-feedback.jpg',
@@ -242,8 +335,8 @@ async function run() {
     courseId: 'course_bio_001',
     courseSessionId: 'lesson_bio_001_01'
   });
-  assert(liveEntry.status === 'pending' && liveEntry.provider === 'classin', 'ClassIn placeholder shape missing');
-  assert(Object.prototype.hasOwnProperty.call(liveEntry, 'classinEntryUrl'), 'ClassIn entry URL field missing');
+  assert(liveEntry.status === 'ready' && liveEntry.provider === 'classin', 'ClassIn demo entry shape missing');
+  assert(liveEntry.classinEntryUrl && (liveEntry.previewVideoUrl || liveEntry.streamUrl), 'ClassIn demo entry should expose playable preview fields');
 
   const adminSession = await Api.loginByPhone({ phone: '13800000003' });
   assert(adminSession.role === 'admin', 'admin phone should login as admin');
@@ -281,6 +374,26 @@ async function run() {
   });
   const updatedCourse = await Api.updateCourse({ id: createdCourse.id, name: 'Smoke CRUD 课程A', subject: '化学', grade: '初三', teacherId: updatedTeacher.id, classroomId: updatedClassroom.id });
   assert(updatedCourse.name === 'Smoke CRUD 课程A' && updatedCourse.grade === '初三', 'admin should update course');
+  const createdSession = await Api.createCourseSession({
+    courseId: createdCourse.id,
+    date: '2026-08-01',
+    startTime: '08:00',
+    endTime: '09:30',
+    classroomId: updatedClassroom.id,
+    topic: 'Smoke 首次课'
+  });
+  assert(createdSession.sessionTitle === '第1次课' && createdSession.topic === 'Smoke 首次课', 'admin should create default-numbered course lesson');
+  const updatedSession = await Api.updateCourseSession({
+    id: createdSession.id,
+    sessionTitle: '第1次课',
+    topic: 'Smoke 更新主题',
+    date: '2026-08-02',
+    startTime: '10:00',
+    endTime: '11:30',
+    classroomId: updatedClassroom.id
+  });
+  assert(updatedSession.topic === 'Smoke 更新主题' && updatedSession.date === '2026-08-02', 'admin should update lesson topic, room and time');
+  await Api.deleteCourseSession(updatedSession.id);
   await Api.deleteCourse(createdCourse.id);
   await Api.deleteStudent(updatedStudent.id);
   await Api.deleteTeacher(updatedTeacher.id);

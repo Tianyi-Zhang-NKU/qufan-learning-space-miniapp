@@ -1,4 +1,11 @@
-const Api = require('./services/api');
+let apiModule = null;
+
+function getApi() {
+  if (!apiModule) {
+    apiModule = require('./services/api');
+  }
+  return apiModule;
+}
 
 App({
   globalData: {
@@ -20,19 +27,24 @@ App({
     const session = wx.getStorageSync('session');
     if (session && session.identityId) {
       this.globalData.session = session;
-      Api.setSession(session);
+      try {
+        getApi().setSession(session);
+      } catch (error) {
+        this.globalData.session = null;
+        wx.removeStorageSync('session');
+      }
     }
   },
 
   setSession(session) {
     this.globalData.session = session;
-    Api.setSession(session);
+    getApi().setSession(session);
     wx.setStorageSync('session', session);
   },
 
   clearSession() {
     this.globalData.session = null;
-    Api.setSession(null);
+    getApi().setSession(null);
     wx.removeStorageSync('session');
   }
 });

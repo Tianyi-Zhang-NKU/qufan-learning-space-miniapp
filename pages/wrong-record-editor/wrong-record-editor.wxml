@@ -22,7 +22,7 @@
     <view class="qf-section">图片反馈</view>
     <view class="qf-wrap media-row">
       <button class="qf-btn ghost small" bindtap="chooseImage">上传图片</button>
-      <button class="qf-btn ghost small" bindtap="addMockImage">添加演示图片</button>
+      <button class="qf-btn ghost small" bindtap="addMockImage">添加图片样例</button>
     </view>
     <view wx:if="{{imageFiles.length}}" class="qf-list media-list">
       <view wx:for="{{imageFiles}}" wx:key="id" class="qf-list-item qf-row">
@@ -36,7 +36,7 @@
 
     <view class="qf-section">语音反馈</view>
     <view class="qf-wrap media-row">
-      <button class="qf-btn ghost small" bindtap="addMockVoice">添加演示语音</button>
+      <button class="qf-btn ghost small" bindtap="addMockVoice">添加语音样例</button>
     </view>
     <view wx:if="{{voiceFiles.length}}" class="qf-list media-list">
       <view wx:for="{{voiceFiles}}" wx:key="id" class="qf-list-item qf-row">

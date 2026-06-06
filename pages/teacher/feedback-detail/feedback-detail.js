@@ -40,12 +40,13 @@ Page({
   },
 
   onLoad(options) {
-    const { courseId, courseName, studentId, studentName, feedbackType } = options;
+    const { courseId, courseName, studentId, studentName, feedbackType, courseSessionId } = options;
     this.setData({
       courseId: courseId || '',
       courseName: decodeURIComponent(courseName || ''),
       studentId: studentId || '',
       studentName: decodeURIComponent(studentName || ''),
+      activeSessionId: courseSessionId || '',
       feedbackType: ['pre', 'post', 'general'].includes(feedbackType) ? feedbackType : 'post'
     });
     this.initRecorder();

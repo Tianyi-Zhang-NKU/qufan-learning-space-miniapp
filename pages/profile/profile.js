@@ -8,11 +8,45 @@ function roleName(role) {
   return '学生/家长端';
 }
 
+function buildIdentity(session, profile) {
+  const role = session.role;
+  if (role === 'teacher') {
+    const name = profile.name || profile.fullName || session.displayName || '教师';
+    const subject = profile.subject || (profile.subjects || []).join('、') || profile.title || '授课教师';
+    return {
+      identityName: name,
+      identitySub: subject,
+      identityInitial: name.charAt(0) || '师',
+      identityBadge: '教师'
+    };
+  }
+  if (role === 'admin') {
+    const name = session.displayName || profile.name || '管理员';
+    return {
+      identityName: name,
+      identitySub: profile.roleTitle || '校区管理',
+      identityInitial: name.charAt(0) || '管',
+      identityBadge: '管理'
+    };
+  }
+  const name = profile.name || session.displayName || '学生';
+  return {
+    identityName: name,
+    identitySub: [profile.grade, '学生档案'].filter(Boolean).join(' · '),
+    identityInitial: name.charAt(0) || '生',
+    identityBadge: '学生'
+  };
+}
+
 Page({
   data: {
     session: {},
     profile: {},
     roleName: '',
+    identityName: '',
+    identitySub: '',
+    identityInitial: '',
+    identityBadge: '',
 
     // 教师端专属
     teacherName: '',
@@ -32,7 +66,8 @@ Page({
         this.setData({
           session: active,
           profile: result.profile || {},
-          roleName: roleName(active.role)
+          roleName: roleName(active.role),
+          ...buildIdentity(active, result.profile || {})
         });
 
         // 教师端加载额外数据
@@ -43,7 +78,7 @@ Page({
       .catch((error) => Notice.alert(error.message || '个人信息加载失败'));
   },
 
-  /** 加载教师端专属数据：课程合集、学生合集 */
+  /** 加载教师端专属数据 */
   loadTeacherData(session) {
     Api.getTeacherCourses()
       .then((result) => {
@@ -86,10 +121,6 @@ Page({
       .catch(() => {
         // 静默处理
       });
-  },
-
-  goWrongBook() {
-    wx.navigateTo({ url: '/pages/parent/exercises/exercises?all=1' });
   },
 
   /** 点击课程 → 跳转课程详情 */

@@ -6,7 +6,7 @@
     <view class="qf-top">
       <view class="qf-brand">
         <text class="qf-brand-title">{{courseName}} · {{feedbackTypeLabel}}</text>
-        <text class="qf-brand-sub">共 {{students.length}} 名学生 · 点击学生录入错题反馈</text>
+        <text class="qf-brand-sub">{{sessionLabel}} · 点击学生录入错题反馈</text>
       </view>
     </view>
 
@@ -15,9 +15,9 @@
       <text class="qf-h2">{{courseName}}</text>
       <text class="qf-muted">{{courseInfo.subject}} · {{courseInfo.grade}} · {{courseInfo.classroomName}} · {{courseInfo.teacherName}}</text>
       <view class="summary-stats">
-        <text class="stat-item">📋 {{courseInfo.sessionCount || 0}} 次课</text>
-        <text class="stat-item">👥 {{students.length}} 名学生</text>
-        <text class="stat-item">📝 {{totalFeedbackCount}} 条{{feedbackTypeLabel}}</text>
+        <text class="stat-item">课次 {{courseInfo.sessionCount || 0}}</text>
+        <text class="stat-item">学生 {{students.length}}</text>
+        <text class="stat-item">反馈 {{totalFeedbackCount}}</text>
       </view>
     </view>
 

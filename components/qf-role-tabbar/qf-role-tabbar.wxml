@@ -6,7 +6,9 @@
     data-url="{{item.url}}"
     bindtap="go"
   >
-    <view class="qf-role-mark">{{item.mark}}</view>
+    <view class="qf-role-mark">
+      <image class="qf-role-icon" src="{{item.icon}}" mode="aspectFit"></image>
+    </view>
     <text class="qf-role-text">{{item.text}}</text>
   </view>
 </view>

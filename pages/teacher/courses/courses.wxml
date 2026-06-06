@@ -51,11 +51,24 @@
       <view wx:for="{{dateCourses}}" wx:key="id" class="course-card">
         <view class="course-info">
           <text class="course-name">{{item.courseName}} · {{item.sessionTitle}}</text>
+          <text class="course-topic">{{item.topic || '未设置主题'}}</text>
           <view class="course-meta">
-            <text class="course-meta-item">👩‍🏫 {{item.teacherName}}</text>
-            <text class="course-meta-item">🕐 {{item.startTime}} - {{item.endTime}}</text>
-            <text class="course-meta-item">📍 {{item.classroomName}}</text>
-            <text class="course-meta-item">👥 {{item.studentCount}} 人</text>
+            <view class="course-meta-item">
+              <image class="course-meta-icon" src="/assets/icons/teacher.svg" mode="aspectFit"></image>
+              <text>{{item.teacherName}}</text>
+            </view>
+            <view class="course-meta-item">
+              <image class="course-meta-icon" src="/assets/icons/clock.svg" mode="aspectFit"></image>
+              <text>{{item.startTime}} - {{item.endTime}}</text>
+            </view>
+            <view class="course-meta-item">
+              <image class="course-meta-icon" src="/assets/icons/location.svg" mode="aspectFit"></image>
+              <text>{{item.classroomName}}</text>
+            </view>
+            <view class="course-meta-item">
+              <image class="course-meta-icon" src="/assets/icons/users.svg" mode="aspectFit"></image>
+              <text>{{item.studentCount}} 人</text>
+            </view>
           </view>
         </view>
         <view class="course-actions">
@@ -63,20 +76,35 @@
             class="qf-btn small test-btn pre-test"
             data-course-id="{{item.courseId}}"
             data-course-name="{{item.courseName}}"
+            data-session-id="{{item.id}}"
             bindtap="goPreTest"
           >课前错题</button>
           <button
             class="qf-btn small test-btn post-test"
             data-course-id="{{item.courseId}}"
             data-course-name="{{item.courseName}}"
+            data-session-id="{{item.id}}"
             bindtap="goPostTest"
           >课后错题</button>
           <button
             class="qf-btn small test-btn feedback-btn-action"
             data-course-id="{{item.courseId}}"
             data-course-name="{{item.courseName}}"
+            data-session-id="{{item.id}}"
             bindtap="goFeedback"
           >课程错题</button>
+          <button
+            class="qf-btn small test-btn live-test"
+            data-session-id="{{item.id}}"
+            bindtap="goLive"
+          >课程直播</button>
+          <button
+            class="qf-btn small test-btn edit-session"
+            data-session-id="{{item.id}}"
+            data-session-title="{{item.sessionTitle}}"
+            data-topic="{{item.topic}}"
+            bindtap="editSession"
+          >改名</button>
         </view>
       </view>
     </view>
@@ -86,6 +114,27 @@
     <!-- spacer -->
     <view style="height: 32rpx;"></view>
   </scroll-view>
+
+  <view wx:if="{{showSessionEditor}}" class="session-editor-mask" catchtap="closeSessionEditor">
+    <view class="session-editor" catchtap="noop">
+      <view class="session-editor-head">
+        <text class="session-editor-title">编辑课次</text>
+        <view class="session-editor-close" bindtap="closeSessionEditor">×</view>
+      </view>
+      <view class="session-editor-field">
+        <text class="session-editor-label">课次名称</text>
+        <input class="session-editor-input" value="{{sessionEditor.sessionTitle}}" data-field="sessionTitle" bindinput="onSessionEditorInput" placeholder="例如 第3次课" />
+      </view>
+      <view class="session-editor-field">
+        <text class="session-editor-label">本次主题</text>
+        <input class="session-editor-input" value="{{sessionEditor.topic}}" data-field="topic" bindinput="onSessionEditorInput" placeholder="例如 遗传与变异专项" />
+      </view>
+      <view class="session-editor-actions">
+        <button class="session-editor-cancel" bindtap="closeSessionEditor">取消</button>
+        <button class="session-editor-save" bindtap="saveSessionEditor">保存</button>
+      </view>
+    </view>
+  </view>
 
   <qf-role-tabbar role="teacher" current="/pages/teacher/courses/courses" fixed="{{false}}"></qf-role-tabbar>
 </view>

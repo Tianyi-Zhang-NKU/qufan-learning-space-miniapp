@@ -41,7 +41,7 @@
       <view class="file-list">
         <view wx:for="{{uploadedFiles}}" wx:key="id" class="file-item">
           <view class="file-info">
-            <text class="file-icon">{{item.ext === 'pdf' ? '📄' : '📃'}}</text>
+            <image class="file-icon" src="/assets/icons/note.svg" mode="aspectFit"></image>
             <view class="file-detail">
               <text class="file-name">{{item.name}}</text>
               <text class="file-meta">{{item.sizeText}} · {{item.uploadedAt}}</text>
@@ -56,12 +56,12 @@
     <view class="qf-section">上传{{typeLabel}}文件</view>
     <view class="qf-card upload-area" bindtap="chooseFile">
       <view wx:if="{{!uploading}}" class="upload-placeholder">
-        <text class="upload-icon">📤</text>
+        <image class="upload-icon" src="/assets/icons/upload.svg" mode="aspectFit"></image>
         <text class="upload-title">点击上传 PDF / Word 文件</text>
         <text class="upload-hint">支持 .pdf、.doc、.docx 格式</text>
       </view>
       <view wx:else class="upload-progress">
-        <text class="upload-icon">⏳</text>
+        <image class="upload-icon" src="/assets/icons/clock.svg" mode="aspectFit"></image>
         <text class="upload-title">正在上传：{{uploadingFileName}}</text>
       </view>
     </view>
