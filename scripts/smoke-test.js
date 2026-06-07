@@ -143,6 +143,38 @@ async function run() {
   assert(componentContract.includes('浅纸感管理风') && componentContract.includes('#FFFDF6'), 'component contract should document the updated shared component theme');
   assert(appWxss.includes('#E9E6DA') && appWxss.includes('#10224A') && appWxss.includes('#FFFDF6'), 'app.wxss should expose the new paper theme colors');
 
+  const feedbackTypes = require('../utils/feedback-types');
+  assert(feedbackTypes.feedbackTypeText('pre') === '课前测错题反馈', 'shared feedback type text should format pre-test feedback');
+  assert(feedbackTypes.feedbackTypeText('post') === '课后测错题反馈', 'shared feedback type text should format post-test feedback');
+  assert(feedbackTypes.feedbackTypeText('general') === '课程错题反馈', 'shared feedback type text should format general feedback');
+  assert(feedbackTypes.feedbackTypeText('unknown') === '课后测错题反馈', 'unknown feedback type should keep the existing post-test fallback');
+  assert(feedbackTypes.feedbackTypeWrongLabel('general') === '课程错题', 'shared feedback type labels should support teacher wrong-feedback tabs');
+  assert(feedbackTypes.feedbackTypeShortLabel('general') === '其他题目', 'shared feedback type labels should preserve parent general-type wording');
+
+  const scheduleCalendar = require('../utils/schedule-calendar');
+  const calendarDays = scheduleCalendar.buildCalendarDays(2026, 6, '2026-06-06', new Set(['2026-06-06']), '2026-06-07');
+  assert(calendarDays.length === 42, 'shared calendar builder should keep a stable 42-cell grid');
+  assert(calendarDays[0].date === '2026-06-01' && calendarDays[0].isCurrentMonth, 'June 2026 calendar should start on Monday without filler days');
+  assert(calendarDays.find((day) => day.date === '2026-06-06').hasCourse, 'shared calendar builder should mark course dates');
+  assert(calendarDays.find((day) => day.date === '2026-06-07').isToday, 'shared calendar builder should support deterministic today markers');
+  assert(scheduleCalendar.formatDisplayDate('2026-06-07', '2026-06-07') === '今天', 'shared date display should render today');
+  assert(scheduleCalendar.formatDisplayDate('2026-06-08', '2026-06-07') === '明天', 'shared date display should render tomorrow');
+  const scheduleCourses = [{
+    id: 'course_smoke',
+    name: 'Smoke 课程',
+    teacherName: 'Smoke 老师',
+    classroomName: '1号教室',
+    studentCount: 2,
+    sessions: [
+      { id: 'lesson_late', date: '2026-06-06', startTime: '20:00', endTime: '21:00', displayTitle: '第2次课', status: 'scheduled' },
+      { id: 'lesson_early', date: '2026-06-06', startTime: '18:30', endTime: '20:00', displayTitle: '第1次课', topic: 'Smoke 主题', status: 'finished' }
+    ]
+  }];
+  const courseDates = scheduleCalendar.collectCourseDates(scheduleCourses);
+  const sessionsForDate = scheduleCalendar.getSessionsForDate(scheduleCourses, '2026-06-06');
+  assert(courseDates.has('2026-06-06'), 'shared schedule helper should collect dates from nested sessions');
+  assert(sessionsForDate[0].id === 'lesson_early' && sessionsForDate[0].courseName === 'Smoke 课程', 'shared schedule helper should sort and decorate sessions for a date');
+
   const profileWxml = readText('pages/profile/profile.wxml');
   const profileJs = readText('pages/profile/profile.js');
   assert(profileWxml.includes('profile-identity-header') && profileWxml.includes('avatar-badge'), 'profile should use the unified role identity header for all roles');

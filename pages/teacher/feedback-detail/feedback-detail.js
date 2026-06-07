@@ -1,12 +1,12 @@
 const Api = require('../../../services/api');
 const Guard = require('../../../utils/page-guard');
 const Notice = require('../../../utils/notice');
+const FeedbackTypes = require('../../../utils/feedback-types');
 
-const FEEDBACK_TYPES = [
-  { value: 'pre', label: '课前测错题' },
-  { value: 'post', label: '课后测错题' },
-  { value: 'general', label: '课程错题' }
-];
+const FEEDBACK_TYPES = FeedbackTypes.FEEDBACK_TYPES.map((item) => ({
+  value: item.value,
+  label: item.wrongLabel
+}));
 
 function extFromPath(path, fallback) {
   const parts = String(path || '').split('.');
@@ -47,7 +47,7 @@ Page({
       studentId: studentId || '',
       studentName: decodeURIComponent(studentName || ''),
       activeSessionId: courseSessionId || '',
-      feedbackType: ['pre', 'post', 'general'].includes(feedbackType) ? feedbackType : 'post'
+      feedbackType: FeedbackTypes.normalizeFeedbackType(feedbackType)
     });
     this.initRecorder();
     wx.setNavigationBarTitle({ title: `错题反馈 - ${this.data.studentName}` });

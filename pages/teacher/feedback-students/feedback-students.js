@@ -1,6 +1,7 @@
 const Api = require('../../../services/api');
 const Guard = require('../../../utils/page-guard');
 const Notice = require('../../../utils/notice');
+const FeedbackTypes = require('../../../utils/feedback-types');
 
 Page({
   data: {
@@ -24,8 +25,8 @@ Page({
 
   onLoad(options) {
     const { courseId, courseName, feedbackType, courseSessionId } = options;
-    const type = ['pre', 'post', 'general'].includes(feedbackType) ? feedbackType : 'post';
-    const typeLabel = type === 'pre' ? '课前测错题' : type === 'post' ? '课后测错题' : '课程错题';
+    const type = FeedbackTypes.normalizeFeedbackType(feedbackType);
+    const typeLabel = FeedbackTypes.feedbackTypeWrongLabel(type);
     this.setData({
       courseId: courseId || '',
       courseName: decodeURIComponent(courseName || ''),

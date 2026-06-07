@@ -1,6 +1,7 @@
 const Api = require('../../../services/api');
 const Guard = require('../../../utils/page-guard');
 const Notice = require('../../../utils/notice');
+const FeedbackTypes = require('../../../utils/feedback-types');
 
 function buildFeedbackRecord(feedback) {
   return {
@@ -9,7 +10,7 @@ function buildFeedbackRecord(feedback) {
     createdAt: feedback.createdAt || '',
     teacherName: feedback.teacherName || '',
     feedbackType: feedback.feedbackType || 'post',
-    feedbackTypeText: feedback.feedbackTypeText || ((feedback.feedbackType || 'post') === 'pre' ? '课前测错题反馈' : '课后测错题反馈'),
+    feedbackTypeText: feedback.feedbackTypeText || FeedbackTypes.feedbackTypeText(feedback.feedbackType),
     imageFiles: feedback.imageFiles || [],
     videoFiles: feedback.videoFiles || [],
     voiceFiles: feedback.voiceFiles || [],
@@ -21,9 +22,7 @@ function buildFeedbackRecord(feedback) {
 }
 
 function typeLabel(type) {
-  if (type === 'pre') return '课前测';
-  if (type === 'post') return '课后测';
-  return '其他题目';
+  return FeedbackTypes.feedbackTypeShortLabel(type);
 }
 
 Page({

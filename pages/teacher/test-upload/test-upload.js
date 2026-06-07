@@ -1,6 +1,7 @@
 const Api = require('../../../services/api');
 const Guard = require('../../../utils/page-guard');
 const Notice = require('../../../utils/notice');
+const FeedbackTypes = require('../../../utils/feedback-types');
 
 Page({
   data: {
@@ -20,7 +21,7 @@ Page({
 
   onLoad(options) {
     const { courseId, courseName, type } = options;
-    const typeLabel = type === 'pre' ? '课前测' : '课后测';
+    const typeLabel = FeedbackTypes.feedbackTypeShortLabel(type === 'pre' ? 'pre' : 'post');
     this.setData({
       courseId: courseId || '',
       courseName: decodeURIComponent(courseName || ''),

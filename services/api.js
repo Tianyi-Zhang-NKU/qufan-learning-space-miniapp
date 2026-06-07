@@ -1,5 +1,6 @@
 const config = require('./config');
 const db = require('./mock-db');
+const FeedbackTypes = require('../utils/feedback-types');
 
 let activeSession = null;
 
@@ -230,12 +231,6 @@ function assignmentWithFile(item) {
   };
 }
 
-function feedbackTypeText(type) {
-  if (type === 'pre') return '课前测错题反馈';
-  if (type === 'post') return '课后测错题反馈';
-  return '课程错题反馈';
-}
-
 function decorateMedia(file) {
   if (!file) return null;
   const messageMap = {
@@ -266,7 +261,7 @@ function feedbackWithMedia(item) {
   return {
     ...item,
     feedbackType,
-    feedbackTypeText: feedbackTypeText(feedbackType),
+    feedbackTypeText: FeedbackTypes.feedbackTypeText(feedbackType),
     studentName: student.name || '',
     teacherName: teacher.name || teacher.fullName || '',
     courseName: course.name || '',
@@ -682,7 +677,7 @@ const mockApi = {
     const videoFileIds = payload.videoFileIds || [];
     const voiceFileIds = payload.voiceFileIds || [];
     const attachFileIds = payload.attachFileIds || [];
-    const feedbackType = ['pre', 'post', 'general'].includes(payload.feedbackType) ? payload.feedbackType : 'post';
+    const feedbackType = FeedbackTypes.normalizeFeedbackType(payload.feedbackType);
     imageFileIds.forEach((id) => {
       const file = findMedia(id);
       if (!file || file.type !== 'image') throw makeError('VALIDATION_ERROR', '图片媒体不存在。');
@@ -718,7 +713,7 @@ const mockApi = {
       visibleToStudent: payload.visibleToStudent !== false
     };
     db.lessonFeedbacks.unshift(record);
-    pushAudit(session.identityId, 'create_lesson_feedback', 'lessonFeedback', record.id, `为 ${student.name} 保存${feedbackTypeText(feedbackType)}`);
+    pushAudit(session.identityId, 'create_lesson_feedback', 'lessonFeedback', record.id, `为 ${student.name} 保存${FeedbackTypes.feedbackTypeText(feedbackType)}`);
     return delay(feedbackWithMedia(record));
   },
 
