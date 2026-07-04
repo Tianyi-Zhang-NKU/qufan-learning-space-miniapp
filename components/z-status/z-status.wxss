@@ -1,0 +1,26 @@
+.status {
+  display: inline-block;
+  flex-shrink: 0;
+  padding: 10rpx 16rpx;
+  border-radius: 999rpx;
+  color: #14251f;
+  font-size: 20rpx;
+  line-height: 1;
+  background: #d6e6be;
+}
+
+.status.warn {
+  color: #382817;
+  background: #efd39b;
+}
+
+.status.muted {
+  color: rgba(248, 243, 234, 0.68);
+  border: 1rpx solid rgba(248, 243, 234, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.status.danger {
+  color: #fff2dc;
+  background: rgba(154, 70, 54, 0.72);
+}

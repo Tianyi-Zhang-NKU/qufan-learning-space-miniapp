@@ -1,0 +1,10 @@
+<view class="topbar page-head">
+  <view class="brand-row">
+    <z-logo mode="{{logoMode}}"></z-logo>
+    <view class="head-copy">
+      <text class="page-kicker">{{kicker}}</text>
+      <view class="page-title">{{title}}</view>
+      <view class="page-desc">{{desc}}</view>
+    </view>
+  </view>
+</view>

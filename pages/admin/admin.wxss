@@ -1,0 +1,18 @@
+.admin-screen {
+  padding-top: 54rpx;
+}
+
+.admin-stats {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 28rpx;
+}
+
+.admin-screen .grid-2 {
+  position: relative;
+  z-index: 1;
+}
+
+.compact-title {
+  margin-top: 0;
+}

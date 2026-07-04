@@ -1,0 +1,49 @@
+<view class="screen home-screen">
+  <z-bg></z-bg>
+  <view class="topbar">
+    <view class="brand-row">
+      <z-logo></z-logo>
+      <view>
+        <text class="brand-name">{{roleName}}</text>
+        <text class="brand-sub">{{brandSub}}</text>
+      </view>
+    </view>
+    <button class="ghost-btn small-ghost" bindtap="logout">退出</button>
+  </view>
+
+  <z-card mode="hero">
+    <text class="page-kicker">{{kicker}}</text>
+    <view class="page-title">{{title}}</view>
+    <view class="page-desc">{{desc}}</view>
+    <view class="chip-row">
+      <z-chip wx:for="{{chips}}" wx:key="*this" text="{{item}}" active="{{index === 0}}"></z-chip>
+    </view>
+  </z-card>
+
+  <view class="grid-3 home-metrics">
+    <view wx:for="{{metrics}}" wx:key="label">
+      <z-metric value="{{item.value}}" label="{{item.label}}"></z-metric>
+    </view>
+  </view>
+
+  <z-section-title title="{{sectionTitle}}" right="{{sectionRight}}"></z-section-title>
+  <view class="grid-2 role-actions">
+    <view wx:for="{{actions}}" wx:key="title">
+      <z-tile icon="{{item.icon}}" title="{{item.title}}" desc="{{item.desc}}" url="{{item.url}}" open-type-alias="{{item.openTypeAlias}}"></z-tile>
+    </view>
+  </view>
+
+  <z-card>
+    <z-section-title title="{{nextTitle}}" right="{{nextCourse ? nextCourse.status : '暂无'}}" right-type-alias="status" tone="{{nextCourse ? 'ok' : 'muted'}}"></z-section-title>
+    <z-list-item
+      wx:if="{{nextCourse}}"
+      time="{{nextCourse.startTime}}"
+      title="{{nextCourse.title}}"
+      sub="{{nextCourse.className}} · {{nextCourse.classroomName}} · {{nextCourse.teacherName}}"
+      no-border="{{true}}"
+    ></z-list-item>
+    <view wx:else class="empty-copy">{{nextEmpty}}</view>
+  </z-card>
+
+  <view class="safe-bottom"></view>
+</view>

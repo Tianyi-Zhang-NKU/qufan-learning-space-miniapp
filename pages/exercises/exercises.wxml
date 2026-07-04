@@ -1,0 +1,35 @@
+<view class="screen exercises-screen">
+  <z-bg></z-bg>
+  <z-page-head kicker="OPTIONAL TESTS" title="可选测验资料" desc="课前测、课后测可作为弱功能保留，第一版主流程仍是课后反馈。"></z-page-head>
+
+  <z-card mode="hero">
+    <z-section-title title="今天" right="可选记录" right-type-alias="status"></z-section-title>
+    <view class="grid-3">
+      <view><z-metric value="2" label="课程记录" size="mini"></z-metric></view>
+      <view><z-metric value="3" label="反馈图片" size="mini"></z-metric></view>
+      <view><z-metric value="3" label="反馈语音" size="mini"></z-metric></view>
+    </view>
+  </z-card>
+
+  <z-card mode="light">
+    <z-section-title title="初二数学强化 A 班" right="课后记录" theme="light"></z-section-title>
+    <view class="paper-line">
+      <text class="paper-index">01</text>
+      <text class="paper-text">线下完成练习，老师在课后上传批改照片和文字反馈。</text>
+    </view>
+    <view class="paper-line">
+      <text class="paper-index">02</text>
+      <text class="paper-text">可选测验资料只做记录，不作为第一版核心入口。</text>
+    </view>
+    <view class="btn-row">
+      <navigator class="btn" url="/pages/parent/exercises/exercises">查看反馈</navigator>
+      <view class="ghost-btn dark-ghost">已记录</view>
+    </view>
+  </z-card>
+
+  <z-card>
+    <z-section-title title="历史记录" right="近 7 天"></z-section-title>
+    <z-list-item time="06-03" title="初三生物1班" sub="课后反馈已上传"></z-list-item>
+    <z-list-item time="06-02" title="初一英语提高班" sub="可选资料已记录"></z-list-item>
+  </z-card>
+</view>

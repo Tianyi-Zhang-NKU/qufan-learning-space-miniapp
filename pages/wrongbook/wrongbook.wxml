@@ -1,0 +1,44 @@
+<view class="screen wrongbook-screen">
+  <z-bg></z-bg>
+  <z-page-head kicker="FEEDBACK" title="课后反馈" desc="老师上传图片、文字和语音，学生/家长查看课后反馈。"></z-page-head>
+
+  <view class="grid-3 wrong-stats">
+    <view><z-metric value="4" label="反馈样例"></z-metric></view>
+    <view><z-metric value="3" label="图片素材"></z-metric></view>
+    <view><z-metric value="3" label="语音素材"></z-metric></view>
+  </view>
+
+  <view class="chip-row filter-row">
+    <z-chip text="全部" active="{{true}}"></z-chip>
+    <z-chip text="生物"></z-chip>
+    <z-chip text="数学"></z-chip>
+    <z-chip text="英语"></z-chip>
+  </view>
+
+  <z-card mode="light">
+    <view class="wrong-head">
+      <view>
+        <text class="wrong-subject">初三生物1班 · 第一次课</text>
+        <text class="wrong-title">细胞结构复习反馈</text>
+      </view>
+      <z-status text="已反馈"></z-status>
+    </view>
+    <view class="wrong-body">老师已上传批改照片和语音说明，家长可查看图片并收听语音。</view>
+  </z-card>
+
+  <z-card mode="light">
+    <view class="wrong-head">
+      <view>
+        <text class="wrong-subject">初二数学A班 · 第一次课</text>
+        <text class="wrong-title">一次函数图像反馈</text>
+      </view>
+      <z-status text="已反馈"></z-status>
+    </view>
+    <view class="wrong-body">本页是历史入口兼容展示，主流程请进入“老师反馈”。</view>
+  </z-card>
+
+  <z-card>
+    <z-section-title title="当前主流程" right="手机号登录"></z-section-title>
+    <view class="body-copy">老师从课程课次进入学生名单上传课后反馈；学生/家长用报班手机号查看。</view>
+  </z-card>
+</view>

@@ -1,0 +1,5 @@
+<view class="card {{mode}}">
+  <view class="card-content">
+    <slot></slot>
+  </view>
+</view>

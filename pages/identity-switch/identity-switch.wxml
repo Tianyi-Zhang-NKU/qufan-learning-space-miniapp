@@ -1,0 +1,24 @@
+<view class="qf-page">
+  <z-bg mode="dark"></z-bg>
+  <view class="qf-top">
+    <view class="qf-brand">
+      <text class="qf-brand-title">当前手机号身份</text>
+      <text class="qf-brand-sub">趣帆学习空间</text>
+    </view>
+    <button class="qf-btn ghost small" bindtap="goLogin">换手机号</button>
+  </view>
+
+  <view class="qf-card">
+    <text class="qf-h2">{{session.displayName}}</text>
+    <text class="qf-muted">手机号：{{session.phone}}</text>
+    <view class="qf-divider"></view>
+    <view wx:if="{{identities.length}}" class="qf-list">
+      <view wx:for="{{identities}}" wx:key="id" class="qf-list-item">
+        <text class="qf-h3">{{item.displayName}}</text>
+        <text class="qf-muted">{{item.roleName}} · 当前登录身份</text>
+      </view>
+    </view>
+    <view wx:else class="qf-empty">当前手机号暂无身份</view>
+    <button class="qf-btn full identity-enter" bindtap="enterHome">进入首页</button>
+  </view>
+</view>

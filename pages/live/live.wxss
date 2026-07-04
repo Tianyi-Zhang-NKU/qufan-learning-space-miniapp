@@ -1,0 +1,13 @@
+.live-screen {
+  padding-top: 52rpx;
+  padding-bottom: 200rpx;
+}
+
+.camera-grid {
+  position: relative;
+  z-index: 1;
+}
+
+.compact-title {
+  margin-top: 0;
+}

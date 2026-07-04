@@ -1,0 +1,91 @@
+<view class="qf-page qf-page-fixed">
+  <z-bg mode="dark"></z-bg>
+
+  <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
+    <!-- Header -->
+    <view class="qf-top">
+      <view class="qf-brand">
+        <text class="qf-brand-title">我的课程</text>
+        <text class="qf-brand-sub">{{teacherName}} · 选择日期查看当日课程</text>
+      </view>
+    </view>
+
+    <!-- Calendar -->
+    <view class="calendar-card">
+      <!-- Month nav -->
+      <view class="calendar-header">
+        <view class="calendar-nav" bindtap="prevMonth">
+          <text class="calendar-nav-arrow">‹</text>
+        </view>
+        <text class="calendar-month">{{calendarYear}}年{{calendarMonth}}月</text>
+        <view class="calendar-nav" bindtap="nextMonth">
+          <text class="calendar-nav-arrow">›</text>
+        </view>
+      </view>
+
+      <!-- Weekday labels -->
+      <view class="calendar-weekdays">
+        <text wx:for="{{weekLabels}}" wx:key="*this" class="calendar-weekday">{{item}}</text>
+      </view>
+
+      <!-- Day grid -->
+      <view class="calendar-grid">
+        <view
+          wx:for="{{calendarDays}}"
+          wx:key="index"
+          class="calendar-day {{item.isToday ? 'today' : ''}} {{item.isSelected ? 'selected' : ''}} {{item.isCurrentMonth ? '' : 'other-month'}} {{item.hasCourse ? 'has-course' : ''}}"
+          data-date="{{item.date}}"
+          data-clickable="{{item.isCurrentMonth}}"
+          bindtap="onDayTap"
+        >
+          <text class="calendar-day-num">{{item.day}}</text>
+          <view wx:if="{{item.hasCourse}}" class="calendar-dot"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- Selected Date Courses -->
+    <view class="qf-section">{{selectedDateText}} 课程</view>
+
+    <view wx:if="{{dateCourses.length}}" class="course-list">
+      <view wx:for="{{dateCourses}}" wx:key="id" class="course-card">
+        <view class="course-info">
+          <text class="course-name">{{item.courseName}} · {{item.sessionTitle}}</text>
+          <view class="course-meta">
+            <text class="course-meta-item">👩‍🏫 {{item.teacherName}}</text>
+            <text class="course-meta-item">🕐 {{item.startTime}} - {{item.endTime}}</text>
+            <text class="course-meta-item">📍 {{item.classroomName}}</text>
+            <text class="course-meta-item">👥 {{item.studentCount}} 人</text>
+          </view>
+        </view>
+        <view class="course-actions">
+          <button
+            class="qf-btn small test-btn pre-test"
+            data-course-id="{{item.courseId}}"
+            data-course-name="{{item.courseName}}"
+            bindtap="goPreTest"
+          >课前错题</button>
+          <button
+            class="qf-btn small test-btn post-test"
+            data-course-id="{{item.courseId}}"
+            data-course-name="{{item.courseName}}"
+            bindtap="goPostTest"
+          >课后错题</button>
+          <button
+            class="qf-btn small test-btn feedback-btn-action"
+            data-course-id="{{item.courseId}}"
+            data-course-name="{{item.courseName}}"
+            bindtap="goFeedback"
+          >课后反馈</button>
+        </view>
+      </view>
+    </view>
+
+    <view wx:else class="qf-empty">当天暂无课程安排</view>
+
+    <!-- spacer -->
+    <view style="height: 32rpx;"></view>
+  </scroll-view>
+
+  <qf-role-tabbar role="teacher" current="/pages/teacher/courses/courses" fixed="{{false}}"></qf-role-tabbar>
+</view>

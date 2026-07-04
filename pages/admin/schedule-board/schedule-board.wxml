@@ -1,0 +1,125 @@
+<view class="qf-page qf-page-fixed">
+  <z-bg mode="dark"></z-bg>
+
+  <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
+    <!-- ===== 顶部标题 ===== -->
+    <view class="qf-top">
+      <view class="qf-brand">
+        <text class="qf-brand-title">课程表</text>
+        <text class="qf-brand-sub">{{weekLabel}}</text>
+      </view>
+    </view>
+
+    <!-- ===== 日历周视图 ===== -->
+    <view class="calendar-wrap">
+      <!-- 周导航 -->
+      <view class="calendar-nav">
+        <view class="nav-btn" bindtap="prevWeek">
+          <text class="nav-arrow">◀</text>
+        </view>
+        <text class="nav-label">{{weekLabel}}</text>
+        <view class="nav-btn" bindtap="nextWeek">
+          <text class="nav-arrow">▶</text>
+        </view>
+      </view>
+
+      <!-- 7天日历条 -->
+      <view class="calendar-week">
+        <view
+          wx:for="{{weekDays}}"
+          wx:key="dateStr"
+          class="calendar-day {{item.isSelected ? 'selected' : ''}} {{item.isToday ? 'today' : ''}} {{item.hasSessions ? 'has-session' : ''}}"
+          data-date="{{item.dateStr}}"
+          bindtap="selectDate"
+        >
+          <text class="cal-day-name">{{item.dayName}}</text>
+          <text class="cal-day-num">{{item.dayNum}}</text>
+          <view wx:if="{{item.hasSessions}}" class="cal-dot"></view>
+          <view wx:elif="{{item.isToday}}" class="cal-dot today-dot"></view>
+        </view>
+      </view>
+
+      <!-- 回到今天 -->
+      <view class="today-link" bindtap="goToday">
+        <text class="today-link-text">📅 回到今天</text>
+      </view>
+    </view>
+
+    <!-- ===== 选中日期的教室安排 ===== -->
+    <view class="qf-section">
+      {{selectedDate}} 教室安排 · {{dateClassroomCount}}间教室 · {{dateSessionCount}}节课
+    </view>
+
+    <!-- 教室列表 -->
+    <view wx:if="{{dateClassrooms.length}}" class="classroom-schedule-list">
+      <view
+        wx:for="{{dateClassrooms}}"
+        wx:key="classroomId"
+        class="qf-card classroom-schedule-card {{expandedClassroomId === item.classroomId ? 'expanded' : ''}}"
+      >
+        <!-- 教室头部（可点击展开） -->
+        <view
+          class="classroom-schedule-header"
+          data-room-id="{{item.classroomId}}"
+          bindtap="toggleClassroom"
+        >
+          <view class="cs-left">
+            <view class="cs-room-icon">🏫</view>
+            <view class="cs-room-info">
+              <text class="cs-room-name">{{item.classroomName}}</text>
+              <text class="cs-room-meta">{{item.campus || '主校区'}} · 容量{{item.capacity || '-'}}人 · {{item.sessions.length}}节课</text>
+            </view>
+          </view>
+          <view class="cs-right">
+            <text class="cs-expand-icon">{{expandedClassroomId === item.classroomId ? '▲' : '▼'}}</text>
+          </view>
+        </view>
+
+        <!-- 展开：课程列表 -->
+        <view wx:if="{{expandedClassroomId === item.classroomId}}" class="classroom-sessions-detail">
+          <view wx:for="{{item.sessions}}" wx:for-item="session" wx:key="id" class="session-item">
+            <!-- 时间轴 -->
+            <view class="session-time-bar">
+              <view class="time-dot {{session.statusTone}}"></view>
+              <view class="time-line"></view>
+            </view>
+            <view class="session-card">
+              <view class="session-card-top">
+                <text class="session-course-name">{{session.courseName}}</text>
+                <text class="qf-tag {{session.statusTone}}">{{session.statusText || '未开始'}}</text>
+              </view>
+              <text class="session-title">{{session.displayTitle || session.title}}</text>
+              <view class="session-meta-row">
+                <text class="session-meta">⏰ {{session.startTime}} - {{session.endTime}}</text>
+                <text class="session-meta">👨‍🏫 {{session.teacherName}}</text>
+              </view>
+              <view class="session-meta-row">
+                <text class="session-meta">📖 {{session.courseSubject || '-'}}</text>
+                <text class="session-meta">👥 {{session.studentIds.length}}名学生</text>
+              </view>
+              <text wx:if="{{session.note}}" class="session-note">📝 {{session.note}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 折叠态：只显示课程名列表 -->
+        <view wx:if="{{expandedClassroomId !== item.classroomId}}" class="classroom-sessions-preview">
+          <text
+            wx:for="{{item.sessions}}"
+            wx:for-item="s"
+            wx:key="id"
+            class="session-preview-chip {{s.statusTone}}"
+          >{{s.startTime}} {{s.courseName}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view wx:else class="qf-empty">该日期暂无教室排课</view>
+
+    <!-- spacer -->
+    <view style="height: 32rpx;"></view>
+  </scroll-view>
+
+  <qf-role-tabbar role="admin" current="/pages/admin/schedule-board/schedule-board" fixed="{{false}}"></qf-role-tabbar>
+</view>

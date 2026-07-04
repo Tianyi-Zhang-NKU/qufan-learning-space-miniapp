@@ -1,0 +1,87 @@
+.card {
+  position: relative;
+  z-index: 1;
+  padding: 30rpx;
+  margin-bottom: 24rpx;
+  overflow: hidden;
+  border: 1rpx solid rgba(255, 250, 235, 0.16);
+  border-radius: 30rpx;
+  background: rgba(20, 38, 33, 0.66);
+  box-shadow: 0 24rpx 70rpx rgba(0, 0, 0, 0.22);
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  left: 1rpx;
+  right: 1rpx;
+  top: 1rpx;
+  height: 46%;
+  pointer-events: none;
+  border-radius: 30rpx 30rpx 0 0;
+  background: linear-gradient(180deg, rgba(255, 250, 235, 0.09), rgba(255, 250, 235, 0));
+}
+
+.card-content {
+  position: relative;
+  z-index: 1;
+}
+
+.card.hero {
+  padding: 40rpx 34rpx;
+  margin-bottom: 30rpx;
+  border-color: rgba(255, 250, 235, 0.18);
+  background:
+    linear-gradient(140deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.045)),
+    rgba(18, 37, 32, 0.7);
+}
+
+.card.auth,
+.card.form {
+  padding: 40rpx 34rpx 34rpx;
+  border-radius: 34rpx;
+  background: rgba(18, 34, 30, 0.72);
+}
+
+.card.camera {
+  padding: 16rpx;
+  border-radius: 30rpx;
+  background: rgba(14, 27, 24, 0.72);
+}
+
+.card.paper,
+.card.light {
+  color: #22372f;
+  border-color: rgba(77, 60, 42, 0.18);
+  background:
+    linear-gradient(90deg, rgba(105, 71, 38, 0.035) 1rpx, transparent 1rpx),
+    linear-gradient(0deg, rgba(105, 71, 38, 0.032) 1rpx, transparent 1rpx),
+    rgba(255, 250, 237, 0.9);
+  background-size: 68rpx 68rpx, 74rpx 74rpx, auto;
+  box-shadow: 0 22rpx 54rpx rgba(73, 88, 59, 0.18);
+}
+
+.card.paper::before,
+.card.light::before {
+  height: 100%;
+  border-radius: 30rpx;
+  opacity: 0.55;
+  background:
+    radial-gradient(circle at 84% 12%, rgba(154, 107, 58, 0.13), rgba(154, 107, 58, 0) 240rpx),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.48), rgba(255, 255, 255, 0));
+}
+
+.card.paper::after,
+.card.light::after {
+  content: "";
+  position: absolute;
+  right: -70rpx;
+  bottom: -76rpx;
+  width: 260rpx;
+  height: 220rpx;
+  pointer-events: none;
+  border-top: 3rpx solid rgba(103, 70, 39, 0.22);
+  border-left: 3rpx solid rgba(103, 70, 39, 0.14);
+  border-radius: 70% 0 0 0;
+  transform: rotate(-18deg);
+}

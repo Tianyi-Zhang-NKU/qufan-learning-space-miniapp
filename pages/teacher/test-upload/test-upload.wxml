@@ -1,0 +1,74 @@
+<view class="qf-page qf-page-fixed">
+  <z-bg mode="dark"></z-bg>
+
+  <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
+    <!-- 顶部标题 -->
+    <view class="qf-top">
+      <view class="qf-brand">
+        <text class="qf-brand-title">{{typeLabel}} · {{courseName}}</text>
+        <text class="qf-brand-sub">选择课次，上传 PDF / Word 文件</text>
+      </view>
+    </view>
+
+    <!-- 课次横向滑动导航栏 -->
+    <view class="session-nav-wrapper">
+      <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="session-nav-scroll">
+        <view class="session-nav-inner">
+          <view
+            wx:for="{{sessions}}"
+            wx:key="id"
+            class="session-tab {{activeSessionId === item.id ? 'active' : ''}}"
+            data-session-id="{{item.id}}"
+            bindtap="selectSession"
+          >
+            <text class="session-tab-title">{{item.sessionTitle || item.displayTitle}}</text>
+            <text class="session-tab-meta">{{item.date}} {{item.startTime}}-{{item.endTime}}</text>
+            <text class="session-tab-status {{item.status}}">{{item.statusText || '未开始'}}</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 当前选中课次信息 -->
+    <view wx:if="{{currentSession}}" class="current-session-info qf-card">
+      <text class="qf-h2">{{currentSession.displayTitle || currentSession.sessionTitle}}</text>
+      <text class="qf-muted">{{currentSession.date}} {{currentSession.startTime}}-{{currentSession.endTime}} · {{currentSession.classroomName}}</text>
+    </view>
+
+    <!-- 已上传文件列表 -->
+    <view wx:if="{{uploadedFiles.length}}" class="qf-section">已上传的{{typeLabel}}资料</view>
+    <view wx:if="{{uploadedFiles.length}}" class="qf-card tight">
+      <view class="file-list">
+        <view wx:for="{{uploadedFiles}}" wx:key="id" class="file-item">
+          <view class="file-info">
+            <text class="file-icon">{{item.ext === 'pdf' ? '📄' : '📃'}}</text>
+            <view class="file-detail">
+              <text class="file-name">{{item.name}}</text>
+              <text class="file-meta">{{item.sizeText}} · {{item.uploadedAt}}</text>
+            </view>
+          </view>
+          <button class="qf-btn ghost small" data-id="{{item.id}}" bindtap="removeFile">删除</button>
+        </view>
+      </view>
+    </view>
+
+    <!-- 上传入口 -->
+    <view class="qf-section">上传{{typeLabel}}文件</view>
+    <view class="qf-card upload-area" bindtap="chooseFile">
+      <view wx:if="{{!uploading}}" class="upload-placeholder">
+        <text class="upload-icon">📤</text>
+        <text class="upload-title">点击上传 PDF / Word 文件</text>
+        <text class="upload-hint">支持 .pdf、.doc、.docx 格式</text>
+      </view>
+      <view wx:else class="upload-progress">
+        <text class="upload-icon">⏳</text>
+        <text class="upload-title">正在上传：{{uploadingFileName}}</text>
+      </view>
+    </view>
+
+    <!-- 安全区域 -->
+    <view class="qf-safe-bottom"></view>
+  </scroll-view>
+
+  <qf-role-tabbar role="teacher" current="/pages/teacher/home/home" fixed="{{false}}"></qf-role-tabbar>
+</view>

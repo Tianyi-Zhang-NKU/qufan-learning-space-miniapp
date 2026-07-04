@@ -1,0 +1,84 @@
+<view class="qf-page qf-page-fixed">
+  <z-bg mode="dark"></z-bg>
+
+  <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
+    <view class="qf-top">
+      <view class="qf-brand">
+        <text class="qf-brand-title">{{teacherName}} 老师的课程</text>
+        <text class="qf-brand-sub">共 {{courses.length}} 门课程 · 课前/课后错题反馈</text>
+      </view>
+    </view>
+
+    <!-- 课程列表卡片 -->
+    <view wx:if="{{courses.length}}" class="course-list">
+      <view wx:for="{{courses}}" wx:key="id" class="course-card qf-card">
+        <!-- 课程头部信息 -->
+        <view class="course-header">
+          <text class="course-name">{{item.name}}</text>
+          <view class="course-tags">
+            <text class="course-tag">{{item.subject}}</text>
+            <text class="course-tag">{{item.grade}}</text>
+          </view>
+        </view>
+
+        <!-- 课程详细信息 -->
+        <view class="course-info">
+          <view class="info-row">
+            <text class="info-icon">🏫</text>
+            <text class="info-label">教室：</text>
+            <text class="info-value">{{item.classroomName}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-icon">👨‍🏫</text>
+            <text class="info-label">教师：</text>
+            <text class="info-value">{{item.teacherName}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-icon">📅</text>
+            <text class="info-label">最近课次：</text>
+            <text class="info-value">{{item.recentSessionTitle || '暂无课次'}}</text>
+          </view>
+          <view wx:if="{{item.nextSessionTime}}" class="info-row">
+            <text class="info-icon">⏰</text>
+            <text class="info-label">上课时间：</text>
+            <text class="info-value">{{item.nextSessionTime}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-icon">👥</text>
+            <text class="info-label">学生人数：</text>
+            <text class="info-value">{{item.studentCount}} 人</text>
+          </view>
+          <view class="info-row">
+            <text class="info-icon">📝</text>
+            <text class="info-label">已反馈人数：</text>
+            <text class="info-value">{{item.feedbackStudentCount || item.feedbackCount}} 人</text>
+          </view>
+        </view>
+
+        <!-- 操作按钮区 -->
+        <view class="course-actions">
+          <button class="action-btn pre-test-btn" data-course-id="{{item.id}}" data-course-name="{{item.name}}" bindtap="goPreTest">
+            <text class="action-icon">📋</text>
+            <text class="action-label">课前错题</text>
+          </button>
+          <button class="action-btn post-test-btn" data-course-id="{{item.id}}" data-course-name="{{item.name}}" bindtap="goPostTest">
+            <text class="action-icon">📝</text>
+            <text class="action-label">课后错题</text>
+          </button>
+          <button class="action-btn feedback-btn" data-course-id="{{item.id}}" data-course-name="{{item.name}}" bindtap="goFeedback">
+            <text class="action-icon">💬</text>
+            <text class="action-label">课后反馈</text>
+          </button>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view wx:else class="qf-empty">
+      <text>暂无课程数据</text>
+      <text class="qf-muted">请联系管理员分配课程</text>
+    </view>
+  </scroll-view>
+
+  <qf-role-tabbar role="teacher" current="/pages/teacher/home/home" fixed="{{false}}"></qf-role-tabbar>
+</view>

@@ -1,0 +1,11 @@
+{
+  "name": "qufan-learning-space-miniapp-demo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "教培机构微信小程序 demo，含本地 mock 后端",
+  "scripts": {
+    "start:backend": "node server/index.js",
+    "check:js": "node scripts/check-js.js",
+    "smoke": "node scripts/smoke-test.js"
+  }
+}

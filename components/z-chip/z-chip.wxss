@@ -1,0 +1,28 @@
+.chip {
+  display: inline-block;
+  padding: 12rpx 18rpx;
+  border: 1rpx solid rgba(248, 243, 234, 0.18);
+  border-radius: 999rpx;
+  color: rgba(248, 243, 234, 0.74);
+  font-size: 22rpx;
+  line-height: 1;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.chip.active {
+  color: #11251f;
+  border-color: rgba(218, 232, 190, 0.72);
+  background: #d8e7bd;
+}
+
+.chip.light {
+  color: rgba(35, 53, 45, 0.68);
+  border-color: rgba(45, 63, 50, 0.16);
+  background: rgba(45, 63, 50, 0.055);
+}
+
+.chip.light.active {
+  color: #fff9ec;
+  border-color: rgba(58, 90, 56, 0.72);
+  background: #4f7a4c;
+}

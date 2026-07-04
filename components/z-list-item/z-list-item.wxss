@@ -1,0 +1,50 @@
+.list-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid rgba(255, 250, 235, 0.1);
+}
+
+.list-item.no-border {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.time-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 128rpx;
+  min-height: 64rpx;
+  padding: 0 10rpx;
+  margin-right: 20rpx;
+  border: 1rpx solid rgba(214, 230, 190, 0.28);
+  border-radius: 20rpx;
+  color: #d8e7bd;
+  font-size: 22rpx;
+  line-height: 1.2;
+  text-align: center;
+  background: rgba(214, 230, 190, 0.07);
+}
+
+.list-main {
+  flex: 1;
+  min-width: 0;
+  padding-right: 16rpx;
+}
+
+.list-title {
+  display: block;
+  color: #fff8ea;
+  font-size: 28rpx;
+  line-height: 1.35;
+  font-weight: 500;
+}
+
+.list-sub {
+  display: block;
+  margin-top: 10rpx;
+  color: rgba(248, 243, 234, 0.58);
+  font-size: 22rpx;
+  line-height: 1.42;
+}
