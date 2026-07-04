@@ -103,7 +103,34 @@
 }
 
 .existing-feedback {
+  position: relative;
+  overflow: hidden;
   margin-bottom: 28rpx;
+}
+
+.existing-stamp {
+  position: absolute;
+  top: 20rpx;
+  right: -16rpx;
+  padding: 6rpx 36rpx;
+  font-size: 22rpx;
+  font-weight: 800;
+  border-radius: 8rpx;
+  transform: rotate(15deg);
+  letter-spacing: 4rpx;
+  pointer-events: none;
+}
+
+.existing-stamp.passed {
+  color: #dc2626;
+  border: 4rpx solid #dc2626;
+  opacity: 0.85;
+}
+
+.existing-stamp.not-passed {
+  color: #9ca3af;
+  border: 4rpx solid #9ca3af;
+  opacity: 0.6;
 }
 
 .existing-header {
@@ -141,12 +168,77 @@
 
 .feedback-textarea {
   width: 100%;
-  min-height: 210rpx;
+  min-height: 140rpx;
   padding: 8rpx;
+  margin-bottom: 0;
   font-size: 26rpx;
   line-height: 1.6;
   color: #1f352e;
   background: transparent;
+}
+
+.textarea-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4rpx;
+}
+
+.clear-text-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.1);
+  color: #888;
+  font-size: 24rpx;
+  line-height: 1;
+}
+
+.emoji-btn {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 10rpx 20rpx;
+  border-radius: 999rpx;
+  background: rgba(249, 115, 22, 0.06);
+  border: 1rpx solid rgba(249, 115, 22, 0.18);
+}
+
+.emoji-btn-icon {
+  font-size: 32rpx;
+}
+
+.emoji-btn-text {
+  font-size: 22rpx;
+  color: #f97316;
+  font-weight: 600;
+}
+
+.emoji-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  padding: 20rpx 8rpx;
+  margin-top: 12rpx;
+  border-top: 1rpx solid rgba(83, 117, 91, 0.1);
+}
+
+.emoji-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64rpx;
+  height: 64rpx;
+  font-size: 40rpx;
+  border-radius: 14rpx;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.emoji-item:active {
+  background: rgba(249, 115, 22, 0.12);
 }
 
 .upload-btn {
@@ -172,6 +264,27 @@
 .upload-btn-icon {
   font-size: 30rpx;
   font-weight: 800;
+}
+
+.upload-btn-row {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 8rpx;
+}
+
+.flex-btn {
+  flex: 1;
+  min-width: 0;
+}
+
+.doc-thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #506157;
+  font-size: 24rpx;
+  font-weight: 800;
+  background: linear-gradient(145deg, rgba(254, 243, 199, 0.86), rgba(255, 237, 213, 0.78));
 }
 
 .media-preview-list {
@@ -310,6 +423,60 @@
 .submit-area {
   margin-top: 44rpx;
   margin-bottom: 20rpx;
+}
+
+.pass-toggle-area {
+  margin-top: 28rpx;
+}
+
+.pass-toggle-card {
+  border: 2rpx solid rgba(249, 115, 22, 0.3);
+  background:
+    linear-gradient(145deg, rgba(255, 237, 213, 0.12), rgba(249, 115, 22, 0.06)),
+    rgba(18, 42, 35, 0.52);
+}
+
+.pass-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pass-toggle-label {
+  color: #fff9ec;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.pass-toggle-switch {
+  position: relative;
+  width: 96rpx;
+  height: 52rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.18);
+  border: 2rpx solid rgba(255, 255, 255, 0.2);
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.pass-toggle-switch.on {
+  background: #22c55e;
+  border-color: #16a34a;
+}
+
+.pass-toggle-knob {
+  position: absolute;
+  top: 6rpx;
+  left: 6rpx;
+  width: 38rpx;
+  height: 38rpx;
+  border-radius: 50%;
+  background: #fff;
+  transition: left 0.2s;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+}
+
+.pass-toggle-switch.on .pass-toggle-knob {
+  left: 50rpx;
 }
 
 .submit-btn {

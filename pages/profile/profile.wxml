@@ -85,7 +85,7 @@
       <view class="qf-grid profile-actions">
         <view class="qf-entry-card" bindtap="goWrongBook">
           <text class="qf-entry-title">📖 我的错题本</text>
-          <text class="qf-entry-sub">审阅全部课程错题记录</text>
+          <text class="qf-entry-sub">审阅全部课后反馈记录</text>
         </view>
       </view>
 

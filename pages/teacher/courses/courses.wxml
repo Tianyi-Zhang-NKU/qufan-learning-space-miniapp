@@ -76,7 +76,7 @@
             data-course-id="{{item.courseId}}"
             data-course-name="{{item.courseName}}"
             bindtap="goFeedback"
-          >课程错题</button>
+          >课后反馈</button>
         </view>
       </view>
     </view>

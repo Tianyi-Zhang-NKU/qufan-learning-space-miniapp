@@ -5,7 +5,13 @@ const Notice = require('../../../utils/notice');
 const FEEDBACK_TYPES = [
   { value: 'pre', label: '课前测错题' },
   { value: 'post', label: '课后测错题' },
-  { value: 'general', label: '课程错题' }
+  { value: 'general', label: '课后反馈' }
+];
+
+const EMOJI_LIST = [
+  '😊', '👍', '🌟', '❤️', '🎉', '💪', '👏', '✨',
+  '😄', '🤔', '📚', '✏️', '💡', '🔥', '⭐', '🏆',
+  '😀', '🙂', '😅', '😢', '😤', '🤗', '🥳', '😎'
 ];
 
 function extFromPath(path, fallback) {
@@ -35,8 +41,12 @@ Page({
     imageFiles: [],
     videoFiles: [],
     voiceFiles: [],
+    docFiles: [],
     recording: false,
-    submitting: false
+    submitting: false,
+    showEmojiPanel: false,
+    emojiList: EMOJI_LIST,
+    passed: false
   },
 
   onLoad(options) {
@@ -119,7 +129,9 @@ Page({
       feedbackText: '',
       imageFiles: [],
       videoFiles: [],
-      voiceFiles: []
+      voiceFiles: [],
+      docFiles: [],
+      passed: false
     });
     if (this.data.activeSessionId) this.loadSessionFeedback(this.data.activeSessionId);
   },
@@ -141,9 +153,11 @@ Page({
               ...feedback,
               imageFiles: feedback.imageFiles || [],
               videoFiles: feedback.videoFiles || [],
-              voiceFiles: feedback.voiceFiles || []
+              voiceFiles: feedback.voiceFiles || [],
+              passed: !!feedback.passed
             },
-            feedbackText: feedback.text || ''
+            feedbackText: feedback.text || '',
+            passed: !!feedback.passed
           });
         } else {
           this.setData({ existingFeedback: null, feedbackText: '' });
@@ -158,39 +172,71 @@ Page({
     this.setData({ feedbackText: event.detail.value });
   },
 
-  chooseMedia() {
+  toggleEmojiPanel() {
+    this.setData({ showEmojiPanel: !this.data.showEmojiPanel });
+  },
+
+  insertEmoji(event) {
+    const emoji = event.currentTarget.dataset.emoji;
+    this.setData({ feedbackText: this.data.feedbackText + emoji });
+  },
+
+  clearFeedbackText() {
+    this.setData({ feedbackText: '', showEmojiPanel: false });
+  },
+
+  togglePass() {
+    this.setData({ passed: !this.data.passed });
+  },
+
+  chooseImage() {
     wx.chooseMedia({
-      count: 6,
-      mediaType: ['image', 'video'],
+      count: 9,
+      mediaType: ['image'],
       sizeType: ['compressed'],
       sourceType: ['album', 'camera'],
-      maxDuration: 90,
       success: (res) => {
-        const nextImages = [];
-        const nextVideos = [];
-        (res.tempFiles || []).forEach((file, index) => {
-          const isVideo = file.fileType === 'video';
+        const nextImages = (res.tempFiles || []).map((file, index) => {
           const tempPath = file.tempFilePath || '';
-          const ext = extFromPath(tempPath, isVideo ? 'mp4' : 'jpg');
-          const base = {
-            id: `${isVideo ? 'video' : 'img'}_${Date.now()}_${index}`,
-            name: `${isVideo ? '错题讲解视频' : '错题图片'}_${Date.now()}.${ext}`,
+          const ext = extFromPath(tempPath, 'jpg');
+          return {
+            id: `img_${Date.now()}_${index}`,
+            name: `错题图片_${Date.now()}.${ext}`,
             tempPath,
             size: file.size || 0,
-            duration: Math.round(file.duration || 0),
-            type: isVideo ? 'video' : 'image'
+            type: 'image'
           };
-          if (isVideo) nextVideos.push(base);
-          else nextImages.push(base);
         });
         this.setData({
-          imageFiles: this.data.imageFiles.concat(nextImages),
-          videoFiles: this.data.videoFiles.concat(nextVideos)
+          imageFiles: this.data.imageFiles.concat(nextImages)
         });
       },
       fail: (err) => {
         if (err.errMsg && err.errMsg.includes('cancel')) return;
-        Notice.toast('选择媒体失败');
+        Notice.toast('选择图片失败');
+      }
+    });
+  },
+
+  chooseDocument() {
+    wx.chooseMessageFile({
+      count: 5,
+      type: 'file',
+      success: (res) => {
+        const docs = (res.tempFiles || []).map((file, index) => ({
+          id: `doc_${Date.now()}_${index}`,
+          name: file.name || `文档_${Date.now()}`,
+          tempPath: file.path || '',
+          size: file.size || 0,
+          type: 'doc'
+        }));
+        this.setData({
+          docFiles: this.data.docFiles.concat(docs)
+        });
+      },
+      fail: (err) => {
+        if (err.errMsg && err.errMsg.includes('cancel')) return;
+        Notice.toast('选择文档失败');
       }
     });
   },
@@ -228,6 +274,8 @@ Page({
       this.setData({ videoFiles: this.data.videoFiles.filter((file) => file.id !== id) });
     } else if (type === 'voice') {
       this.setData({ voiceFiles: this.data.voiceFiles.filter((file) => file.id !== id) });
+    } else if (type === 'doc') {
+      this.setData({ docFiles: this.data.docFiles.filter((file) => file.id !== id) });
     }
   },
 
@@ -235,9 +283,9 @@ Page({
     if (this.data.submitting) return;
     if (!this.data.feedbackText.trim()
       && !this.data.imageFiles.length
-      && !this.data.videoFiles.length
+      && !this.data.docFiles.length
       && !this.data.voiceFiles.length) {
-      Notice.toast('请至少填写文字、图片、视频或语音');
+      Notice.toast('请至少填写文字、图片、文档或语音');
       return;
     }
 
@@ -250,14 +298,6 @@ Page({
         size: file.size
       })
     );
-    const videoUploads = this.data.videoFiles.map((file) =>
-      Api.uploadFeedbackVideo({
-        fileName: file.name,
-        tempPath: file.tempPath,
-        size: file.size,
-        duration: file.duration
-      })
-    );
     const voiceUploads = this.data.voiceFiles.map((file) =>
       Api.uploadFeedbackVoice({
         fileName: file.name,
@@ -266,12 +306,17 @@ Page({
         duration: file.duration
       })
     );
+    const docUploads = this.data.docFiles.map((file) =>
+      Api.uploadFeedbackFile
+        ? Api.uploadFeedbackFile({ fileName: file.name, tempPath: file.tempPath, size: file.size })
+        : Api.uploadFeedbackImage({ fileName: file.name, tempPath: file.tempPath, size: file.size })
+    );
 
-    Promise.all(imageUploads.concat(videoUploads, voiceUploads))
+    Promise.all(imageUploads.concat(voiceUploads, docUploads))
       .then((results) => {
         const imageResults = results.slice(0, this.data.imageFiles.length);
-        const videoResults = results.slice(this.data.imageFiles.length, this.data.imageFiles.length + this.data.videoFiles.length);
-        const voiceResults = results.slice(this.data.imageFiles.length + this.data.videoFiles.length);
+        const voiceResults = results.slice(this.data.imageFiles.length, this.data.imageFiles.length + this.data.voiceFiles.length);
+        const docResults = results.slice(this.data.imageFiles.length + this.data.voiceFiles.length);
         return Api.createLessonFeedback({
           studentId: this.data.studentId,
           teacherId: this.data.session.teacherId,
@@ -280,8 +325,10 @@ Page({
           feedbackType: this.data.feedbackType,
           text: this.data.feedbackText.trim(),
           imageFileIds: imageResults.map((file) => file.id),
-          videoFileIds: videoResults.map((file) => file.id),
-          voiceFileIds: voiceResults.map((file) => file.id)
+          videoFileIds: [],
+          voiceFileIds: voiceResults.map((file) => file.id),
+          attachFileIds: docResults.map((file) => file.id),
+          passed: this.data.passed
         });
       })
       .then(() => {
@@ -291,7 +338,8 @@ Page({
           feedbackText: '',
           imageFiles: [],
           videoFiles: [],
-          voiceFiles: []
+          voiceFiles: [],
+          docFiles: []
         });
         this.loadSessionFeedback(this.data.activeSessionId);
       })

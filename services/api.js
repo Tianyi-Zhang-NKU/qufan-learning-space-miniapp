@@ -233,7 +233,7 @@ function assignmentWithFile(item) {
 function feedbackTypeText(type) {
   if (type === 'pre') return '课前测错题反馈';
   if (type === 'post') return '课后测错题反馈';
-  return '课程错题反馈';
+  return '课后反馈';
 }
 
 function decorateMedia(file) {
@@ -316,6 +316,8 @@ function decorateCourse(item, options = {}) {
   const sessions = getCourseSessions(item.id).map((session) => decorateSession(session, options));
   const studentId = options.studentId || '';
   const feedbacks = getFeedbacks({ courseId: item.id, studentId, visibleToStudent: options.visibleToStudent });
+  const generalFeedbacks = feedbacks.filter((f) => (f.feedbackType || 'post') === 'general');
+  const passedSessionIds = new Set(generalFeedbacks.filter((f) => f.passed).map((f) => f.courseSessionId));
   return {
     ...item,
     teacherName: teacher.name || teacher.fullName || '',
@@ -328,6 +330,7 @@ function decorateCourse(item, options = {}) {
     recentSessionTitle: sessions[0] ? sessions[0].displayTitle : '',
     feedbackCount: feedbacks.length,
     feedbackStudentCount: new Set(feedbacks.map((f) => f.studentId)).size,
+    passedCount: passedSessionIds.size,
     assignments: getCourseAssignments(item.id),
     wrongRecords: [],
     liveStatusText: 'ClassIn 接口待接入',
@@ -710,6 +713,7 @@ const mockApi = {
       videoFileIds: videoFileIds.slice(),
       voiceFileIds: voiceFileIds.slice(),
       attachFileIds: attachFileIds.slice(),
+      passed: !!payload.passed,
       createdAt: nowLabel(),
       visibleToStudent: payload.visibleToStudent !== false
     };

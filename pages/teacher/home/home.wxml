@@ -67,7 +67,7 @@
           </button>
           <button class="action-btn feedback-btn" data-course-id="{{item.id}}" data-course-name="{{item.name}}" bindtap="goFeedback">
             <text class="action-icon">💬</text>
-            <text class="action-label">课程错题</text>
+            <text class="action-label">课后反馈</text>
           </button>
         </view>
       </view>

@@ -16,7 +16,8 @@ function buildFeedbackRecord(feedback) {
     mediaFiles: feedback.mediaFiles || [],
     imageCount: feedback.imageCount || 0,
     videoCount: feedback.videoCount || 0,
-    voiceCount: feedback.voiceCount || 0
+    voiceCount: feedback.voiceCount || 0,
+    passed: !!feedback.passed
   };
 }
 
@@ -46,6 +47,8 @@ Page({
     testType: '',
     testTypeLabel: '',
     sessionTests: [],
+    testCurrentIndex: 0,
+    testCurrentSession: null,
 
     // ---- All-records mode ----
     allRecordsGroups: [],
@@ -80,7 +83,7 @@ Page({
         courseId,
         sessionId
       });
-      wx.setNavigationBarTitle({ title: '课程错题' });
+      wx.setNavigationBarTitle({ title: '课后反馈' });
     } else if (courseId) {
       // From course list: session list for a course
       this.setData({ mode: 'sessions', courseId });
@@ -191,7 +194,7 @@ Page({
             sessionId: s.id,
             sessionTitle: s.sessionTitle || s.displayTitle || `第${s.sessionIndex}次课`,
             sessionIndex: s.sessionIndex,
-            label: `第${s.sessionIndex}次课课程错题`,
+            label: `第${s.sessionIndex}次课课后反馈`,
             date: s.date || '',
             time: s.startTime ? `${s.startTime}-${s.endTime}` : '',
             teacherName: s.teacherName || course.teacherName || '',
@@ -243,7 +246,7 @@ Page({
 
         this.setData({
           courseName: course.name || '',
-          sessionLabel: `第${session.sessionIndex || ''}次课课程错题`,
+          sessionLabel: `第${session.sessionIndex || ''}次课课后反馈`,
           sessionDetail: {
             sessionTitle: session.sessionTitle || session.displayTitle || '',
             date: session.date || '',
@@ -317,9 +320,12 @@ Page({
           };
         });
 
+        const lastIndex = sessionTests.length > 0 ? sessionTests.length - 1 : 0;
         this.setData({
           courseName: course.name || '',
           sessionTests,
+          testCurrentIndex: lastIndex,
+          testCurrentSession: sessionTests[lastIndex] || null,
           loading: false
         });
       })
@@ -338,6 +344,44 @@ Page({
         Notice.alert(content, feedback.feedbackTypeText || '错题反馈');
       })
       .catch((error) => Notice.alert(error.message || '详情加载失败'));
+  },
+
+  switchTestTab(event) {
+    const index = event.currentTarget.dataset.index;
+    this.setData({
+      testCurrentIndex: index,
+      testCurrentSession: this.data.sessionTests[index]
+    });
+  },
+
+  previewInlineImage(event) {
+    const current = event.currentTarget.dataset.current;
+    const urls = (event.currentTarget.dataset.urls || []).map((f) => f.previewUrl).filter(Boolean);
+    wx.previewImage({
+      current,
+      urls: urls.length ? urls : [current]
+    });
+  },
+
+  playInlineVoice(event) {
+    const url = event.currentTarget.dataset.url;
+    if (!url) return;
+    const innerAudioContext = wx.createInnerAudioContext();
+    innerAudioContext.src = url;
+    innerAudioContext.play();
+    innerAudioContext.onEnded(() => {
+      innerAudioContext.destroy();
+    });
+    innerAudioContext.onError(() => {
+      innerAudioContext.destroy();
+      Notice.alert('语音播放失败');
+    });
+  },
+
+  toggleRecordExpand(event) {
+    const index = event.currentTarget.dataset.index;
+    const key = `testCurrentSession.records[${index}].expanded`;
+    this.setData({ [key]: !this.data.testCurrentSession.records[index].expanded });
   },
 
   // ================================================================

@@ -11,6 +11,8 @@
     "pages/parent/home/home",
     "pages/parent/courses/courses",
     "pages/parent/exercises/exercises",
+    "pages/parent/quiz/quiz",
+    "pages/parent/summary/summary",
     "pages/teacher/home/home",
     "pages/teacher/courses/courses",
     "pages/teacher/test-upload/test-upload",

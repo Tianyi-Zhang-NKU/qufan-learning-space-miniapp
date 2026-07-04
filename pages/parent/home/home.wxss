@@ -61,6 +61,10 @@
 }
 
 .course-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20rpx;
   margin-bottom: 28rpx;
 }
 
@@ -69,6 +73,45 @@
   align-items: center;
   gap: 16rpx;
   flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.course-header-right {
+  flex-shrink: 0;
+}
+
+.progress-bar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6rpx;
+}
+
+.progress-label {
+  color: #f97316;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.progress-bar-bg {
+  width: 120rpx;
+  height: 12rpx;
+  border-radius: 999rpx;
+  background: rgba(83, 117, 91, 0.12);
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 999rpx;
+  background: linear-gradient(90deg, #f97316, #22c55e);
+  transition: width 0.3s;
+}
+
+.progress-hint {
+  color: rgba(45, 75, 64, 0.5);
+  font-size: 18rpx;
 }
 
 .course-name {

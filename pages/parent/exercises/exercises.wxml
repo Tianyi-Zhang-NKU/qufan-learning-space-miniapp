@@ -8,7 +8,7 @@
     <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
       <view class="qf-top">
         <view class="qf-brand">
-          <text class="qf-brand-title">课程错题</text>
+          <text class="qf-brand-title">课后反馈</text>
           <text class="qf-brand-sub">{{studentName || session.displayName}} · 选择课程查看错题</text>
         </view>
       </view>
@@ -103,7 +103,7 @@
         >
           <view class="session-entry-header">
             <text class="session-entry-index">第{{item.sessionIndex}}次课</text>
-            <text class="session-entry-badge">课程错题</text>
+            <text class="session-entry-badge">课后反馈</text>
           </view>
           <text class="session-entry-title">{{item.sessionTitle}}</text>
 
@@ -338,100 +338,99 @@
   </block>
 
   <!-- ================================================================
-       Mode 4: Test List — 课前测/课后测
+       Mode 4: Test List — 课前测/课后测 (tab bar)
        ================================================================ -->
   <block wx:elif="{{mode === 'testList'}}">
     <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
       <view class="qf-top">
         <view class="qf-brand">
           <text class="qf-brand-title">{{testTypeLabel}}</text>
-        <text class="qf-brand-sub">{{courseName}} · 按课次查看错题反馈</text>
+          <text class="qf-brand-sub">{{courseName}} · 按课次查看错题反馈</text>
         </view>
       </view>
 
-      <view wx:if="{{!sessionTests.length}}" class="qf-empty">
+      <view wx:if="{{loading}}" class="qf-empty"><text>加载中…</text></view>
+
+      <view wx:elif="{{!sessionTests.length}}" class="qf-empty">
         <text>暂无课次安排</text>
         <text class="qf-muted">该课程暂无排课信息</text>
       </view>
 
       <view wx:else class="content-area">
-        <view
-          wx:for="{{sessionTests}}"
-          wx:key="sessionId"
-          class="qf-card test-session-card"
+        <!-- Session tab bar -->
+        <scroll-view
+          scroll-x
+          enhanced
+          show-scrollbar="{{false}}"
+          class="session-tabs-scroll"
+          scroll-into-view="test-tab-{{testCurrentIndex}}"
+          scroll-with-animation
         >
-          <view class="test-session-header">
-            <view class="test-session-title-row">
-              <text class="test-session-index">第{{item.sessionIndex}}次</text>
-              <text class="test-session-label">{{testTypeLabel}}</text>
-            </view>
-            <text class="test-session-name">{{item.sessionTitle}}</text>
-          </view>
-
-          <view class="test-session-info">
-            <view class="meta-row" wx:if="{{item.date}}">
-              <text class="meta-icon">📅</text>
-              <text class="meta-text">{{item.date}} {{item.time}}</text>
-            </view>
-            <view class="meta-row" wx:if="{{item.teacherName}}">
-              <text class="meta-icon">👨‍🏫</text>
-              <text class="meta-text">{{item.teacherName}}</text>
-            </view>
-            <view class="meta-row" wx:if="{{item.classroomName}}">
-              <text class="meta-icon">📍</text>
-              <text class="meta-text">{{item.classroomName}}</text>
-            </view>
-            <view class="meta-row">
-              <text class="meta-icon">{{item.status === 'finished' ? '✅' : '⏳'}}</text>
-              <text class="meta-text">{{item.statusText || '未开始'}}</text>
+          <view class="session-tabs">
+            <view
+              wx:for="{{sessionTests}}"
+              wx:key="sessionId"
+              id="test-tab-{{index}}"
+              class="session-tab {{index === testCurrentIndex ? 'active' : ''}}"
+              data-index="{{index}}"
+              bindtap="switchTestTab"
+            >
+              <text class="session-tab-text">第{{item.sessionIndex}}次课</text>
             </view>
           </view>
+        </scroll-view>
 
+        <!-- Current session test records -->
+        <view class="qf-card test-session-card" wx:if="{{testCurrentSession}}">
           <view class="test-records">
-            <view wx:if="{{item.records.length}}" class="test-records-list">
+            <view wx:if="{{testCurrentSession.records.length}}" class="test-records-list">
               <view
-                wx:for="{{item.records}}"
+                wx:for="{{testCurrentSession.records}}"
                 wx:key="id"
                 class="test-record-item"
-                data-id="{{item.id}}"
-                bindtap="goTestDetail"
               >
-                <view class="test-record-left">
-                  <text class="test-record-title">{{item.feedbackTypeText}}</text>
-                  <text class="test-record-meta">{{item.createdAt}} · {{item.teacherName}}</text>
-                  <text class="test-record-text">{{item.text || '媒体错题反馈'}}</text>
+                <!-- Pass stamp -->
+                <view wx:if="{{item.passed}}" class="pass-stamp">已通关</view>
+
+                <!-- Text content with expand/collapse -->
+                <view wx:if="{{item.text}}" class="test-record-text-wrap">
+                  <text class="test-record-text {{item.expanded ? '' : 'collapsed'}}">{{item.text}}</text>
+                  <text
+                    class="test-record-expand"
+                    data-index="{{index}}"
+                    catchtap="toggleRecordExpand"
+                  >{{item.expanded ? '收起' : '展开'}}</text>
                 </view>
-                <view class="test-record-right">
-                  <text wx:if="{{item.imageCount}}" class="detail-tag ok">图 {{item.imageCount}}</text>
-                  <text wx:if="{{item.videoCount}}" class="detail-tag ok">视频 {{item.videoCount}}</text>
-                  <text wx:if="{{item.voiceCount}}" class="detail-tag ok">语音 {{item.voiceCount}}</text>
-                  <text class="test-record-arrow">›</text>
-                </view>
-                <view wx:if="{{item.imageFiles.length || item.videoFiles.length || item.voiceFiles.length}}" class="test-record-media">
-                  <button
+
+                <!-- Inline images -->
+                <view wx:if="{{item.imageFiles.length}}" class="test-inline-images">
+                  <image
                     wx:for="{{item.imageFiles}}"
-                    wx:for-item="media"
+                    wx:for-item="img"
                     wx:key="id"
-                    class="qf-btn ghost small media-btn"
-                    data-id="{{media.id}}"
-                    catchtap="previewRecordMedia"
-                  >查看图片</button>
-                  <button
-                    wx:for="{{item.videoFiles}}"
-                    wx:for-item="video"
-                    wx:key="id"
-                    class="qf-btn ghost small media-btn"
-                    data-id="{{video.id}}"
-                    catchtap="previewRecordMedia"
-                  >播放视频</button>
-                  <button
+                    class="test-inline-img"
+                    mode="widthFix"
+                    src="{{img.previewUrl}}"
+                    data-urls="{{item.imageFiles}}"
+                    data-current="{{img.previewUrl}}"
+                    bindtap="previewInlineImage"
+                  ></image>
+                </view>
+
+                <!-- Inline voice -->
+                <view wx:if="{{item.voiceFiles.length}}" class="test-inline-voices">
+                  <view
                     wx:for="{{item.voiceFiles}}"
                     wx:for-item="voice"
                     wx:key="id"
-                    class="qf-btn ghost small media-btn"
+                    class="test-voice-bar"
+                    data-url="{{voice.previewUrl}}"
                     data-id="{{voice.id}}"
-                    catchtap="previewRecordMedia"
-                  >播放语音</button>
+                    bindtap="playInlineVoice"
+                  >
+                    <text class="test-voice-icon">🎙️</text>
+                    <text class="test-voice-text">点击播放语音</text>
+                  </view>
                 </view>
               </view>
             </view>

@@ -81,23 +81,22 @@ Page({
       sessionCount: sessions.length,
       sessionTests,
       totalPreCount,
-      totalPostCount
+      totalPostCount,
+      passedCount: course.passedCount || 0
     };
   },
 
-  // Navigate to pre-test list for this course
-  goPreTests(event) {
+  goQuiz(event) {
     const courseId = event.currentTarget.dataset.id;
     wx.navigateTo({
-      url: `/pages/parent/exercises/exercises?courseId=${courseId}&type=pre`
+      url: `/pages/parent/quiz/quiz?courseId=${courseId}`
     });
   },
 
-  // Navigate to post-test list for this course
-  goPostTests(event) {
+  goSummary(event) {
     const courseId = event.currentTarget.dataset.id;
     wx.navigateTo({
-      url: `/pages/parent/exercises/exercises?courseId=${courseId}&type=post`
+      url: `/pages/parent/summary/summary?courseId=${courseId}`
     });
   },
 
