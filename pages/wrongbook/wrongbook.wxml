@@ -1,6 +1,6 @@
 <view class="screen wrongbook-screen">
   <z-bg></z-bg>
-  <z-page-head kicker="FEEDBACK" title="课后反馈" desc="老师上传图片、文字和语音，学生/家长查看课后反馈。"></z-page-head>
+  <z-page-head kicker="FEEDBACK" title="本讲总结" desc="老师上传图片、文字和语音，学生/家长查看本讲总结。"></z-page-head>
 
   <view class="grid-3 wrong-stats">
     <view><z-metric value="4" label="反馈样例"></z-metric></view>
@@ -39,6 +39,6 @@
 
   <z-card>
     <z-section-title title="当前主流程" right="手机号登录"></z-section-title>
-    <view class="body-copy">老师从课程课次进入学生名单上传课后反馈；学生/家长用报班手机号查看。</view>
+    <view class="body-copy">老师从课程课次进入学生名单上传本讲总结；学生/家长用报班手机号查看。</view>
   </z-card>
 </view>

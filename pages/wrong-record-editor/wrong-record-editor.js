@@ -91,7 +91,7 @@ Page({
 
   addMockImage() {
     Api.uploadFeedbackImage({
-      fileName: `课后反馈图片-${this.data.imageFiles.length + 1}.jpg`,
+      fileName: `本讲总结图片-${this.data.imageFiles.length + 1}.jpg`,
       size: 260000,
       tempPath: ''
     })
@@ -101,7 +101,7 @@ Page({
 
   addMockVoice() {
     Api.uploadFeedbackVoice({
-      fileName: `课后反馈语音-${this.data.voiceFiles.length + 1}.m4a`,
+      fileName: `本讲总结语音-${this.data.voiceFiles.length + 1}.m4a`,
       size: 120000,
       duration: 18,
       tempPath: ''

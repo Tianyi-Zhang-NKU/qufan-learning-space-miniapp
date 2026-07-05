@@ -1,6 +1,6 @@
 <view class="screen exercises-screen">
   <z-bg></z-bg>
-  <z-page-head kicker="OPTIONAL TESTS" title="可选测验资料" desc="课前练习、课后巩固可作为弱功能保留，第一版主流程仍是课后反馈。"></z-page-head>
+  <z-page-head kicker="OPTIONAL TESTS" title="可选测验资料" desc="课前练习、课后巩固可作为弱功能保留，第一版主流程仍是本讲总结。"></z-page-head>
 
   <z-card mode="hero">
     <z-section-title title="今天" right="可选记录" right-type-alias="status"></z-section-title>
@@ -29,7 +29,7 @@
 
   <z-card>
     <z-section-title title="历史记录" right="近 7 天"></z-section-title>
-    <z-list-item time="06-03" title="初三生物1班" sub="课后反馈已上传"></z-list-item>
+    <z-list-item time="06-03" title="初三生物1班" sub="本讲总结已上传"></z-list-item>
     <z-list-item time="06-02" title="初一英语提高班" sub="可选资料已记录"></z-list-item>
   </z-card>
 </view>

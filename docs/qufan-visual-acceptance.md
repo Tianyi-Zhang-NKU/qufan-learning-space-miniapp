@@ -9,7 +9,7 @@
 3. 实时课表：`pages/schedule/schedule`
 4. 教室直播：`pages/live/live`
 5. 可选测验资料：`pages/exercises/exercises`
-6. 课后反馈：`pages/parent/exercises/exercises`
+6. 本讲总结：`pages/parent/exercises/exercises`
 7. 家长端：`pages/parent/parent`
 8. 教师端：`pages/teacher/teacher`
 9. 机构端：`pages/admin/admin`

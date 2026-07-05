@@ -5,7 +5,7 @@
       <z-logo></z-logo>
       <view>
         <text class="brand-name">教师端</text>
-        <text class="brand-sub">周老师 · 课后反馈</text>
+        <text class="brand-sub">周老师 · 本讲总结</text>
       </view>
     </view>
     <button class="ghost-btn small-ghost" bindtap="logout">退出</button>
@@ -13,7 +13,7 @@
 
   <z-card mode="hero">
     <text class="page-kicker">TEACHER DESK</text>
-    <view class="page-title">上传课后反馈</view>
+    <view class="page-title">上传本讲总结</view>
     <view class="page-desc">从课程进入课次，再选择学生上传图片、文字和语音。</view>
     <view class="btn-row">
       <navigator class="btn" url="/pages/teacher/courses/courses">我的课程</navigator>

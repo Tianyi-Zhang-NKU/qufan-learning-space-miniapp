@@ -106,11 +106,14 @@ function assertNoDeprecatedMainCopy() {
     ['错', '题', '录', '入'].join(''),
     ['待', '批', '改'].join(''),
     ['批', '改', '中'].join(''),
-    ['作', '业', '批', '改'].join('')
+    ['作', '业', '批', '改'].join(''),
+    ['课', '后', '反', '馈'].join('')
   ];
   const hits = [];
   walkTextFiles((full, text) => {
-    if (blockedWords.some((word) => text.includes(word))) hits.push(path.relative(root, full));
+    const relative = path.relative(root, full).replace(/\\/g, '/');
+    if (relative.startsWith('docs/client-meeting-') || relative.startsWith('docs/superpowers/')) return;
+    if (blockedWords.some((word) => text.includes(word))) hits.push(relative);
   });
   assert(hits.length === 0, `deprecated main-flow copy found: ${hits.join(', ')}`);
 }

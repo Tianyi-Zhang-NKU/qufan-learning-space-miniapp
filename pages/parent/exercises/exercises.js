@@ -105,7 +105,7 @@ Page({
         courseId,
         sessionId
       });
-      wx.setNavigationBarTitle({ title: '课后反馈' });
+      wx.setNavigationBarTitle({ title: '本讲总结' });
     } else if (courseId) {
       // From course list: session list for a course
       this.setData({ mode: 'sessions', courseId });
@@ -216,7 +216,7 @@ Page({
             sessionId: s.id,
             sessionTitle: s.sessionTitle || s.displayTitle || `第${s.sessionIndex}次课`,
             sessionIndex: s.sessionIndex,
-            label: `第${s.sessionIndex}次课课后反馈`,
+            label: `第${s.sessionIndex}次课本讲总结`,
             date: s.date || '',
             time: s.startTime ? `${s.startTime}-${s.endTime}` : '',
             teacherName: s.teacherName || course.teacherName || '',
@@ -268,7 +268,7 @@ Page({
 
         this.setData({
           courseName: course.name || '',
-          sessionLabel: `第${session.sessionIndex || ''}次课课后反馈`,
+          sessionLabel: `第${session.sessionIndex || ''}次课本讲总结`,
           sessionDetail: {
             sessionTitle: session.sessionTitle || session.displayTitle || '',
             date: session.date || '',

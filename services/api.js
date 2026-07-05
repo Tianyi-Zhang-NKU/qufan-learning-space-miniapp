@@ -1942,7 +1942,7 @@ const mockApi = {
       status: 'scheduled',
       statusText: '未开始',
       liveRoomId: '',
-      note: '课后反馈课次。'
+      note: '本讲总结课次。'
     };
     db.courseSessions.push(courseSession);
     return delay(decorateSession(courseSession));

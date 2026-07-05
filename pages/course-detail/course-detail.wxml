@@ -71,7 +71,7 @@
       <view wx:else class="qf-empty">暂无学生</view>
     </view>
 
-    <view class="qf-section">课后反馈</view>
+    <view class="qf-section">本讲总结</view>
     <view class="qf-card tight">
       <view wx:if="{{detail.lessonFeedbacks.length}}" class="qf-list">
         <view wx:for="{{detail.lessonFeedbacks}}" wx:key="id" class="qf-list-item">
@@ -83,7 +83,7 @@
           </view>
         </view>
       </view>
-      <view wx:else class="qf-empty">暂无课后反馈</view>
+      <view wx:else class="qf-empty">暂无本讲总结</view>
     </view>
 
     <view class="qf-section">可选测验资料</view>

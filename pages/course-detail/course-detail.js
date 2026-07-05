@@ -71,7 +71,7 @@ Page({
     if (!feedbackId) return;
     Api.getFeedbackDetail(feedbackId)
       .then((feedback) => {
-        Notice.alert(feedback.text || '这条反馈只有图片或语音。', `${feedback.studentName} · 课后反馈`);
+        Notice.alert(feedback.text || '这条反馈只有图片或语音。', `${feedback.studentName} · 本讲总结`);
       })
       .catch((error) => Notice.alert(error.message || '反馈加载失败'));
   },

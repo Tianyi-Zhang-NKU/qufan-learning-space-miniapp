@@ -2,7 +2,7 @@
   <z-bg mode="dark"></z-bg>
   <view class="qf-top">
     <view class="qf-brand">
-      <text class="qf-brand-title">上传课后反馈</text>
+      <text class="qf-brand-title">上传本讲总结</text>
       <text class="qf-brand-sub">{{session.displayName}}</text>
     </view>
   </view>
@@ -16,7 +16,7 @@
   <view class="qf-card">
     <view class="qf-field">
       <text class="qf-label">文字反馈</text>
-      <textarea class="qf-textarea" value="{{draft.text}}" placeholder="填写本次课后反馈、订正建议或回家复习提醒" bindinput="inputText"></textarea>
+      <textarea class="qf-textarea" value="{{draft.text}}" placeholder="填写本次本讲总结、订正建议或回家复习提醒" bindinput="inputText"></textarea>
     </view>
 
     <view class="qf-section">图片反馈</view>

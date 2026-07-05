@@ -80,7 +80,7 @@
             data-course-name="{{item.courseName}}"
             data-session-id="{{item.id}}"
             bindtap="goFeedback"
-          >课后反馈</button>
+          >本讲总结</button>
           <button
             class="qf-btn small test-btn live-test"
             data-session-id="{{item.id}}"

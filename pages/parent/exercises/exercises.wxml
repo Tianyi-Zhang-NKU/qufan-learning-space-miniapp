@@ -8,7 +8,7 @@
     <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
       <view class="qf-top">
         <view class="qf-brand">
-          <text class="qf-brand-title">课后反馈</text>
+          <text class="qf-brand-title">本讲总结</text>
           <text class="qf-brand-sub">{{studentName || session.displayName}} · 选择课程查看错题</text>
         </view>
       </view>
@@ -103,7 +103,7 @@
         >
           <view class="session-entry-header">
             <text class="session-entry-index">第{{item.sessionIndex}}次课</text>
-            <text class="session-entry-badge">课后反馈</text>
+            <text class="session-entry-badge">本讲总结</text>
           </view>
           <text class="session-entry-title">{{item.sessionTitle}}</text>
 

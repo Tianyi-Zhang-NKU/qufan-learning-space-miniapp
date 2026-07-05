@@ -5,7 +5,7 @@
     <view class="login-brand">
       <view class="login-monogram login-logo-placeholder">LOGO</view>
       <text class="login-title">趣帆学习空间</text>
-      <text class="login-sub">课后反馈看得见，学习进度不打扰</text>
+      <text class="login-sub">本讲总结看得见，学习进度不打扰</text>
     </view>
 
     <view class="qf-card qf-hero login-panel">

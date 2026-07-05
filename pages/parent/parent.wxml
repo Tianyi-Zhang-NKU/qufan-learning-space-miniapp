@@ -19,7 +19,7 @@
 
   <view class="grid-2">
     <view><z-tile icon="看" title="课程直播" desc="查看课堂直播状态" url="/pages/live/live" open-type-alias="switchTab"></z-tile></view>
-    <view><z-tile icon="反" title="老师反馈" desc="查看课后反馈" url="/pages/parent/exercises/exercises"></z-tile></view>
+    <view><z-tile icon="反" title="老师反馈" desc="查看本讲总结" url="/pages/parent/exercises/exercises"></z-tile></view>
   </view>
 
   <z-card>

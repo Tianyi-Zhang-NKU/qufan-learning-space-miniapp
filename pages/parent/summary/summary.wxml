@@ -107,7 +107,7 @@
 
         <view wx:else class="qf-card feedback-card">
           <view class="summary-empty-box">
-            <text class="summary-empty">暂无课后反馈</text>
+            <text class="summary-empty">暂无本讲总结</text>
             <text class="summary-empty-hint">老师批改后会发布反馈</text>
           </view>
         </view>

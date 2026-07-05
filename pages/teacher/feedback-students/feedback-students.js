@@ -23,7 +23,7 @@ Page({
   onLoad(options) {
     const { courseId, courseName, feedbackType } = options;
     const type = ['pre', 'post', 'general'].includes(feedbackType) ? feedbackType : 'post';
-    const typeLabel = type === 'pre' ? '课堂小测错题' : type === 'post' ? '本讲总结错题' : '课后反馈';
+    const typeLabel = type === 'pre' ? '课堂小测错题' : type === 'post' ? '本讲总结错题' : '本讲总结反馈';
     this.setData({
       courseId: courseId || '',
       courseName: decodeURIComponent(courseName || ''),

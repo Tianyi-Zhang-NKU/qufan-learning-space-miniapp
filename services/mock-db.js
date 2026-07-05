@@ -283,7 +283,7 @@ const db = {
       studentIds: ['stu_001', 'stu_003'],
       defaultDurationMinutes: 90,
       status: 'active',
-      description: '中考生物复习课后反馈班。'
+      description: '中考生物复习本讲总结班。'
     },
     {
       id: 'course_bio_002',
@@ -313,7 +313,7 @@ const db = {
       studentIds: ['stu_001', 'stu_002'],
       defaultDurationMinutes: 90,
       status: 'active',
-      description: '函数与几何课后反馈班。'
+      description: '函数与几何本讲总结班。'
     },
     {
       id: 'course_math_002',
@@ -343,7 +343,7 @@ const db = {
       studentIds: ['stu_002', 'stu_004'],
       defaultDurationMinutes: 90,
       status: 'active',
-      description: '阅读理解与词汇课后反馈班。'
+      description: '阅读理解与词汇本讲总结班。'
     },
     {
       id: 'course_eng_002',
@@ -674,7 +674,7 @@ const db = {
       action: 'seed_feedback_data',
       targetType: 'lessonFeedback',
       targetId: 'feedback_001',
-      message: '初始化课后反馈数据',
+      message: '初始化本讲总结数据',
       createdAt: '2026-06-03 20:10'
     }
   ]
