@@ -122,7 +122,7 @@
   line-height: 1.45;
 }
 
-.login-debug {
+.login-quick {
   position: relative;
   z-index: 2;
   display: flex;
@@ -131,7 +131,7 @@
   margin-top: 12rpx;
 }
 
-.debug-login-toggle {
+.quick-login-toggle {
   min-height: 38rpx;
   padding: 0 16rpx;
   border-radius: 999rpx;
@@ -141,7 +141,7 @@
   border: 1rpx solid rgba(16, 34, 74, 0.08);
 }
 
-.debug-login-panel {
+.quick-login-panel {
   width: 100%;
   margin-top: 14rpx;
   padding: 16rpx;
@@ -151,7 +151,7 @@
   box-shadow: 0 12rpx 28rpx rgba(35, 39, 55, 0.08);
 }
 
-.debug-login-account {
+.quick-login-account {
   width: 100%;
   min-height: 56rpx;
   display: flex;
@@ -164,6 +164,6 @@
   background: #F6F3E8;
 }
 
-.debug-login-account:first-child {
+.quick-login-account:first-child {
   margin-top: 0;
 }

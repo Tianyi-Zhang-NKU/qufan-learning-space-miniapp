@@ -250,7 +250,7 @@ async function run() {
   assert(loginWxml.includes('login-brand-mark') && loginWxml.includes('帆') && !loginWxml.includes('LOGO') && !loginWxml.includes('QF'), 'login page should use a polished Qufan brand mark instead of a placeholder logo');
   assert(loginWxml.includes('login-card-title') && loginWxml.includes('login-helper'), 'login page should use a formal form card and weak helper copy');
   assert(!loginWxml.includes('login-signal-row') && !loginWxml.includes('演示账号'), 'login page should remove large debug/explainer blocks');
-  assert(loginWxml.includes('debug-login-toggle') && loginWxml.includes('开发入口') && loginWxss.includes('debug-login-toggle'), 'login page should keep only a small low-emphasis developer entry');
+  assert(loginWxml.includes('quick-login-toggle') && loginWxml.includes('快速体验') && loginWxss.includes('quick-login-toggle'), 'login page should keep only a small low-emphasis quick-experience entry');
   assert(loginWxss.includes('animation: none') && loginWxss.includes('opacity: 1'), 'login page should not inherit global page entrance animation');
   assert(!loginWxss.includes('calc(100vh'), 'login page should avoid calc viewport sizing that can collapse in miniapp renderers');
   assertNoOldBrand();

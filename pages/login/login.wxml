@@ -31,13 +31,13 @@
 
     <view class="login-helper">登录即代表已阅读并同意平台服务与隐私规则</view>
 
-    <view class="login-debug">
-      <button class="debug-login-toggle" bindtap="toggleDemo">{{showDemo ? '收起开发入口' : '开发入口'}}</button>
-      <view wx:if="{{showDemo}}" class="debug-login-panel">
+    <view class="login-quick">
+      <button class="quick-login-toggle" bindtap="toggleDemo">{{showDemo ? '收起快速体验' : '快速体验'}}</button>
+      <view wx:if="{{showDemo}}" class="quick-login-panel">
         <button
           wx:for="{{demoPhones}}"
           wx:key="phone"
-          class="debug-login-account"
+          class="quick-login-account"
           data-phone="{{item.phone}}"
           bindtap="useDemoPhone"
         >{{item.label}} {{item.phone}}</button>

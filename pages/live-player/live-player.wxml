@@ -41,11 +41,11 @@
         <text class="qf-muted">{{entry.classinEntryUrl || '暂无入口地址'}}</text>
       </view>
       <view class="qf-list-item">
-        <text class="qf-h3">播放流</text>
-        <text class="qf-muted">{{entry.streamUrl || '暂无播放流'}}</text>
+        <text class="qf-h3">课堂画面</text>
+        <text class="qf-muted">{{entry.streamUrl || '直播开始后显示课堂画面'}}</text>
       </view>
       <view class="qf-list-item">
-        <text class="qf-h3">签名有效期</text>
+        <text class="qf-h3">入口有效期</text>
         <text class="qf-muted">{{entry.signedAt || '-'}} 至 {{entry.expiresAt || '-'}}</text>
       </view>
     </view>
