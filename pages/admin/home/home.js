@@ -521,6 +521,7 @@ Page({
         classroomName: item ? item.classroomName : (this.data.classroomOptions[0] || {}).name || '',
         classroomIndex,
         description: item ? item.description : '',
+        passThresholdPercent: item ? Number(item.passThresholdPercent || 80) : 80,
         sessionCount: sessionDrafts.length,
         sessionDrafts,
         removedSessionIds: []
@@ -695,6 +696,7 @@ Page({
       teacherId: form.teacherId,
       classroomId: form.classroomId,
       description: form.description,
+      passThresholdPercent: Number(form.passThresholdPercent || 80),
       studentIds: form.studentIds
     };
     Api[method](payload)

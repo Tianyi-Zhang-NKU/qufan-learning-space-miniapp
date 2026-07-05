@@ -218,6 +218,7 @@ async function run() {
   assert(readText('pages/teacher/courses/courses.wxml').includes('bindtap="editSession"') && readText('pages/teacher/courses/courses.wxml').includes('session-editor'), 'teacher schedule should expose lesson rename/topic editor');
   assert(readText('pages/admin/home/home.wxml').includes('/pages/live-player/live-player'), 'admin course collection should expose course live entry');
   assert(adminHomeWxml.includes('课次数量') && adminHomeWxml.includes('onSessionCountInput') && adminHomeWxml.includes('onSessionDraftInput') && adminHomeWxml.includes('onSessionClassroomChange'), 'admin course editor should expose editable session count, classroom and time fields');
+  assert(adminHomeWxml.includes('通关标准%') && adminHomeWxml.includes('data-field="passThresholdPercent"') && adminHomeJs.includes('passThresholdPercent'), 'admin course editor should expose teacher-defined pass threshold');
   assert(adminHomeJs.includes('syncCourseSessionsForEditor') && adminHomeJs.includes('saveCourseEditor'), 'admin course editor should persist course session count and lesson edits');
   assert(teacherHomeWxml.includes('教师待办') && teacherHomeWxml.includes('confirmPass') === false && teacherHomeWxml.includes('确认通关'), 'teacher home should expose pass-confirmation todo cards');
   assert(readText('pages/teacher/home/home.js').includes('getTeacherTodos') && readText('pages/teacher/home/home.wxss').includes('todo-card'), 'teacher home should load and style teacher todos');
@@ -420,6 +421,21 @@ async function run() {
   assert(passResult.passed && passResult.feedback.passed, 'teacher should confirm pass for one student/session');
   const todosAfterPass = await Api.getTeacherTodos();
   assert(!todosAfterPass.items.some((item) => item.studentId === 'stu_001' && item.courseSessionId === 'lesson_bio_001_01'), 'confirmed pass item should disappear from teacher todos');
+  const earlyStudentSession = await Api.loginByPhone({ phone: '13800000001' });
+  Api.setSession(earlyStudentSession);
+  const earlyHonors = await Api.getStudentHonors({ courseId: 'course_bio_001' });
+  assert(!earlyHonors.certificates.length && earlyHonors.passHistory.length === 1, 'single lesson pass should create pass history but not issue course certificate before threshold');
+  Api.setSession(teacherSession);
+  for (const courseSessionId of ['lesson_bio_001_02', 'lesson_bio_001_03', 'lesson_bio_001_04', 'lesson_bio_001_05', 'lesson_bio_001_06', 'lesson_bio_001_07']) {
+    const thresholdPass = await Api.confirmStudentPass({
+      studentId: 'stu_001',
+      courseId: 'course_bio_001',
+      courseSessionId,
+      passed: true,
+      comment: 'Smoke 达成通关标准'
+    });
+    assert(thresholdPass.passed, 'teacher should confirm enough sessions to reach honor threshold');
+  }
 
   await expectReject(Api.createLessonFeedback({
     studentId: 'stu_004',
@@ -450,7 +466,7 @@ async function run() {
   const exportedWordWorkbook = await Api.exportStudentWrongWorkbook({ courseId: 'course_bio_001', format: 'docx' });
   assert(exportedWordWorkbook.format === 'docx' && exportedWordWorkbook.fileName.endsWith('.docx') && exportedWordWorkbook.printable, 'parent should export wrong workbook as a printable Word file');
   const honors = await Api.getStudentHonors({ courseId: 'course_bio_001' });
-  assert(honors.certificates.some((item) => item.studentName === '陈一诺' && item.courseName), 'student honors should expose named course certificates');
+  assert(honors.certificates.some((item) => item.studentName === '陈一诺' && item.courseName && item.passRate >= item.thresholdPercent), 'student honors should issue named course certificates only after threshold');
   await expectReject(Api.getFeedbackDetail('feedback_002'), 'NO_PERMISSION');
 
   const imagePreview = await Api.getMediaPreview(uploadedImage.id);
@@ -503,8 +519,8 @@ async function run() {
     studentIds: [updatedStudent.id],
     description: 'CRUD smoke'
   });
-  const updatedCourse = await Api.updateCourse({ id: createdCourse.id, name: 'Smoke CRUD 课程A', subject: '化学', grade: '初三', teacherId: updatedTeacher.id, classroomId: updatedClassroom.id });
-  assert(updatedCourse.name === 'Smoke CRUD 课程A' && updatedCourse.grade === '初三', 'admin should update course');
+  const updatedCourse = await Api.updateCourse({ id: createdCourse.id, name: 'Smoke CRUD 课程A', subject: '化学', grade: '初三', teacherId: updatedTeacher.id, classroomId: updatedClassroom.id, passThresholdPercent: 75 });
+  assert(updatedCourse.name === 'Smoke CRUD 课程A' && updatedCourse.grade === '初三' && updatedCourse.passThresholdPercent === 75, 'admin should update course and pass threshold');
   const createdSession = await Api.createCourseSession({
     courseId: createdCourse.id,
     date: '2026-08-01',

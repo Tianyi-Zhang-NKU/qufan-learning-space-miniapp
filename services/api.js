@@ -381,6 +381,8 @@ function decorateCourse(item, options = {}) {
     feedbackCount: feedbacks.length,
     feedbackStudentCount: new Set(feedbacks.map((f) => f.studentId)).size,
     passedCount: passedSessionIds.size,
+    passThresholdPercent: Number(item.passThresholdPercent || 80),
+    passRate: sessions.length ? Math.round((passedSessionIds.size / sessions.length) * 100) : 0,
     assignments: getCourseAssignments(item.id),
     wrongRecords: [],
     liveStatusText: 'ClassIn 接口待接入',
@@ -646,8 +648,13 @@ function buildStudentHonors(studentId, filter = {}) {
   const passHistory = [];
   courses.forEach((course) => {
     const sessions = getCourseSessions(course.id);
+    const sessionCount = sessions.length;
+    const thresholdPercent = Number(course.passThresholdPercent || 80);
     const passedFeedbacks = getFeedbacks({ studentId, courseId: course.id, feedbackType: 'general', visibleToStudent: true })
       .filter((feedback) => feedback.passed);
+    const passedSessionIds = new Set(passedFeedbacks.map((feedback) => feedback.courseSessionId).filter(Boolean));
+    const passedCount = passedSessionIds.size;
+    const passRate = sessionCount ? Math.round((passedCount / sessionCount) * 100) : 0;
     passedFeedbacks.forEach((feedback) => {
       const courseSession = findCourseSession(feedback.courseSessionId) || {};
       passHistory.push({
@@ -661,7 +668,8 @@ function buildStudentHonors(studentId, filter = {}) {
         teacherName: (findTeacher(feedback.teacherId) || {}).name || ''
       });
     });
-    if (passedFeedbacks.length) {
+    if (sessionCount && passRate >= thresholdPercent) {
+      const latestFeedback = passedFeedbacks[passedFeedbacks.length - 1] || {};
       certificates.push({
         id: `certificate_${course.id}_${studentId}`,
         studentId,
@@ -669,9 +677,13 @@ function buildStudentHonors(studentId, filter = {}) {
         courseId: course.id,
         courseName: course.name,
         title: `${course.name} 通关证书`,
-        progressText: `${passedFeedbacks.length}/${sessions.length} 讲已通关`,
+        passedCount,
+        sessionCount,
+        passRate,
+        thresholdPercent,
+        progressText: `${passedCount}/${sessionCount} 讲已通关 · 达成${thresholdPercent}%标准`,
         sealText: '趣帆学习通关认证',
-        issuedAt: passedFeedbacks[passedFeedbacks.length - 1].updatedAt || passedFeedbacks[passedFeedbacks.length - 1].createdAt || nowLabel()
+        issuedAt: latestFeedback.updatedAt || latestFeedback.createdAt || nowLabel()
       });
     }
   });
@@ -1827,6 +1839,7 @@ const mockApi = {
       defaultClassroomId: classroom.id,
       studentIds,
       defaultDurationMinutes: 90,
+      passThresholdPercent: Number(payload.passThresholdPercent || 80),
       status: 'active',
       description: payload.description || ''
     };
@@ -1863,6 +1876,7 @@ const mockApi = {
     course.subject = payload.subject !== undefined ? String(payload.subject || '').trim() : course.subject;
     course.grade = payload.grade !== undefined ? String(payload.grade || '').trim() : course.grade;
     course.description = payload.description !== undefined ? String(payload.description || '').trim() : course.description;
+    if (payload.passThresholdPercent !== undefined) course.passThresholdPercent = Number(payload.passThresholdPercent || 80);
     course.teacherId = teacher.id;
     course.mainTeacherId = teacher.id;
     course.classroomId = classroom.id;

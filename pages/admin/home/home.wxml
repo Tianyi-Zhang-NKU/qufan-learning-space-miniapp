@@ -328,9 +328,15 @@
             <view class="picker-value">{{editorForm.classroomName || '选择教室'}}</view>
           </picker>
         </view>
-        <view class="editor-field session-count-stepper">
-          <text class="field-label">课次数量</text>
-          <input class="field-input" value="{{editorForm.sessionCount}}" type="number" bindinput="onSessionCountInput" placeholder="输入课次数量" />
+        <view class="editor-row">
+          <view class="editor-field half session-count-stepper">
+            <text class="field-label">课次数量</text>
+            <input class="field-input" value="{{editorForm.sessionCount}}" type="number" bindinput="onSessionCountInput" placeholder="输入课次数量" />
+          </view>
+          <view class="editor-field half">
+            <text class="field-label">通关标准%</text>
+            <input class="field-input" value="{{editorForm.passThresholdPercent}}" type="number" data-field="passThresholdPercent" bindinput="onEditorInput" placeholder="80" />
+          </view>
         </view>
         <view wx:if="{{editorForm.sessionDrafts.length}}" class="session-draft-list">
           <view wx:for="{{editorForm.sessionDrafts}}" wx:for-item="session" wx:for-index="index" wx:key="sessionIndex" class="session-draft-card">

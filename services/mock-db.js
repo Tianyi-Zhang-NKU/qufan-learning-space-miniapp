@@ -282,6 +282,7 @@ const db = {
       defaultClassroomId: 'room_08',
       studentIds: ['stu_001', 'stu_003'],
       defaultDurationMinutes: 90,
+      passThresholdPercent: 80,
       status: 'active',
       description: '中考生物复习本讲总结班。'
     },
@@ -297,6 +298,7 @@ const db = {
       defaultClassroomId: 'room_10',
       studentIds: ['stu_001', 'stu_003'],
       defaultDurationMinutes: 90,
+      passThresholdPercent: 80,
       status: 'active',
       description: '中考生物第二轮专题复习班。'
     },
@@ -312,6 +314,7 @@ const db = {
       defaultClassroomId: 'room_12',
       studentIds: ['stu_001', 'stu_002'],
       defaultDurationMinutes: 90,
+      passThresholdPercent: 80,
       status: 'active',
       description: '函数与几何本讲总结班。'
     },
@@ -327,6 +330,7 @@ const db = {
       defaultClassroomId: 'room_14',
       studentIds: ['stu_001', 'stu_002'],
       defaultDurationMinutes: 90,
+      passThresholdPercent: 80,
       status: 'active',
       description: '代数与几何综合提升班。'
     },
@@ -342,6 +346,7 @@ const db = {
       defaultClassroomId: 'room_03',
       studentIds: ['stu_002', 'stu_004'],
       defaultDurationMinutes: 90,
+      passThresholdPercent: 80,
       status: 'active',
       description: '阅读理解与词汇本讲总结班。'
     },
@@ -357,6 +362,7 @@ const db = {
       defaultClassroomId: 'room_06',
       studentIds: ['stu_002', 'stu_004'],
       defaultDurationMinutes: 90,
+      passThresholdPercent: 80,
       status: 'active',
       description: '阅读精读与写作表达班。'
     }

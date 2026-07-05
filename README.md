@@ -35,6 +35,7 @@ authMode: 'mock' // mock | wechatPhone | sms | http
 - `phoneAccounts`：手机号到老师、学生/家长、管理员档案的映射。
 - `students` / `teachers` / `courses` / `courseSessions`：课程与课次基础数据；老师按“一名老师对应一个学科”建模。
 - 教务同步：mock 层支持学生插班、调班、退班，并同步课程、班级和课次名单。
+- 通关荣誉：课程默认按 80% 通关讲次生成证书，逐讲通关记录独立展示。
 - `lessonFeedbacks`：老师上传给学生的本讲总结。
 - `mediaFiles`：图片、语音元信息，包含 `storageKey`、`retentionUntil` 和下载权限。
 - `classrooms` / `liveRooms`：15 间教室和 ClassIn 直播入口占位。
