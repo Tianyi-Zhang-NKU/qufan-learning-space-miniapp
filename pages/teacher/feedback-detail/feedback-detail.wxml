@@ -108,7 +108,7 @@
       </view>
       <view class="upload-btn-row">
         <button class="upload-btn flex-btn" bindtap="chooseImage">
-          <text class="upload-btn-icon">＋</text>
+          <image class="upload-btn-icon" src="/assets/icons/image.svg" mode="aspectFit"></image>
           <text>添加图片</text>
         </button>
         <button class="upload-btn flex-btn" bindtap="chooseDocument">
@@ -132,11 +132,11 @@
       </view>
       <view class="record-actions">
         <button wx:if="{{!recording}}" class="upload-btn record-btn" bindtap="startRecord">
-          <text class="upload-btn-icon">●</text>
+          <image class="upload-btn-icon" src="/assets/icons/voice.svg" mode="aspectFit"></image>
           <text>开始录音</text>
         </button>
         <button wx:else class="upload-btn record-btn recording" bindtap="stopRecord">
-          <text class="upload-btn-icon">■</text>
+          <image class="upload-btn-icon" src="/assets/icons/stop.svg" mode="aspectFit"></image>
           <text>结束录音</text>
         </button>
       </view>

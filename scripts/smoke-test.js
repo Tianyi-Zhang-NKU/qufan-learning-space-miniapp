@@ -91,7 +91,7 @@ function assertNoOldBrand() {
 }
 
 function assertNoPresentationEmoji() {
-  const blockedEmoji = ['🎙️', '📝', '✅', '📄', '📷', '🎬', '👨‍🏫', '👩‍🏫', '👥', '📍', '🕐', '📅', '📖', '📋'];
+  const blockedEmoji = ['🎙️', '📝', '✅', '📄', '📷', '🎬', '👨‍🏫', '👩‍🏫', '👥', '📍', '🕐', '📅', '📖', '📋', '＋', '●', '■'];
   const hits = [];
   walkTextFiles((full, text) => {
     const relative = path.relative(root, full).replace(/\\/g, '/');
@@ -102,6 +102,7 @@ function assertNoPresentationEmoji() {
   });
   assert(hits.length === 0, `presentation emoji found; use local icon assets instead: ${hits.join(', ')}`);
 }
+
 function assertNoDeprecatedMainCopy() {
   const blockedWords = [
     ['邀', '请', '码'].join(''),
@@ -228,6 +229,7 @@ async function run() {
   assert(teacherHomeWxml.includes('/pages/live-player/live-player'), 'teacher home should expose course live entry');
   assert(readText('pages/teacher/courses/courses.wxml').includes('current="/pages/teacher/courses/courses"'), 'teacher schedule page tabbar current should point to itself');
   assert(readText('pages/teacher/courses/courses.wxml').includes('bindtap="editSession"') && readText('pages/teacher/courses/courses.wxml').includes('session-editor'), 'teacher schedule should expose lesson rename/topic editor');
+  assert(!readText('pages/teacher/courses/courses.wxml').includes('课前错题') && !readText('pages/teacher/courses/courses.wxml').includes('课后错题'), 'teacher schedule should use classroom quiz/summary wording instead of pre/post wrong-question copy');
   assert(readText('pages/admin/home/home.wxml').includes('/pages/live-player/live-player'), 'admin course collection should expose course live entry');
   assert(adminHomeWxml.includes('课次数量') && adminHomeWxml.includes('onSessionCountInput') && adminHomeWxml.includes('onSessionDraftInput') && adminHomeWxml.includes('onSessionClassroomChange'), 'admin course editor should expose editable session count, classroom and time fields');
   assert(adminHomeWxml.includes('通关标准%') && adminHomeWxml.includes('data-field="passThresholdPercent"') && adminHomeJs.includes('passThresholdPercent'), 'admin course editor should expose teacher-defined pass threshold');
