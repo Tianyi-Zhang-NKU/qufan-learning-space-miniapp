@@ -103,6 +103,38 @@ function assertNoPresentationEmoji() {
   assert(hits.length === 0, `presentation emoji found; use local icon assets instead: ${hits.join(', ')}`);
 }
 
+function assertNoNestedCards() {
+  const hits = [];
+  walkTextFiles((full, text) => {
+    const relative = path.relative(root, full).replace(/\\/g, '/');
+    if (!relative.startsWith('pages/') && !relative.startsWith('components/')) return;
+    if (path.extname(relative) !== '.wxml') return;
+    const stack = [];
+    const tagRe = /<\/?([a-zA-Z0-9-]+)\b[^>]*>/g;
+    let match;
+    while ((match = tagRe.exec(text))) {
+      const tag = match[0];
+      const name = match[1];
+      if (tag.startsWith('</')) {
+        for (let i = stack.length - 1; i >= 0; i -= 1) {
+          if (stack[i].name === name) {
+            stack.splice(i);
+            break;
+          }
+        }
+        continue;
+      }
+      const className = (tag.match(/class="([^"]*)"/) || [null, ''])[1];
+      if (/\bqf-card\b/.test(className)) {
+        const parentCard = stack.findLast((item) => /\bqf-card\b/.test(item.className));
+        if (parentCard) hits.push(`${relative}: nested qf-card near ${tag.slice(0, 80)}`);
+      }
+      if (!tag.endsWith('/>') && !['image', 'input'].includes(name)) stack.push({ name, className });
+    }
+  });
+  assert(hits.length === 0, `nested qf-card structures found: ${hits.join(', ')}`);
+}
+
 function assertNoDeprecatedMainCopy() {
   const blockedWords = [
     ['邀', '请', '码'].join(''),
@@ -275,6 +307,7 @@ async function run() {
   assertNoOldBrand();
   assertNoDeprecatedMainCopy();
   assertNoPresentationEmoji();
+  assertNoNestedCards();
 
   const config = require('../services/config');
   const db = require('../services/mock-db');
