@@ -28,7 +28,7 @@
   color: #10224A;
 }
 
-.login-monogram {
+.login-brand-mark {
   width: 128rpx;
   height: 128rpx;
   margin: 0 auto 24rpx;
@@ -38,18 +38,13 @@
   border: 1rpx solid rgba(16, 34, 74, 0.08);
   border-radius: 30rpx;
   color: #10224A;
-  font-size: 28rpx;
+  font-size: 58rpx;
   font-weight: 850;
-  background: #E8EEFF;
+  background:
+    linear-gradient(145deg, rgba(255, 253, 246, 0.96), rgba(238, 245, 221, 0.82)),
+    #FFFDF6;
   box-shadow: 0 18rpx 42rpx rgba(35, 39, 55, 0.1);
   letter-spacing: 0;
-}
-
-.login-logo-placeholder {
-  color: #2F6FAE;
-  background:
-    linear-gradient(145deg, rgba(232, 238, 255, 0.92), rgba(238, 245, 221, 0.72)),
-    #E8EEFF;
 }
 
 .login-title {

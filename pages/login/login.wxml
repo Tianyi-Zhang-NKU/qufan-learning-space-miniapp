@@ -3,7 +3,7 @@
 
   <view class="login-shell">
     <view class="login-brand">
-      <view class="login-monogram login-logo-placeholder">LOGO</view>
+      <view class="login-brand-mark">帆</view>
       <text class="login-title">趣帆学习空间</text>
       <text class="login-sub">本讲总结看得见，学习进度不打扰</text>
     </view>
@@ -32,7 +32,7 @@
     <view class="login-helper">登录即代表已阅读并同意平台服务与隐私规则</view>
 
     <view class="login-debug">
-      <button class="debug-login-toggle" bindtap="toggleDemo">{{showDemo ? '收起调试账号' : '调试账号'}}</button>
+      <button class="debug-login-toggle" bindtap="toggleDemo">{{showDemo ? '收起开发入口' : '开发入口'}}</button>
       <view wx:if="{{showDemo}}" class="debug-login-panel">
         <button
           wx:for="{{demoPhones}}"
