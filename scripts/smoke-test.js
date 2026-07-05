@@ -227,7 +227,16 @@ async function run() {
   assert(readText('pages/teacher/test-upload/test-upload.wxml').includes('本课题目框') && readText('pages/teacher/test-upload/test-upload.js').includes('createLessonQuestions'), 'teacher upload page should create question slots for wrong workbook');
   assert(readText('pages/teacher/feedback-students/feedback-students.wxml').includes('student-grid') && readText('pages/teacher/feedback-students/feedback-students.wxss').includes('grid-template-columns: repeat(4'), 'teacher student list should use compact avatar grid');
   assert(readText('pages/parent/home/home.wxml').includes('我的荣誉') && readText('pages/parent/home/home.js').includes('getStudentHonors'), 'student home should expose honor certificates');
-  assert(readText('pages/parent/summary/summary.wxml').includes('honor-card') && readText('pages/parent/summary/summary.wxml').includes('feedback-docs'), 'lesson summary should show honors and feedback documents inline');
+  const parentSummaryWxml = readText('pages/parent/summary/summary.wxml');
+  const parentSummaryJs = readText('pages/parent/summary/summary.js');
+  assert(parentSummaryWxml.includes('honor-card') && parentSummaryWxml.includes('feedback-docs'), 'lesson summary should show honors and feedback documents inline');
+  assert(parentSummaryJs.includes('lastFeedbackIndex'), 'lesson summary should open the latest session that actually has feedback');
+  assert(
+    parentSummaryWxml.indexOf('class="feedback-images"') < parentSummaryWxml.indexOf('class="feedback-text"')
+      && parentSummaryWxml.indexOf('class="feedback-text"') < parentSummaryWxml.indexOf('class="feedback-voices"')
+      && parentSummaryWxml.includes('feedback-voice-bar disabled'),
+    'lesson summary feedback card should render image, comment and voice state inline in the client-requested order'
+  );
   assert(readText('pages/parent/exercises/exercises.wxml').includes('workbook-export-card') && readText('pages/parent/exercises/exercises.js').includes('exportStudentWrongWorkbook'), 'wrong workbook should expose printable PDF export');
   assert(readText('pages/parent/exercises/exercises.wxml').includes('data-format="docx"') && readText('pages/parent/exercises/exercises.wxml').includes('导出 Word'), 'wrong workbook should also expose printable Word export');
 

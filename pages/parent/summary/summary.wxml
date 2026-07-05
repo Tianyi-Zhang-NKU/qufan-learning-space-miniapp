@@ -58,9 +58,6 @@
             <view wx:if="{{item.passed}}" class="pass-stamp">已通关</view>
             <view wx:else class="pass-stamp not-passed">暂未通关</view>
 
-            <!-- Text -->
-            <text class="feedback-text" wx:if="{{item.text}}">{{item.text}}</text>
-
             <!-- Images -->
             <view wx:if="{{item.imageFiles.length}}" class="feedback-images">
               <image
@@ -75,6 +72,9 @@
                 bindtap="previewImage"
               ></image>
             </view>
+
+            <!-- Text -->
+            <text class="feedback-text" wx:if="{{item.text}}">{{item.text}}</text>
 
             <view wx:if="{{item.attachFiles.length}}" class="feedback-docs">
               <view wx:for="{{item.attachFiles}}" wx:for-item="doc" wx:key="id" class="feedback-doc-row">
@@ -96,6 +96,10 @@
                 <text class="feedback-voice-icon">🎙️</text>
                 <text class="feedback-voice-text">点击播放语音</text>
               </view>
+            </view>
+            <view wx:else class="feedback-voice-bar disabled">
+              <text class="feedback-voice-icon">🎙️</text>
+              <text class="feedback-voice-text">暂无语音</text>
             </view>
 
             <view class="feedback-meta">

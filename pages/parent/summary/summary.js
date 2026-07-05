@@ -70,13 +70,16 @@ Page({
           };
         });
 
-        const lastIndex = summaries.length > 0 ? summaries.length - 1 : 0;
+        const lastFeedbackIndex = summaries.reduce((latestIndex, item, index) => (
+          item.feedbacks.length ? index : latestIndex
+        ), -1);
+        const defaultIndex = lastFeedbackIndex >= 0 ? lastFeedbackIndex : (summaries.length > 0 ? summaries.length - 1 : 0);
 
         this.setData({
           courseName: course.name || '',
           summaries,
-          currentIndex: lastIndex,
-          currentSummary: summaries[lastIndex] || null,
+          currentIndex: defaultIndex,
+          currentSummary: summaries[defaultIndex] || null,
           honors: honors.certificates || [],
           passHistory: honors.passHistory || [],
           loading: false

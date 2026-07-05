@@ -304,3 +304,14 @@
   color: #10224A;
   font-size: 24rpx;
 }
+
+.feedback-voice-bar.disabled {
+  background: rgba(156, 163, 175, 0.1);
+  border-color: rgba(156, 163, 175, 0.18);
+  opacity: 0.72;
+}
+
+.feedback-voice-bar.disabled .feedback-voice-text,
+.feedback-voice-bar.disabled .feedback-voice-icon {
+  color: #8A8D88;
+}
