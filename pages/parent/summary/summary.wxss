@@ -316,3 +316,89 @@
 .feedback-voice-bar.disabled .feedback-voice-icon {
   color: #8A8D88;
 }
+.honor-seal-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+  padding-top: 8rpx;
+}
+
+.honor-seal {
+  padding: 6rpx 12rpx;
+  border: 2rpx solid #B91C1C;
+  border-radius: 8rpx;
+  color: #B91C1C;
+  font-size: 20rpx;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.honor-issued {
+  color: #8A8D88;
+  font-size: 21rpx;
+  white-space: nowrap;
+}
+
+.pass-history-panel {
+  margin-bottom: 22rpx;
+  padding: 22rpx 24rpx;
+  border-radius: 8rpx;
+  background: #FFFDF6;
+  border: 1rpx solid rgba(16, 34, 74, 0.1);
+}
+
+.pass-history-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+  margin-bottom: 14rpx;
+}
+
+.pass-history-title {
+  color: #10224A;
+  font-size: 28rpx;
+  font-weight: 800;
+}
+
+.pass-history-count {
+  color: #617064;
+  font-size: 22rpx;
+  white-space: nowrap;
+}
+
+.pass-history-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14rpx;
+  padding: 14rpx 0;
+  border-top: 1rpx solid rgba(16, 34, 74, 0.08);
+}
+
+.pass-history-dot {
+  width: 14rpx;
+  height: 14rpx;
+  margin-top: 12rpx;
+  border-radius: 999rpx;
+  background: #1f7a4d;
+  flex-shrink: 0;
+}
+
+.pass-history-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.pass-history-session {
+  color: #10224A;
+  font-size: 25rpx;
+  font-weight: 700;
+}
+
+.pass-history-meta {
+  color: #617064;
+  font-size: 22rpx;
+}

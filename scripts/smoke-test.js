@@ -301,10 +301,10 @@ async function run() {
   assert(teacherFeedbackStudentsWxml.includes('student-grid') && readText('pages/teacher/feedback-students/feedback-students.wxss').includes('grid-template-columns: repeat(4'), 'teacher student list should use compact avatar grid');
   assert(teacherFeedbackStudentsWxml.includes('student-search-card') && teacherFeedbackStudentsJs.includes('filteredStudents'), 'teacher student list should support searching large class rosters');
   assert(teacherFeedbackStudentsJs.includes('courseSessionId') && teacherFeedbackStudentsJs.includes('&courseSessionId='), 'teacher student list should preserve session context when opening feedback detail');
-  assert(readText('pages/parent/home/home.wxml').includes('我的荣誉') && readText('pages/parent/home/home.js').includes('getStudentHonors'), 'student home should expose honor certificates');
+  assert(readText('pages/parent/home/home.wxml').includes('我的荣誉') && readText('pages/parent/home/home.wxml').includes('home-honor-seal') && readText('pages/parent/home/home.js').includes('getStudentHonors'), 'student home should expose honor certificates with electronic seal');
   const parentSummaryWxml = readText('pages/parent/summary/summary.wxml');
   const parentSummaryJs = readText('pages/parent/summary/summary.js');
-  assert(parentSummaryWxml.includes('honor-card') && parentSummaryWxml.includes('feedback-docs'), 'lesson summary should show honors and feedback documents inline');
+  assert(parentSummaryWxml.includes('honor-card') && parentSummaryWxml.includes('honor-seal') && parentSummaryWxml.includes('pass-history-panel') && parentSummaryWxml.includes('feedback-docs'), 'lesson summary should show honors, electronic seals, pass history and feedback documents inline');
   assert(parentSummaryJs.includes('lastFeedbackIndex'), 'lesson summary should open the latest session that actually has feedback');
   assert(
     parentSummaryWxml.indexOf('class="feedback-images"') < parentSummaryWxml.indexOf('class="feedback-text"')

@@ -426,3 +426,27 @@
   color: #617064;
   font-size: 24rpx;
 }
+
+.home-honor-seal-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+  padding-top: 8rpx;
+}
+
+.home-honor-seal {
+  padding: 6rpx 12rpx;
+  border: 2rpx solid #B91C1C;
+  border-radius: 8rpx;
+  color: #B91C1C;
+  font-size: 20rpx;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.home-honor-issued {
+  color: #8A8D88;
+  font-size: 21rpx;
+  white-space: nowrap;
+}

@@ -15,6 +15,10 @@
         <text class="home-honor-kicker">我的荣誉</text>
         <text class="home-honor-title">{{item.title}}</text>
         <text class="home-honor-sub">{{item.studentName}} · {{item.progressText}}</text>
+        <view class="home-honor-seal-row">
+          <text class="home-honor-seal">{{item.sealText || '趣帆学习通关认证'}}</text>
+          <text class="home-honor-issued">{{item.issuedAt}}</text>
+        </view>
       </view>
     </view>
     <!-- Section title -->

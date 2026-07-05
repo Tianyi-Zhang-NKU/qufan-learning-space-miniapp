@@ -22,8 +22,28 @@
           <text class="honor-title">{{item.title}}</text>
           <text class="honor-name">{{item.studentName}}</text>
           <text class="honor-progress">{{item.progressText}}</text>
+          <view class="honor-seal-row">
+            <text class="honor-seal">{{item.sealText || '趣帆学习通关认证'}}</text>
+            <text class="honor-issued">{{item.issuedAt}}</text>
+          </view>
         </view>
-      </view>      <!-- Session tab bar -->
+      </view>
+
+      <view wx:if="{{passHistory.length}}" class="pass-history-panel">
+        <view class="pass-history-head">
+          <text class="pass-history-title">通关历史</text>
+          <text class="pass-history-count">{{passHistory.length}} 次确认</text>
+        </view>
+        <view wx:for="{{passHistory}}" wx:key="id" class="pass-history-row">
+          <view class="pass-history-dot"></view>
+          <view class="pass-history-main">
+            <text class="pass-history-session">{{item.sessionTitle}}</text>
+            <text class="pass-history-meta">{{item.teacherName}} · {{item.confirmedAt}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- Session tab bar -->
       <scroll-view
         scroll-x
         enhanced
