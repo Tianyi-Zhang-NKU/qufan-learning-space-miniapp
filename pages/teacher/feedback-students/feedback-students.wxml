@@ -23,10 +23,21 @@
 
     <!-- 学生名单 -->
     <view wx:if="{{students.length}}" class="qf-section">学生名单</view>
+    <view wx:if="{{students.length}}" class="student-search-card">
+      <image class="student-search-icon" src="/assets/icons/search.svg" mode="aspectFit"></image>
+      <input
+        class="student-search-input"
+        value="{{studentSearchQuery}}"
+        bindinput="onStudentSearchInput"
+        confirm-type="search"
+        placeholder="搜索学生姓名、年级或手机号"
+      />
+      <view wx:if="{{studentSearchQuery}}" class="student-search-clear" bindtap="clearStudentSearch">×</view>
+    </view>
     <view wx:if="{{students.length}}" class="qf-card tight">
-      <view class="student-grid">
+      <view wx:if="{{filteredStudents.length}}" class="student-grid">
         <view
-          wx:for="{{students}}"
+          wx:for="{{filteredStudents}}"
           wx:key="id"
           class="student-grid-item"
           data-student-id="{{item.id}}"
@@ -45,6 +56,7 @@
           </view>
         </view>
       </view>
+      <view wx:else class="qf-empty compact">暂无匹配学生</view>
     </view>
 
     <!-- 空状态 -->

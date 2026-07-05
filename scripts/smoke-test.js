@@ -225,7 +225,11 @@ async function run() {
   assert(readText('pages/teacher/feedback-detail/feedback-detail.wxml').includes('pass-quick-card') && readText('pages/teacher/feedback-detail/feedback-detail.js').includes('confirmPassNow'), 'feedback detail should expose fixed pass confirmation action');
   assert(readText('pages/teacher/feedback-detail/feedback-detail.wxml').includes('wrong-question-card') && readText('pages/teacher/feedback-detail/feedback-detail.js').includes('markStudentWrongQuestions'), 'feedback detail should let teachers mark student wrong questions');
   assert(readText('pages/teacher/test-upload/test-upload.wxml').includes('本课题目框') && readText('pages/teacher/test-upload/test-upload.js').includes('createLessonQuestions'), 'teacher upload page should create question slots for wrong workbook');
-  assert(readText('pages/teacher/feedback-students/feedback-students.wxml').includes('student-grid') && readText('pages/teacher/feedback-students/feedback-students.wxss').includes('grid-template-columns: repeat(4'), 'teacher student list should use compact avatar grid');
+  const teacherFeedbackStudentsWxml = readText('pages/teacher/feedback-students/feedback-students.wxml');
+  const teacherFeedbackStudentsJs = readText('pages/teacher/feedback-students/feedback-students.js');
+  assert(teacherFeedbackStudentsWxml.includes('student-grid') && readText('pages/teacher/feedback-students/feedback-students.wxss').includes('grid-template-columns: repeat(4'), 'teacher student list should use compact avatar grid');
+  assert(teacherFeedbackStudentsWxml.includes('student-search-card') && teacherFeedbackStudentsJs.includes('filteredStudents'), 'teacher student list should support searching large class rosters');
+  assert(teacherFeedbackStudentsJs.includes('courseSessionId') && teacherFeedbackStudentsJs.includes('&courseSessionId='), 'teacher student list should preserve session context when opening feedback detail');
   assert(readText('pages/parent/home/home.wxml').includes('我的荣誉') && readText('pages/parent/home/home.js').includes('getStudentHonors'), 'student home should expose honor certificates');
   const parentSummaryWxml = readText('pages/parent/summary/summary.wxml');
   const parentSummaryJs = readText('pages/parent/summary/summary.js');
