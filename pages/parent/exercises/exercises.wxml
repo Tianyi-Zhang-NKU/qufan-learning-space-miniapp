@@ -258,7 +258,7 @@
           <text class="workbook-export-title">可打印错题本</text>
           <text class="workbook-export-sub">{{workbookSummary.totalWrongQuestions || 0}} 道错题 · 正确率 {{workbookSummary.accuracyText || '待录入'}}</text>
         </view>
-        <button class="workbook-export-btn" bindtap="exportWorkbook" disabled="{{exportingWorkbook}}">{{exportingWorkbook ? '生成中…' : '导出 PDF'}}</button>
+        <view class="workbook-export-actions"><button class="workbook-export-btn" data-format="pdf" bindtap="exportWorkbook" disabled="{{exportingWorkbook}}">{{exportingWorkbook ? '生成中…' : '导出 PDF'}}</button><button class="workbook-export-btn secondary" data-format="docx" bindtap="exportWorkbook" disabled="{{exportingWorkbook}}">导出 Word</button></view>
       </view>
         </view>
       </view>

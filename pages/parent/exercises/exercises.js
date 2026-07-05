@@ -470,10 +470,11 @@ Page({
   // ================================================================
   //  Legacy / shared utilities
   // ================================================================
-  exportWorkbook() {
+  exportWorkbook(event) {
     if (this.data.exportingWorkbook) return;
+    const format = (event.currentTarget.dataset.format || 'pdf');
     this.setData({ exportingWorkbook: true });
-    Api.exportStudentWrongWorkbook({ format: 'pdf' })
+    Api.exportStudentWrongWorkbook({ format })
       .then((result) => {
         this.setData({ exportingWorkbook: false });
         Notice.alert(`已生成 ${result.fileName}`, '错题本导出');

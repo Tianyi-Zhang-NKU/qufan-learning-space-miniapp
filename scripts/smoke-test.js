@@ -217,11 +217,13 @@ async function run() {
   assert(teacherHomeWxml.includes('教师待办') && teacherHomeWxml.includes('confirmPass') === false && teacherHomeWxml.includes('确认通关'), 'teacher home should expose pass-confirmation todo cards');
   assert(readText('pages/teacher/home/home.js').includes('getTeacherTodos') && readText('pages/teacher/home/home.wxss').includes('todo-card'), 'teacher home should load and style teacher todos');
   assert(readText('pages/teacher/feedback-detail/feedback-detail.wxml').includes('pass-quick-card') && readText('pages/teacher/feedback-detail/feedback-detail.js').includes('confirmPassNow'), 'feedback detail should expose fixed pass confirmation action');
+  assert(readText('pages/teacher/feedback-detail/feedback-detail.wxml').includes('wrong-question-card') && readText('pages/teacher/feedback-detail/feedback-detail.js').includes('markStudentWrongQuestions'), 'feedback detail should let teachers mark student wrong questions');
   assert(readText('pages/teacher/test-upload/test-upload.wxml').includes('本课题目框') && readText('pages/teacher/test-upload/test-upload.js').includes('createLessonQuestions'), 'teacher upload page should create question slots for wrong workbook');
   assert(readText('pages/teacher/feedback-students/feedback-students.wxml').includes('student-grid') && readText('pages/teacher/feedback-students/feedback-students.wxss').includes('grid-template-columns: repeat(4'), 'teacher student list should use compact avatar grid');
   assert(readText('pages/parent/home/home.wxml').includes('我的荣誉') && readText('pages/parent/home/home.js').includes('getStudentHonors'), 'student home should expose honor certificates');
   assert(readText('pages/parent/summary/summary.wxml').includes('honor-card') && readText('pages/parent/summary/summary.wxml').includes('feedback-docs'), 'lesson summary should show honors and feedback documents inline');
   assert(readText('pages/parent/exercises/exercises.wxml').includes('workbook-export-card') && readText('pages/parent/exercises/exercises.js').includes('exportStudentWrongWorkbook'), 'wrong workbook should expose printable PDF export');
+  assert(readText('pages/parent/exercises/exercises.wxml').includes('data-format="docx"') && readText('pages/parent/exercises/exercises.wxml').includes('导出 Word'), 'wrong workbook should also expose printable Word export');
 
   const loginWxss = readText('pages/login/login.wxss');
   const loginWxml = readText('pages/login/login.wxml');
@@ -395,6 +397,9 @@ async function run() {
   });
   assert(wrongSelection.questionIds.length === 2 && wrongSelection.accuracy === 60, 'teacher should mark wrong questions by student');
 
+  const lessonDetailAfterWrongSelection = await Api.getTeacherLessonDetail('lesson_bio_001_01');
+  assert(lessonDetailAfterWrongSelection.wrongSelections.some((item) => item.studentId === 'stu_001' && item.questionIds.length === 2), 'teacher lesson detail should expose saved wrong-question selections');
+
   const todosBeforePass = await Api.getTeacherTodos();
   assert(todosBeforePass.pendingPassCount >= 1, 'teacher todos should include pending pass confirmations');
   assert(todosBeforePass.items.some((item) => item.studentId === 'stu_001' && item.courseSessionId === 'lesson_bio_001_01'), 'teacher todos should list pending student/session pass items');
@@ -436,6 +441,8 @@ async function run() {
   assert(workbook.summary.totalWrongQuestions >= 2 && workbook.summary.accuracyText, 'student wrong workbook should expose totals and accuracy text');
   const exportedWorkbook = await Api.exportStudentWrongWorkbook({ courseId: 'course_bio_001', format: 'pdf' });
   assert(exportedWorkbook.format === 'pdf' && exportedWorkbook.fileName.endsWith('.pdf') && exportedWorkbook.printable, 'parent should export wrong workbook as a printable single file');
+  const exportedWordWorkbook = await Api.exportStudentWrongWorkbook({ courseId: 'course_bio_001', format: 'docx' });
+  assert(exportedWordWorkbook.format === 'docx' && exportedWordWorkbook.fileName.endsWith('.docx') && exportedWordWorkbook.printable, 'parent should export wrong workbook as a printable Word file');
   const honors = await Api.getStudentHonors({ courseId: 'course_bio_001' });
   assert(honors.certificates.some((item) => item.studentName === '陈一诺' && item.courseName), 'student honors should expose named course certificates');
   await expectReject(Api.getFeedbackDetail('feedback_002'), 'NO_PERMISSION');

@@ -808,3 +808,13 @@
   font-size: 24rpx;
   font-weight: 700;
 }
+
+.workbook-export-actions {
+  display: flex;
+  gap: 12rpx;
+  flex-shrink: 0;
+}
+
+.workbook-export-btn.secondary {
+  background: #1f7a4d;
+}

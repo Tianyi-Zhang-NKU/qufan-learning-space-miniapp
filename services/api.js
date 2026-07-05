@@ -808,6 +808,7 @@ const mockApi = {
       students,
       assignments: getCourseAssignments(courseSession.courseId, courseSession.id),
       questions: getLessonQuestions({ courseId: courseSession.courseId, courseSessionId: courseSession.id }),
+      wrongSelections: getWrongSelections({ courseId: courseSession.courseId, courseSessionId: courseSession.id }).map(decorateWrongSelection),
       lessonFeedbacks: feedbacks,
       feedbacks,
       wrongRecords: []

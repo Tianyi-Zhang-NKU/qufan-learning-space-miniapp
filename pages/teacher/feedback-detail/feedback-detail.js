@@ -46,7 +46,12 @@ Page({
     submitting: false,
     showEmojiPanel: false,
     emojiList: EMOJI_LIST,
-    passed: false
+    passed: false,
+    questionSlots: [],
+    selectedWrongQuestionIds: [],
+    accuracyInput: '',
+    rankTextInput: '',
+    savingWrongQuestions: false
   },
 
   onLoad(options) {
@@ -131,6 +136,9 @@ Page({
       videoFiles: [],
       voiceFiles: [],
       docFiles: [],
+      selectedWrongQuestionIds: [],
+      accuracyInput: '',
+      rankTextInput: '',
       passed: false
     });
     if (this.data.activeSessionId) this.loadSessionFeedback(this.data.activeSessionId);
@@ -145,6 +153,19 @@ Page({
             && feedback.teacherId === this.data.session.teacherId
             && (feedback.feedbackType || 'post') === this.data.feedbackType
           );
+        const wrongSelection = (data.wrongSelections || [])
+          .find((item) => item.studentId === this.data.studentId) || null;
+        const selectedWrongQuestionIds = wrongSelection ? wrongSelection.questionIds || [] : [];
+        const questionSlots = (data.questions || []).map((question) => ({
+          ...question,
+          checked: selectedWrongQuestionIds.includes(question.id)
+        }));
+        this.setData({
+          questionSlots,
+          selectedWrongQuestionIds,
+          accuracyInput: wrongSelection && wrongSelection.accuracy !== undefined ? String(wrongSelection.accuracy) : '',
+          rankTextInput: wrongSelection ? wrongSelection.rankText || '' : ''
+        });
 
         if (feedbacks.length) {
           const feedback = feedbacks[0];
@@ -279,6 +300,53 @@ Page({
     }
   },
 
+  toggleWrongQuestion(event) {
+    const questionId = event.currentTarget.dataset.id;
+    if (!questionId) return;
+    const selected = this.data.selectedWrongQuestionIds.slice();
+    const index = selected.indexOf(questionId);
+    if (index >= 0) {
+      selected.splice(index, 1);
+    } else {
+      selected.push(questionId);
+    }
+    this.setData({
+      selectedWrongQuestionIds: selected,
+      questionSlots: this.data.questionSlots.map((question) => ({
+        ...question,
+        checked: selected.includes(question.id)
+      }))
+    });
+  },
+
+  onAccuracyInput(event) {
+    this.setData({ accuracyInput: event.detail.value || '' });
+  },
+
+  onRankTextInput(event) {
+    this.setData({ rankTextInput: event.detail.value || '' });
+  },
+
+  saveWrongQuestions() {
+    if (!this.data.activeSessionId || this.data.savingWrongQuestions) return;
+    this.setData({ savingWrongQuestions: true });
+    Api.markStudentWrongQuestions({
+      studentId: this.data.studentId,
+      courseId: this.data.courseId,
+      courseSessionId: this.data.activeSessionId,
+      questionIds: this.data.selectedWrongQuestionIds,
+      accuracy: this.data.accuracyInput === '' ? undefined : Number(this.data.accuracyInput),
+      rankText: this.data.rankTextInput
+    })
+      .then(() => {
+        this.setData({ savingWrongQuestions: false });
+        Notice.toast('错题已保存');
+      })
+      .catch((error) => {
+        this.setData({ savingWrongQuestions: false });
+        Notice.alert(error.message || '错题保存失败');
+      });
+  },
   submitFeedback() {
     if (this.data.submitting) return;
     if (!this.data.feedbackText.trim()
