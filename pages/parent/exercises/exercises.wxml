@@ -39,15 +39,15 @@
 
           <view class="course-entry-meta">
             <view class="meta-row">
-              <text class="meta-icon">👨‍🏫</text>
+              <image class="meta-icon" src="/assets/icons/teacher.svg" mode="aspectFit"></image>
               <text class="meta-text">{{item.teacherName || '待分配'}}</text>
             </view>
             <view class="meta-row" wx:if="{{item.classroomName}}">
-              <text class="meta-icon">📍</text>
+              <image class="meta-icon" src="/assets/icons/location.svg" mode="aspectFit"></image>
               <text class="meta-text">{{item.classroomName}}</text>
             </view>
             <view class="meta-row" wx:if="{{item.nextSessionTime}}">
-              <text class="meta-icon">🕐</text>
+              <image class="meta-icon" src="/assets/icons/clock.svg" mode="aspectFit"></image>
               <text class="meta-text">{{item.nextSessionTime}}</text>
             </view>
           </view>
@@ -109,15 +109,15 @@
 
           <view class="session-entry-meta">
             <view class="meta-row" wx:if="{{item.date}}">
-              <text class="meta-icon">📅</text>
+              <image class="meta-icon" src="/assets/icons/calendar.svg" mode="aspectFit"></image>
               <text class="meta-text">{{item.date}} {{item.time}}</text>
             </view>
             <view class="meta-row" wx:if="{{item.teacherName}}">
-              <text class="meta-icon">👨‍🏫</text>
+              <image class="meta-icon" src="/assets/icons/teacher.svg" mode="aspectFit"></image>
               <text class="meta-text">{{item.teacherName}}</text>
             </view>
             <view class="meta-row">
-              <text class="meta-icon">{{item.status === 'finished' ? '✅' : '⏳'}}</text>
+              <text class="meta-status {{item.status === 'finished' ? 'finished' : 'pending'}}">{{item.status === 'finished' ? '已' : '待'}}</text>
               <text class="meta-text">{{item.statusText || '未开始'}}</text>
             </view>
           </view>
@@ -154,19 +154,19 @@
           <text class="session-info-title">{{sessionDetail.sessionTitle}}</text>
           <view class="session-info-rows">
             <view class="meta-row" wx:if="{{sessionDetail.date}}">
-              <text class="meta-icon">📅</text>
+              <image class="meta-icon" src="/assets/icons/calendar.svg" mode="aspectFit"></image>
               <text class="meta-text">{{sessionDetail.date}} {{sessionDetail.time}}</text>
             </view>
             <view class="meta-row" wx:if="{{sessionDetail.teacherName}}">
-              <text class="meta-icon">👨‍🏫</text>
+              <image class="meta-icon" src="/assets/icons/teacher.svg" mode="aspectFit"></image>
               <text class="meta-text">{{sessionDetail.teacherName}}</text>
             </view>
             <view class="meta-row" wx:if="{{sessionDetail.classroomName}}">
-              <text class="meta-icon">📍</text>
+              <image class="meta-icon" src="/assets/icons/location.svg" mode="aspectFit"></image>
               <text class="meta-text">{{sessionDetail.classroomName}}</text>
             </view>
             <view class="meta-row">
-              <text class="meta-icon">{{sessionDetail.status === 'finished' ? '✅' : '⏳'}}</text>
+              <text class="meta-status {{sessionDetail.status === 'finished' ? 'finished' : 'pending'}}">{{sessionDetail.status === 'finished' ? '已' : '待'}}</text>
               <text class="meta-text">{{sessionDetail.statusText || '未开始'}}</text>
             </view>
           </view>
@@ -197,9 +197,9 @@
             <!-- Media badges -->
             <view class="record-detail-tags" wx:if="{{item.imageCount || item.videoCount || item.voiceCount}}">
               <text class="detail-tag">{{item.feedbackTypeText}}</text>
-              <text wx:if="{{item.imageCount}}" class="detail-tag">📷 {{item.imageCount}} 张图片</text>
-              <text wx:if="{{item.videoCount}}" class="detail-tag">🎬 {{item.videoCount}} 个视频</text>
-              <text wx:if="{{item.voiceCount}}" class="detail-tag">🎙️ {{item.voiceCount}} 条语音</text>
+              <text wx:if="{{item.imageCount}}" class="detail-tag">图片 {{item.imageCount}} 张</text>
+              <text wx:if="{{item.videoCount}}" class="detail-tag">视频 {{item.videoCount}} 个</text>
+              <text wx:if="{{item.voiceCount}}" class="detail-tag">语音 {{item.voiceCount}} 条</text>
             </view>
 
             <!-- Image thumbnails + view buttons -->
@@ -211,7 +211,7 @@
                 class="qf-btn ghost small media-btn"
                 data-id="{{media.id}}"
                 catchtap="previewRecordMedia"
-              >📷 查看图片</button>
+              >查看图片</button>
             </view>
 
             <!-- Video play buttons -->
@@ -223,7 +223,7 @@
                 class="qf-btn ghost small media-btn"
                 data-id="{{video.id}}"
                 catchtap="previewRecordMedia"
-              >🎬 播放视频</button>
+              >播放视频</button>
             </view>
 
             <!-- Voice play buttons -->
@@ -235,7 +235,7 @@
                 class="qf-btn ghost small media-btn"
                 data-id="{{voice.id}}"
                 catchtap="previewRecordMedia"
-              >🎙️ 播放语音</button>
+              >播放语音</button>
             </view>
           </view>
         </view>
@@ -251,18 +251,10 @@
     <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
       <view class="qf-top">
         <view class="qf-brand">
-          <text class="qf-brand-title">📖 我的错题本</text>
+          <text class="qf-brand-title">我的错题本</text>
           <text class="qf-brand-sub">全部课程 · 共 {{allRecordsTotal}} 条错题记录</text>
-      <view class="workbook-export-card">
-        <view class="workbook-export-copy">
-          <text class="workbook-export-title">可打印错题本</text>
-          <text class="workbook-export-sub">{{workbookSummary.totalWrongQuestions || 0}} 道错题 · 正确率 {{workbookSummary.accuracyText || '待录入'}}</text>
-        </view>
-        <view class="workbook-export-actions"><button class="workbook-export-btn" data-format="pdf" bindtap="exportWorkbook" disabled="{{exportingWorkbook}}">{{exportingWorkbook ? '生成中…' : '导出 PDF'}}</button><button class="workbook-export-btn secondary" data-format="docx" bindtap="exportWorkbook" disabled="{{exportingWorkbook}}">导出 Word</button></view>
-      </view>
         </view>
       </view>
-
       <view wx:if="{{loading}}" class="qf-empty"><text>加载中…</text></view>
 
       <view wx:elif="{{!allRecordsGroups.length}}" class="qf-empty">
@@ -271,6 +263,16 @@
       </view>
 
       <view wx:else class="content-area">
+        <view class="workbook-export-card">
+          <view class="workbook-export-copy">
+            <text class="workbook-export-title">可打印错题本</text>
+            <text class="workbook-export-sub">{{workbookSummary.totalWrongQuestions || 0}} 道错题 · 正确率 {{workbookSummary.accuracyText || '待录入'}}</text>
+          </view>
+          <view class="workbook-export-actions">
+            <button class="workbook-export-btn" data-format="pdf" bindtap="exportWorkbook" disabled="{{exportingWorkbook}}">{{exportingWorkbook ? '生成中…' : '导出 PDF'}}</button>
+            <button class="workbook-export-btn secondary" data-format="docx" bindtap="exportWorkbook" disabled="{{exportingWorkbook}}">导出 Word</button>
+          </view>
+        </view>
         <block wx:for="{{allRecordsGroups}}" wx:key="{{item.courseName}}{{item.sessionTitle}}">
           <!-- Course group header -->
           <view wx:if="{{index === 0 || item.courseName !== allRecordsGroups[index - 1].courseName}}" class="all-course-header">
@@ -301,10 +303,10 @@
                 <text class="all-record-text">{{item.text || '（图片/视频/语音反馈）'}}</text>
                 <view class="all-record-tags" wx:if="{{item.imageCount || item.videoCount || item.voiceCount || item.attachFileCount}}">
                   <text class="detail-tag">{{item.feedbackTypeText}}</text>
-                  <text wx:if="{{item.imageCount}}" class="detail-tag">📷 {{item.imageCount}} 张</text>
-                  <text wx:if="{{item.videoCount}}" class="detail-tag">🎬 {{item.videoCount}} 个</text>
-                  <text wx:if="{{item.voiceCount}}" class="detail-tag">🎙️ {{item.voiceCount}} 条</text>
-                  <text wx:if="{{item.attachFileCount}}" class="detail-tag">📄 {{item.attachFileCount}} 份</text>
+                  <text wx:if="{{item.imageCount}}" class="detail-tag">图片 {{item.imageCount}} 张</text>
+                  <text wx:if="{{item.videoCount}}" class="detail-tag">视频 {{item.videoCount}} 个</text>
+                  <text wx:if="{{item.voiceCount}}" class="detail-tag">语音 {{item.voiceCount}} 条</text>
+                  <text wx:if="{{item.attachFileCount}}" class="detail-tag">文档 {{item.attachFileCount}} 份</text>
                 </view>
                 <view wx:if="{{item.imageFiles.length}}" class="all-record-media">
                   <button
@@ -314,7 +316,7 @@
                     class="qf-btn ghost small"
                     data-id="{{media.id}}"
                     catchtap="previewRecordMedia"
-                  >📷 查看图片</button>
+                  >查看图片</button>
                 </view>
                 <view wx:if="{{item.videoFiles.length}}" class="all-record-media">
                   <button
@@ -324,7 +326,7 @@
                     class="qf-btn ghost small"
                     data-id="{{video.id}}"
                     catchtap="previewRecordMedia"
-                  >🎬 播放视频</button>
+                  >播放视频</button>
                 </view>
                 <view wx:if="{{item.voiceFiles.length}}" class="all-record-media">
                   <button
@@ -334,7 +336,7 @@
                     class="qf-btn ghost small"
                     data-id="{{voice.id}}"
                     catchtap="previewRecordMedia"
-                  >🎙️ 播放语音</button>
+                  >播放语音</button>
                 </view>
               </view>
             </view>
@@ -436,7 +438,7 @@
                     data-id="{{voice.id}}"
                     bindtap="playInlineVoice"
                   >
-                    <text class="test-voice-icon">🎙️</text>
+                    <image class="test-voice-icon" src="/assets/icons/voice.svg" mode="aspectFit"></image>
                     <text class="test-voice-text">点击播放语音</text>
                   </view>
                 </view>

@@ -58,17 +58,17 @@
         <!-- Course info: teacher, time, location -->
         <view class="course-info">
           <view class="course-info-row">
-            <text class="course-info-icon">👨‍🏫</text>
+            <image class="course-info-icon" src="/assets/icons/teacher.svg" mode="aspectFit"></image>
             <text class="course-info-label">任课教师</text>
             <text class="course-info-value">{{item.teacherName || '待分配'}}</text>
           </view>
           <view class="course-info-row">
-            <text class="course-info-icon">📍</text>
+            <image class="course-info-icon" src="/assets/icons/location.svg" mode="aspectFit"></image>
             <text class="course-info-label">上课地点</text>
             <text class="course-info-value">{{item.classroomName}}</text>
           </view>
           <view class="course-info-row" wx:if="{{item.nextSessionTime}}">
-            <text class="course-info-icon">🕐</text>
+            <image class="course-info-icon" src="/assets/icons/clock.svg" mode="aspectFit"></image>
             <text class="course-info-label">最近上课</text>
             <text class="course-info-value">{{item.nextSessionTime}}</text>
           </view>
@@ -97,7 +97,7 @@
             data-id="{{item.id}}"
             bindtap="goQuiz"
           >
-            <text class="test-btn-icon">📝</text>
+            <image class="test-btn-icon" src="/assets/icons/pre-test.svg" mode="aspectFit"></image>
             <view class="test-btn-text">
               <text class="test-btn-title">课堂小测</text>
               <text class="test-btn-sub" wx:if="{{item.totalPreCount + item.totalPostCount}}">{{item.totalPreCount + item.totalPostCount}} 份记录</text>
@@ -110,7 +110,7 @@
             data-id="{{item.id}}"
             bindtap="goSummary"
           >
-            <text class="test-btn-icon">📋</text>
+            <image class="test-btn-icon" src="/assets/icons/post-test.svg" mode="aspectFit"></image>
             <view class="test-btn-text">
               <text class="test-btn-title">本讲总结</text>
               <text class="test-btn-sub">查看总结</text>
@@ -125,7 +125,7 @@
             data-url="/pages/live-player/live-player?id={{item.nextSessionId}}"
             bindtap="goLive"
           >
-            <text class="test-btn-icon">▶</text>
+            <image class="test-btn-icon" src="/assets/icons/live.svg" mode="aspectFit"></image>
             <view class="test-btn-text">
               <text class="test-btn-title">课程直播</text>
               <text class="test-btn-sub">{{item.nextSessionTime || '暂无直播安排'}}</text>

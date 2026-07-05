@@ -28,6 +28,11 @@
   background: rgba(249, 115, 22, 0.08);
 }
 
+.quiz-option-img {
+  width: 46rpx;
+  height: 46rpx;
+}
+
 .quiz-option-body {
   flex: 1;
   min-width: 0;

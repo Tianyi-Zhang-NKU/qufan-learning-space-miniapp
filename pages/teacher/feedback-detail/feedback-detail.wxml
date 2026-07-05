@@ -112,7 +112,7 @@
           <text>添加图片</text>
         </button>
         <button class="upload-btn flex-btn" bindtap="chooseDocument">
-          <text class="upload-btn-icon">📄</text>
+          <image class="upload-btn-icon" src="/assets/icons/note.svg" mode="aspectFit"></image>
           <text>上传文档</text>
         </button>
       </view>

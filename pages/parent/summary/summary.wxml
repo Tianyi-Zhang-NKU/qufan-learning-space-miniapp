@@ -93,12 +93,12 @@
                 data-url="{{voice.previewUrl}}"
                 bindtap="playVoice"
               >
-                <text class="feedback-voice-icon">🎙️</text>
+                <image class="feedback-voice-icon" src="/assets/icons/voice.svg" mode="aspectFit"></image>
                 <text class="feedback-voice-text">点击播放语音</text>
               </view>
             </view>
             <view wx:else class="feedback-voice-bar disabled">
-              <text class="feedback-voice-icon">🎙️</text>
+              <image class="feedback-voice-icon" src="/assets/icons/voice.svg" mode="aspectFit"></image>
               <text class="feedback-voice-text">暂无语音</text>
             </view>
 

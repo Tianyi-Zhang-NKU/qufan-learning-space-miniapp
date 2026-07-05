@@ -209,7 +209,8 @@
 
 .feedback-voice-icon {
   flex-shrink: 0;
-  font-size: 30rpx;
+  width: 34rpx;
+  height: 34rpx;
 }
 
 .feedback-voice-text {

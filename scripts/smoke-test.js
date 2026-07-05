@@ -90,6 +90,18 @@ function assertNoOldBrand() {
   assert(hits.length === 0, `old brand strings found: ${hits.join(', ')}`);
 }
 
+function assertNoPresentationEmoji() {
+  const blockedEmoji = ['🎙️', '📝', '✅', '📄', '📷', '🎬', '👨‍🏫', '👩‍🏫', '👥', '📍', '🕐', '📅', '📖', '📋'];
+  const hits = [];
+  walkTextFiles((full, text) => {
+    const relative = path.relative(root, full).replace(/\\/g, '/');
+    if (!relative.startsWith('pages/') && !relative.startsWith('components/') && !relative.startsWith('custom-tab-bar/')) return;
+    if (!['.wxml', '.wxss'].includes(path.extname(relative))) return;
+    const found = blockedEmoji.filter((emoji) => text.includes(emoji));
+    if (found.length) hits.push(`${relative}: ${found.join(' ')}`);
+  });
+  assert(hits.length === 0, `presentation emoji found; use local icon assets instead: ${hits.join(', ')}`);
+}
 function assertNoDeprecatedMainCopy() {
   const blockedWords = [
     ['邀', '请', '码'].join(''),
@@ -241,8 +253,13 @@ async function run() {
       && parentSummaryWxml.includes('feedback-voice-bar disabled'),
     'lesson summary feedback card should render image, comment and voice state inline in the client-requested order'
   );
-  assert(readText('pages/parent/exercises/exercises.wxml').includes('workbook-export-card') && readText('pages/parent/exercises/exercises.js').includes('exportStudentWrongWorkbook'), 'wrong workbook should expose printable PDF export');
-  assert(readText('pages/parent/exercises/exercises.wxml').includes('data-format="docx"') && readText('pages/parent/exercises/exercises.wxml').includes('导出 Word'), 'wrong workbook should also expose printable Word export');
+  const parentExercisesWxml = readText('pages/parent/exercises/exercises.wxml');
+  assert(parentExercisesWxml.includes('workbook-export-card') && readText('pages/parent/exercises/exercises.js').includes('exportStudentWrongWorkbook'), 'wrong workbook should expose printable PDF export');
+  assert(parentExercisesWxml.includes('data-format="docx"') && parentExercisesWxml.includes('导出 Word'), 'wrong workbook should also expose printable Word export');
+  const allRecordsStart = parentExercisesWxml.indexOf("mode === 'allRecords'");
+  const workbookExportStart = parentExercisesWxml.indexOf('workbook-export-card', allRecordsStart);
+  const allRecordsContentStart = parentExercisesWxml.indexOf('wx:else class="content-area"', allRecordsStart);
+  assert(allRecordsStart >= 0 && workbookExportStart > allRecordsContentStart, 'wrong workbook export card should render inside the all-records content area, not in the page header');
 
   const loginWxss = readText('pages/login/login.wxss');
   const loginWxml = readText('pages/login/login.wxml');
@@ -255,6 +272,7 @@ async function run() {
   assert(!loginWxss.includes('calc(100vh'), 'login page should avoid calc viewport sizing that can collapse in miniapp renderers');
   assertNoOldBrand();
   assertNoDeprecatedMainCopy();
+  assertNoPresentationEmoji();
 
   const config = require('../services/config');
   const db = require('../services/mock-db');
