@@ -34,6 +34,7 @@ authMode: 'mock' // mock | wechatPhone | sms | http
 
 - `phoneAccounts`：手机号到老师、学生/家长、管理员档案的映射。
 - `students` / `teachers` / `courses` / `courseSessions`：课程与课次基础数据；老师按“一名老师对应一个学科”建模。
+- 教务同步：mock 层支持学生插班、调班、退班，并同步课程、班级和课次名单。
 - `lessonFeedbacks`：老师上传给学生的本讲总结。
 - `mediaFiles`：图片、语音元信息，包含 `storageKey`、`retentionUntil` 和下载权限。
 - `classrooms` / `liveRooms`：15 间教室和 ClassIn 直播入口占位。
@@ -45,7 +46,7 @@ authMode: 'mock' // mock | wechatPhone | sms | http
 - 反馈：`uploadFeedbackImage`、`uploadFeedbackVoice`、`createLessonFeedback`
 - 学生/家长端：`getStudentDashboard`、`getStudentCourses`、`getStudentCourseDetail`、`getStudentLessonFeedbacks`、`getFeedbackDetail`
 - 媒体：`getMediaPreview`、`downloadFeedbackImage`、`playFeedbackVoice`
-- 管理端：`getAdminOverview`、`getAdminCourseTree`、`getAdminTeacherRelations`、`getAdminStudentRelations`
+- 管理端：`getAdminOverview`、`getAdminCourseTree`、`getAdminTeacherRelations`、`getAdminStudentRelations`、`syncEnrollmentChange`
 - 直播：`requestClassInLiveEntry`
 
 ## 页面说明
@@ -65,7 +66,7 @@ authMode: 'mock' // mock | wechatPhone | sms | http
 ## 真实上线前需要甲方提供
 
 - 真实手机号登录方式：微信手机号授权或短信验证码服务。
-- 学员、老师、课程、课次数据 API。
+- 学员、老师、课程、课次数据 API，以及插班、调班、退班同步事件。
 - 媒体存储方案：微信云存储、腾讯云 COS 或其他对象存储。
 - 图片下载签名接口。
 - 语音播放签名接口。

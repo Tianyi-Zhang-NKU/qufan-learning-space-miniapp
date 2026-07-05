@@ -134,6 +134,32 @@ function addUnique(list, value) {
   list.push(value);
 }
 
+function removeValue(list, value) {
+  if (!Array.isArray(list)) return;
+  for (let index = list.length - 1; index >= 0; index -= 1) {
+    if (list[index] === value) list.splice(index, 1);
+  }
+}
+
+function attachStudentToCourse(student, course) {
+  addUnique(course.studentIds, student.id);
+  addUnique(student.courseIds, course.id);
+  const classItem = findClass(course.classId);
+  if (classItem) addUnique(classItem.studentIds, student.id);
+  db.courseSessions.forEach((session) => {
+    if (session.courseId === course.id) addUnique(session.studentIds, student.id);
+  });
+}
+
+function detachStudentFromCourse(student, course) {
+  removeValue(course.studentIds, student.id);
+  removeValue(student.courseIds, course.id);
+  const classItem = findClass(course.classId);
+  if (classItem) removeValue(classItem.studentIds, student.id);
+  db.courseSessions.forEach((session) => {
+    if (session.courseId === course.id) removeValue(session.studentIds, student.id);
+  });
+}
 function removeFromCollection(collection, predicate) {
   let removed = 0;
   for (let index = collection.length - 1; index >= 0; index -= 1) {
@@ -2017,45 +2043,59 @@ const mockApi = {
   addStudentToCourse(payload = {}) {
     requireRole('admin');
     const student = findStudent(payload.studentId);
-    const course = findCourse(payload.courseId);
+    const course = findCourse(payload.courseId || payload.toCourseId);
     if (!student) throw makeError('NOT_FOUND', '学生不存在。');
     if (!course) throw makeError('NOT_FOUND', '课程不存在。');
     if (course.studentIds.includes(student.id)) throw makeError('ALREADY_EXISTS', '学生已在该课程中。');
-    course.studentIds.push(student.id);
-    student.courseIds.push(course.id);
-    const classItem = findClass(course.classId);
-    if (classItem && !classItem.studentIds.includes(student.id)) {
-      classItem.studentIds.push(student.id);
-    }
-    db.courseSessions.forEach((session) => {
-      if (session.courseId === course.id && !session.studentIds.includes(student.id)) {
-        session.studentIds.push(student.id);
-      }
-    });
-    pushAudit(getSession().identityId, 'add_student_to_course', 'course', course.id, `将 ${student.name} 导入课程 ${course.name}`);
-    return delay({ student, course: decorateCourse(course) });
+    attachStudentToCourse(student, course);
+    pushAudit(getSession().identityId, 'add_student_to_course', 'course', course.id, `将 ${student.name} 插班到 ${course.name}`);
+    return delay({ action: 'enroll', student, course: decorateCourse(course) });
   },
 
   removeStudentFromCourse(payload = {}) {
     requireRole('admin');
     const student = findStudent(payload.studentId);
-    const course = findCourse(payload.courseId);
+    const course = findCourse(payload.courseId || payload.fromCourseId);
     if (!student) throw makeError('NOT_FOUND', '学生不存在。');
     if (!course) throw makeError('NOT_FOUND', '课程不存在。');
     if (!course.studentIds.includes(student.id)) throw makeError('NOT_FOUND', '学生不在该课程中。');
-    course.studentIds = course.studentIds.filter((id) => id !== student.id);
-    student.courseIds = student.courseIds.filter((id) => id !== course.id);
-    const classItem = findClass(course.classId);
-    if (classItem) {
-      classItem.studentIds = classItem.studentIds.filter((id) => id !== student.id);
-    }
-    db.courseSessions.forEach((session) => {
-      if (session.courseId === course.id) {
-        session.studentIds = session.studentIds.filter((id) => id !== student.id);
-      }
+    detachStudentFromCourse(student, course);
+    pushAudit(getSession().identityId, 'remove_student_from_course', 'course', course.id, `将 ${student.name} 从 ${course.name} 退班`);
+    return delay({ action: 'withdraw', student, course: decorateCourse(course) });
+  },
+
+  transferStudentCourse(payload = {}) {
+    requireRole('admin');
+    const student = findStudent(payload.studentId);
+    const fromCourse = findCourse(payload.fromCourseId || payload.sourceCourseId);
+    const toCourse = findCourse(payload.toCourseId || payload.targetCourseId);
+    if (!student) throw makeError('NOT_FOUND', '学生不存在。');
+    if (!fromCourse || !toCourse) throw makeError('NOT_FOUND', '源课程或目标课程不存在。');
+    if (fromCourse.id === toCourse.id) throw makeError('VALIDATION_ERROR', '调班前后课程不能相同。');
+    if (!fromCourse.studentIds.includes(student.id)) throw makeError('NOT_FOUND', '学生不在源课程中。');
+    detachStudentFromCourse(student, fromCourse);
+    attachStudentToCourse(student, toCourse);
+    pushAudit(getSession().identityId, 'transfer_student_course', 'course', toCourse.id, `将 ${student.name} 从 ${fromCourse.name} 调班到 ${toCourse.name}`);
+    return delay({
+      action: 'transfer',
+      student,
+      fromCourse: decorateCourse(fromCourse),
+      toCourse: decorateCourse(toCourse)
     });
-    pushAudit(getSession().identityId, 'remove_student_from_course', 'course', course.id, `将 ${student.name} 移出课程 ${course.name}`);
-    return delay({ student, course: decorateCourse(course) });
+  },
+
+  syncEnrollmentChange(payload = {}) {
+    const action = payload.action || payload.type || 'enroll';
+    if (action === 'enroll' || action === 'insert') {
+      return this.addStudentToCourse({ studentId: payload.studentId, courseId: payload.courseId || payload.toCourseId || payload.targetCourseId });
+    }
+    if (action === 'transfer') {
+      return this.transferStudentCourse(payload);
+    }
+    if (action === 'withdraw' || action === 'drop' || action === 'remove') {
+      return this.removeStudentFromCourse({ studentId: payload.studentId, courseId: payload.courseId || payload.fromCourseId || payload.sourceCourseId });
+    }
+    throw makeError('VALIDATION_ERROR', '未知教务同步动作。');
   },
 
   createInvite() {

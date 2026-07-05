@@ -18,6 +18,11 @@ Page({
     selectedCourseId: '',
     importingStudent: false,
     studentResult: null,
+    selectedSourceCourseIndex: 0,
+    selectedSourceCourseId: '',
+    syncAction: 'enroll',
+    syncingEnrollment: false,
+    syncResult: null,
 
     // ===== 导入课程表单 =====
     teacherOptions: [],
@@ -46,7 +51,7 @@ Page({
   },
 
   loadAll() {
-    Promise.all([
+    return Promise.all([
       Api.getBootstrap(),
       Api.getAdminCourseTree()
     ])
@@ -81,6 +86,7 @@ Page({
 
         const selectedStudentId = studentList.length > 0 ? studentList[0].id : '';
         const selectedCourseId = courseList.length > 0 ? courseList[0].id : '';
+        const selectedSourceCourseId = courseList.length > 0 ? courseList[0].id : '';
 
         this.setData({
           bootstrap,
@@ -90,16 +96,16 @@ Page({
           courseList,
           selectedStudentIndex: 0,
           selectedCourseIndex: 0,
+          selectedSourceCourseIndex: 0,
           selectedStudentId,
           selectedCourseId,
+          selectedSourceCourseId,
           teacherOptions,
           classroomOptions,
           selectedTeacherIndex: 0,
           selectedClassroomIndex: 0,
           'courseForm.teacherId': defaultTeacherId,
           'courseForm.classroomId': defaultClassroomId,
-          studentResult: null,
-          courseResult: null,
           recentCourses: (courseTree || []).slice(0, 5)
         });
       })
@@ -115,7 +121,8 @@ Page({
     this.setData({
       selectedStudentIndex: index,
       selectedStudentId: student.id,
-      studentResult: null
+      studentResult: null,
+      syncResult: null
     });
   },
 
@@ -126,7 +133,8 @@ Page({
     this.setData({
       selectedCourseIndex: index,
       selectedCourseId: course.id,
-      studentResult: null
+      studentResult: null,
+      syncResult: null
     });
   },
 
@@ -146,7 +154,7 @@ Page({
 
     this.setData({ importingStudent: true, studentResult: null });
 
-    Api.addStudentToCourse({ studentId: selectedStudentId, courseId: selectedCourseId })
+    Api.syncEnrollmentChange({ action: 'enroll', studentId: selectedStudentId, toCourseId: selectedCourseId })
       .then(() => {
         const student = studentList.find((s) => s.id === selectedStudentId);
         const course = courseList.find((c) => c.id === selectedCourseId);
@@ -166,6 +174,89 @@ Page({
       });
   },
 
+  pickSourceCourse(event) {
+    const index = Number(event.detail.value || 0);
+    const course = this.data.courseList[index];
+    if (!course) return;
+    this.setData({
+      selectedSourceCourseIndex: index,
+      selectedSourceCourseId: course.id,
+      syncResult: null
+    });
+  },
+
+  switchSyncAction(event) {
+    const action = event.currentTarget.dataset.action || 'enroll';
+    const updates = { syncAction: action, syncResult: null, studentResult: null };
+    if (action === 'transfer' && this.data.selectedSourceCourseId === this.data.selectedCourseId && this.data.courseList.length > 1) {
+      const nextIndex = this.data.selectedSourceCourseIndex === 0 ? 1 : 0;
+      const nextCourse = this.data.courseList[nextIndex];
+      updates.selectedCourseIndex = nextIndex;
+      updates.selectedCourseId = nextCourse ? nextCourse.id : this.data.selectedCourseId;
+    }
+    this.setData(updates);
+  },
+
+  doSyncEnrollment() {
+    const {
+      syncAction,
+      selectedStudentId,
+      selectedCourseId,
+      selectedSourceCourseId,
+      studentList,
+      courseList
+    } = this.data;
+    if (!selectedStudentId) {
+      Notice.toast('请先选择学生');
+      return;
+    }
+    if ((syncAction === 'transfer' || syncAction === 'withdraw') && !selectedSourceCourseId) {
+      Notice.toast('请先选择原课程');
+      return;
+    }
+    if ((syncAction === 'enroll' || syncAction === 'transfer') && !selectedCourseId) {
+      Notice.toast('请先选择目标课程');
+      return;
+    }
+    if (syncAction === 'transfer' && selectedSourceCourseId === selectedCourseId) {
+      Notice.toast('调班前后课程不能相同');
+      return;
+    }
+
+    const student = studentList.find((s) => s.id === selectedStudentId) || {};
+    const sourceCourse = courseList.find((c) => c.id === selectedSourceCourseId) || {};
+    const targetCourse = courseList.find((c) => c.id === selectedCourseId) || {};
+    const labels = { enroll: '插班', transfer: '调班', withdraw: '退班' };
+
+    this.setData({ syncingEnrollment: true, syncResult: null });
+    Api.syncEnrollmentChange({
+      action: syncAction,
+      studentId: selectedStudentId,
+      fromCourseId: selectedSourceCourseId,
+      toCourseId: selectedCourseId
+    })
+      .then(() => {
+        const message = syncAction === 'transfer'
+          ? `${student.name || '学生'} 已从「${sourceCourse.name || ''}」调班到「${targetCourse.name || ''}」`
+          : syncAction === 'withdraw'
+            ? `${student.name || '学生'} 已从「${sourceCourse.name || ''}」退班`
+            : `${student.name || '学生'} 已插班到「${targetCourse.name || ''}」`;
+        Notice.toast(`${labels[syncAction]}成功`, 'success');
+        return this.loadAll().then(() => {
+          this.setData({
+            syncingEnrollment: false,
+            syncResult: { success: true, message }
+          });
+        });
+      })
+      .catch((error) => {
+        Notice.toast(error.message || '同步失败');
+        this.setData({
+          syncingEnrollment: false,
+          syncResult: { success: false, message: error.message || '同步失败' }
+        });
+      });
+  },
   // ============ 导入课程（创建课程） ============
 
   onCourseFormInput(event) {

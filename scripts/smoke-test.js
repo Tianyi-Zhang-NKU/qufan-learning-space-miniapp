@@ -203,6 +203,8 @@ async function run() {
 
   const adminManageWxml = readText('pages/admin/manage/manage.wxml');
   assert(adminManageWxml.includes('导入学生') && !adminManageWxml.includes('导入课程'), 'admin data management should only keep import-student action');
+  assert(adminManageWxml.includes('教务同步') && adminManageWxml.includes('data-action="transfer"') && adminManageWxml.includes('data-action="withdraw"'), 'admin data management should expose enrollment sync actions for insert, transfer and withdraw');
+  assert(readText('pages/admin/manage/manage.js').includes('syncEnrollmentChange'), 'admin data management should call enrollment sync API');
 
   assert(readText('pages/parent/home/home.wxml').includes('/pages/live-player/live-player'), 'student pages should expose course live entry');
   assert(readText('pages/parent/home/home.wxml').includes('course-actions tests-row') && readText('pages/parent/home/home.wxml').includes('course-actions live-row'), 'student home should split test buttons and live entry into separate rows');
@@ -288,6 +290,7 @@ async function run() {
   assert(typeof Api.updateStudent === 'function' && typeof Api.deleteStudent === 'function', 'admin student CRUD missing');
   assert(typeof Api.updateTeacher === 'function' && typeof Api.deleteTeacher === 'function', 'admin teacher CRUD missing');
   assert(typeof Api.updateClassroom === 'function' && typeof Api.deleteClassroom === 'function', 'admin classroom CRUD missing');
+  assert(typeof Api.syncEnrollmentChange === 'function' && typeof Api.transferStudentCourse === 'function' && typeof Api.removeStudentFromCourse === 'function', 'admin enrollment sync APIs missing');
   assert(!Object.prototype.hasOwnProperty.call(Api, ['b', 'i', 'n', 'd', 'I', 'n', 'v', 'i', 't', 'e'].join('')), 'old auth API should not be exported');
 
   const teacherSession = await Api.loginByPhone({ phone: '13800000002' });
@@ -511,6 +514,34 @@ async function run() {
     topic: 'Smoke 首次课'
   });
   assert(createdSession.sessionTitle === '第1次课' && createdSession.topic === 'Smoke 首次课', 'admin should create default-numbered course lesson');
+
+  const transferCourse = await Api.createCourse({
+    name: 'Smoke 调班目标课程',
+    subject: '化学',
+    grade: '初三',
+    teacherId: updatedTeacher.id,
+    classroomId: updatedClassroom.id,
+    studentIds: [],
+    description: 'enrollment sync smoke'
+  });
+  const transferSession = await Api.createCourseSession({
+    courseId: transferCourse.id,
+    date: '2026-08-01',
+    startTime: '12:00',
+    endTime: '13:30',
+    classroomId: updatedClassroom.id,
+    topic: 'Smoke 调班目标课'
+  });
+  const enrolledChange = await Api.syncEnrollmentChange({ action: 'enroll', studentId: updatedStudent.id, toCourseId: transferCourse.id });
+  assert(enrolledChange.course.studentIds.includes(updatedStudent.id), 'admin enrollment sync should insert student into target course');
+  assert(Api.__mockDb.courseSessions.find((item) => item.id === transferSession.id).studentIds.includes(updatedStudent.id), 'inserted student should sync into target course sessions');
+  const transferredChange = await Api.syncEnrollmentChange({ action: 'transfer', studentId: updatedStudent.id, fromCourseId: createdCourse.id, toCourseId: transferCourse.id });
+  assert(!transferredChange.fromCourse.studentIds.includes(updatedStudent.id) && transferredChange.toCourse.studentIds.includes(updatedStudent.id), 'admin enrollment sync should transfer student between courses');
+  assert(!Api.__mockDb.courseSessions.find((item) => item.id === createdSession.id).studentIds.includes(updatedStudent.id), 'transferred student should leave source course sessions');
+  const withdrawnChange = await Api.syncEnrollmentChange({ action: 'withdraw', studentId: updatedStudent.id, fromCourseId: transferCourse.id });
+  assert(!withdrawnChange.course.studentIds.includes(updatedStudent.id), 'admin enrollment sync should withdraw student from course');
+  assert(!Api.__mockDb.courseSessions.find((item) => item.id === transferSession.id).studentIds.includes(updatedStudent.id), 'withdrawn student should leave target course sessions');
+
   const updatedSession = await Api.updateCourseSession({
     id: createdSession.id,
     sessionTitle: '第1次课',
@@ -522,6 +553,7 @@ async function run() {
   });
   assert(updatedSession.topic === 'Smoke 更新主题' && updatedSession.date === '2026-08-02', 'admin should update lesson topic, room and time');
   await Api.deleteCourseSession(updatedSession.id);
+  await Api.deleteCourse(transferCourse.id);
   await Api.deleteCourse(createdCourse.id);
   await Api.deleteStudent(updatedStudent.id);
   await Api.deleteTeacher(updatedTeacher.id);

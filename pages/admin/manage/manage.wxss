@@ -362,3 +362,80 @@
 .recent-course-row {
   border-bottom-color: rgba(16, 34, 74, 0.08);
 }
+
+/* ---- Enrollment sync ---- */
+.sync-section-title {
+  margin-top: 28rpx;
+}
+
+.enrollment-sync-card {
+  max-width: 660rpx;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.sync-action-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+  margin-bottom: 22rpx;
+  padding: 8rpx;
+  border-radius: 22rpx;
+  background: #F6F3E8;
+  border: 1rpx solid rgba(16, 34, 74, 0.08);
+}
+
+.sync-action {
+  min-height: 66rpx;
+  padding: 0 10rpx;
+  border-radius: 18rpx;
+  background: transparent;
+  color: #5F6470;
+  font-size: 24rpx;
+  font-weight: 650;
+  line-height: 66rpx;
+}
+
+.sync-action::after {
+  border: 0;
+}
+
+.sync-action.active {
+  background: #10224A;
+  color: #FFFDF6;
+  box-shadow: 0 10rpx 22rpx rgba(16, 34, 74, 0.16);
+}
+
+.sync-student-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+  margin-bottom: 22rpx;
+  padding: 18rpx 20rpx;
+  border-radius: 18rpx;
+  background: #EEF5DD;
+  border: 1rpx solid rgba(62, 139, 104, 0.14);
+}
+
+.sync-label {
+  color: #5F6470;
+  font-size: 22rpx;
+  font-weight: 650;
+}
+
+.sync-value {
+  flex: 1;
+  min-width: 0;
+  color: #10224A;
+  font-size: 24rpx;
+  font-weight: 700;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sync-submit {
+  margin-top: 18rpx;
+}
