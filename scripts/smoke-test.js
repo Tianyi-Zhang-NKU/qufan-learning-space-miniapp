@@ -69,6 +69,19 @@ function assertPageFiles(appJson) {
   requiredPages.forEach((page) => {
     assert(appJson.pages.includes(page), `app.json missing page: ${page}`);
   });
+  const legacyShellPages = [
+    'pages/home/home',
+    'pages/schedule/schedule',
+    'pages/live/live',
+    'pages/exercises/exercises',
+    'pages/wrongbook/wrongbook',
+    'pages/parent/parent',
+    'pages/teacher/teacher',
+    'pages/admin/admin'
+  ];
+  legacyShellPages.forEach((page) => {
+    assert(!appJson.pages.includes(page), `legacy shell pages should not be registered: ${page}`);
+  });
   appJson.pages.forEach((page) => {
     ['js', 'json', 'wxml', 'wxss'].forEach((ext) => {
       const file = path.join(root, `${page}.${ext}`);

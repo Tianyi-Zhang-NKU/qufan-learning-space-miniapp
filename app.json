@@ -20,15 +20,7 @@
     "pages/teacher/feedback-detail/feedback-detail",
     "pages/admin/home/home",
     "pages/admin/manage/manage",
-    "pages/admin/schedule-board/schedule-board",
-    "pages/home/home",
-    "pages/schedule/schedule",
-    "pages/live/live",
-    "pages/exercises/exercises",
-    "pages/wrongbook/wrongbook",
-    "pages/parent/parent",
-    "pages/teacher/teacher",
-    "pages/admin/admin"
+    "pages/admin/schedule-board/schedule-board"
   ],
   "window": {
     "navigationBarTitleText": "趣帆学习空间",

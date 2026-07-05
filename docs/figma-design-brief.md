@@ -82,14 +82,17 @@
 需要绘制这些首屏：
 
 - 登录：`pages/login/login`
-- 首页：`pages/home/home`
-- 实时课表：`pages/schedule/schedule`
-- 教室直播：`pages/live/live`
-- 可选测验资料：`pages/exercises/exercises`
-- 本讲总结：`pages/parent/exercises/exercises`
-- 家长端：`pages/parent/parent`
-- 教师端：`pages/teacher/teacher`
-- 机构端：`pages/admin/admin`
+- 学生/家长首页：`pages/parent/home/home`
+- 学生/家长课表：`pages/parent/courses/courses`
+- 课堂小测：`pages/parent/quiz/quiz`
+- 本讲总结：`pages/parent/summary/summary`
+- 错题本与导出：`pages/parent/exercises/exercises`
+- 老师首页：`pages/teacher/home/home`
+- 老师课程表：`pages/teacher/courses/courses`
+- 老师反馈详情：`pages/teacher/feedback-detail/feedback-detail`
+- 管理首页：`pages/admin/home/home`
+- 教务同步：`pages/admin/manage/manage`
+- 直播入口：`pages/live-player/live-player`
 
 ## Handoff Rules
 
