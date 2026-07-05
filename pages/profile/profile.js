@@ -122,11 +122,9 @@ Page({
         // 静默处理
       });
   },
-
-  /** 点击课程 → 跳转课程详情 */
-  goCourseDetail(event) {
-    const courseId = event.currentTarget.dataset.courseId;
-    wx.navigateTo({ url: `/pages/course-detail/course-detail?id=${courseId}` });
+  /** 点击课程 → 跳转教师课程表 */
+  goTeacherCourses() {
+    wx.navigateTo({ url: '/pages/teacher/courses/courses' });
   },
 
   /** 点击学生 → 跳转该学生在第一个课程中的反馈 */

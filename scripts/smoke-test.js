@@ -53,15 +53,18 @@ function assertPageFiles(appJson) {
   const requiredPages = [
     'pages/login/login',
     'pages/profile/profile',
-    'pages/course-detail/course-detail',
     'pages/live-player/live-player',
     'pages/file-preview/file-preview',
-    'pages/wrong-record-editor/wrong-record-editor',
     'pages/parent/home/home',
     'pages/parent/courses/courses',
     'pages/parent/exercises/exercises',
+    'pages/parent/quiz/quiz',
+    'pages/parent/summary/summary',
     'pages/teacher/home/home',
     'pages/teacher/courses/courses',
+    'pages/teacher/test-upload/test-upload',
+    'pages/teacher/feedback-students/feedback-students',
+    'pages/teacher/feedback-detail/feedback-detail',
     'pages/admin/home/home',
     'pages/admin/manage/manage',
     'pages/admin/schedule-board/schedule-board'
@@ -69,7 +72,7 @@ function assertPageFiles(appJson) {
   requiredPages.forEach((page) => {
     assert(appJson.pages.includes(page), `app.json missing page: ${page}`);
   });
-  const legacyShellPages = [
+  const removedPages = [
     'pages/home/home',
     'pages/schedule/schedule',
     'pages/live/live',
@@ -77,10 +80,13 @@ function assertPageFiles(appJson) {
     'pages/wrongbook/wrongbook',
     'pages/parent/parent',
     'pages/teacher/teacher',
-    'pages/admin/admin'
+    'pages/admin/admin',
+    'pages/identity-switch/identity-switch',
+    'pages/course-detail/course-detail',
+    'pages/wrong-record-editor/wrong-record-editor'
   ];
-  legacyShellPages.forEach((page) => {
-    assert(!appJson.pages.includes(page), `legacy shell pages should not be registered: ${page}`);
+  removedPages.forEach((page) => {
+    assert(!appJson.pages.includes(page), `removed pages should not be registered: ${page}`);
   });
   appJson.pages.forEach((page) => {
     ['js', 'json', 'wxml', 'wxss'].forEach((ext) => {
@@ -244,6 +250,8 @@ async function run() {
   assert(!profileWxml.includes('查看完整课表'), 'profile schedules should be embedded directly instead of jump-only cards');
   assert(!profileWxml.includes('今日课程提醒') && !profileJs.includes('todayTeacherSchedule'), 'teacher profile should remove today course reminder from personal center');
   assert(!profileWxml.includes('profile-schedule-board') && !profileWxssHasCalendarStyle(), 'profile should not keep calendar board styling after schedule moves out');
+  assert(profileWxml.includes('goTeacherCourses') && profileJs.includes('/pages/teacher/courses/courses'), 'profile course cards should route to current teacher course schedule');
+  assert(!profileWxml.includes('goCourseDetail') && !profileJs.includes('/pages/course-detail/course-detail'), 'profile should not route to removed course detail page');
 
   const teacherHomeJs = readText('pages/teacher/home/home.js');
   const teacherHomeWxml = readText('pages/teacher/home/home.wxml');
@@ -270,6 +278,7 @@ async function run() {
   assert(readText('pages/parent/home/home.wxss').includes('course-schedule-scroll') && readText('pages/parent/home/home.wxss').includes('max-height'), 'student home schedule scroll should limit visible rows');
   assert(!readText('pages/parent/home/home.wxss').includes('justify-content: flex-start') && !readText('pages/parent/home/home.wxss').includes('padding-left: 34rpx'), 'student live button should keep centered text');
   assert(readText('pages/parent/courses/courses.js').includes('/pages/parent/exercises/exercises?courseId=') && !readText('pages/parent/courses/courses.js').includes('/pages/course-detail/course-detail?id=${sessionId}'), 'student schedule test buttons should navigate to the parent wrong-feedback page with course and session context');
+  assert(!readText('pages/parent/home/home.js').includes('/pages/course-detail/course-detail'), 'student home should not keep removed course-detail navigation');
   assert(readText('pages/parent/exercises/exercises.js').includes('courseId && sessionId && type'), 'student wrong-feedback page should support session-scoped pre/post test entries');
   assert(teacherHomeWxml.includes('/pages/live-player/live-player'), 'teacher home should expose course live entry');
   assert(readText('pages/teacher/courses/courses.wxml').includes('current="/pages/teacher/courses/courses"'), 'teacher schedule page tabbar current should point to itself');

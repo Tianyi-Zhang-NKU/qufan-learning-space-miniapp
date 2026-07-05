@@ -2,12 +2,9 @@
   "entryPagePath": "pages/login/login",
   "pages": [
     "pages/login/login",
-    "pages/identity-switch/identity-switch",
     "pages/profile/profile",
-    "pages/course-detail/course-detail",
     "pages/live-player/live-player",
     "pages/file-preview/file-preview",
-    "pages/wrong-record-editor/wrong-record-editor",
     "pages/parent/home/home",
     "pages/parent/courses/courses",
     "pages/parent/exercises/exercises",

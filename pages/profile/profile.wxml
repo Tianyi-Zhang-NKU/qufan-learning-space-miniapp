@@ -35,7 +35,7 @@
 
       <view class="qf-section">课程概览</view>
       <view wx:if="{{teacherCourses.length}}" class="collection-list">
-        <view wx:for="{{teacherCourses}}" wx:key="id" class="collection-card qf-card tight" bindtap="goCourseDetail" data-course-id="{{item.id}}">
+        <view wx:for="{{teacherCourses}}" wx:key="id" class="collection-card qf-card tight" bindtap="goTeacherCourses" data-course-id="{{item.id}}">
           <view class="collection-row">
             <view class="collection-icon course-icon">
               <image class="qf-icon-lg" src="/assets/icons/course.svg" mode="aspectFit"></image>

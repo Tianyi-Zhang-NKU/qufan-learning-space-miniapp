@@ -105,15 +105,6 @@ Page({
       url: `/pages/parent/summary/summary?courseId=${courseId}`
     });
   },
-
-  // Navigate to course detail
-  goCourseDetail(event) {
-    const courseId = event.currentTarget.dataset.id;
-    wx.navigateTo({
-      url: `/pages/course-detail/course-detail?courseId=${courseId}`
-    });
-  },
-
   goLive(event) {
     const sessionId = event.currentTarget.dataset.sessionId;
     if (!sessionId) {

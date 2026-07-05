@@ -1,8 +1,0 @@
-.detail-live {
-  margin-top: 22rpx;
-}
-
-.detail-actions,
-.publish-actions {
-  margin: 18rpx 0;
-}

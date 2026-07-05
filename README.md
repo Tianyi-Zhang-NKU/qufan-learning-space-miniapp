@@ -53,13 +53,14 @@ authMode: 'mock' // mock | wechatPhone | sms | http
 ## 页面说明
 
 - `pages/login`：手机号登录页，保留趣帆学习空间品牌。
-- `pages/teacher/home`：教师首页，展示今日课程、近期需要反馈的课次和最近上传反馈。
-- `pages/teacher/courses`：老师课程列表，进入课程和课次。
-- `pages/course-detail`：课程详情/课次详情。老师在课次学生名单里上传或查看反馈。
-- `pages/wrong-record-editor`：历史文件名保留，页面文案和功能已改为“上传本讲总结”。
-- `pages/parent/home`：学生/家长“我的学习”首页。
+- `pages/teacher/home`：教师首页，展示今日课程、教师待办、课次合集和学生路径。
+- `pages/teacher/courses`：老师课程表，查看课次日历，编辑课次名称和主题。
+- `pages/teacher/test-upload`：老师预上传本课题目框，供错题本勾选使用。
+- `pages/teacher/feedback-students`：老师按课次进入学生头像网格，适配大班检索。
+- `pages/teacher/feedback-detail`：老师编辑学生反馈、勾选错题并确认通关。
+- `pages/parent/home`：学生/家长“我的学习”首页，展示课堂小测、本讲总结、通关进度和直播入口。
 - `pages/parent/courses`：当前学生课程、传统周课程表和课次反馈数量。
-- `pages/parent/exercises`：老师反馈列表，支持按课程筛选。
+- `pages/parent/quiz` / `pages/parent/summary` / `pages/parent/exercises`：分别承载课堂小测、本讲总结和错题本导出。
 - `pages/file-preview`：媒体预览。图片可查看/下载，语音只能播放。
 - `pages/live-player`：ClassIn 直播入口占位。
 - `pages/admin/home` / `pages/admin/manage`：传统课程表、课程关系、学生详情、课程反馈记录、手机号映射和直播配置占位；数据多时用下拉选择和姓名/手机号搜索缩小范围。
