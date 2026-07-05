@@ -468,6 +468,47 @@
    Mode 4: Test List — 课前测 / 课后测
    ================================================================ */
 
+/* Session tabs scrollable bar */
+.session-tabs-scroll {
+  width: 100%;
+  margin-bottom: 28rpx;
+  white-space: nowrap;
+}
+
+.session-tabs {
+  display: inline-flex;
+  gap: 16rpx;
+  padding: 8rpx 4rpx;
+}
+
+.session-tab {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16rpx 30rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.28);
+  border: 1rpx solid rgba(83, 117, 91, 0.16);
+}
+
+.session-tab.active {
+  background: linear-gradient(145deg, #f97316, #ea580c);
+  border-color: transparent;
+  box-shadow: 0 12rpx 28rpx rgba(234, 88, 12, 0.32);
+}
+
+.session-tab-text {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: rgba(45, 75, 64, 0.7);
+  white-space: nowrap;
+}
+
+.session-tab.active .session-tab-text {
+  color: #fff9ec;
+}
+
 .test-session-card {
   margin-bottom: 30rpx;
   padding: 34rpx 32rpx;
@@ -526,17 +567,30 @@
 }
 
 .test-record-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16rpx;
-  flex-wrap: wrap;
-  padding: 20rpx 22rpx;
+  position: relative;
+  overflow: hidden;
+  padding: 24rpx 26rpx;
   border-radius: 18rpx;
   border: 1rpx solid rgba(234, 88, 12, 0.16);
   background:
     linear-gradient(145deg, rgba(255, 237, 213, 0.52), rgba(255, 255, 255, 0.38)),
     rgba(255, 247, 232, 0.44);
+}
+
+.pass-stamp {
+  position: absolute;
+  top: 16rpx;
+  right: -20rpx;
+  padding: 6rpx 40rpx;
+  font-size: 22rpx;
+  font-weight: 800;
+  color: #dc2626;
+  border: 4rpx solid #dc2626;
+  border-radius: 8rpx;
+  transform: rotate(15deg);
+  opacity: 0.85;
+  letter-spacing: 4rpx;
+  pointer-events: none;
 }
 
 .test-record-left {
@@ -604,10 +658,28 @@
 
 .test-record-text {
   display: block;
-  margin-top: 8rpx;
   color: #1f352e;
-  font-size: 23rpx;
-  line-height: 1.45;
+  font-size: 26rpx;
+  line-height: 1.6;
+}
+
+.test-record-text.collapsed {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+
+.test-record-text-wrap {
+  margin-bottom: 8rpx;
+}
+
+.test-record-expand {
+  display: inline-block;
+  margin-top: 8rpx;
+  color: #f97316;
+  font-size: 22rpx;
+  font-weight: 600;
 }
 
 .test-record-right {
@@ -632,4 +704,64 @@
   flex-wrap: wrap;
   padding-top: 10rpx;
   border-top: 1rpx solid rgba(83, 117, 91, 0.08);
+}
+
+/* Inline media styles for test records */
+.test-record-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14rpx;
+}
+
+.test-inline-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14rpx;
+  margin-top: 16rpx;
+}
+
+.test-inline-img {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 14rpx;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.test-inline-videos {
+  margin-top: 16rpx;
+}
+
+.test-inline-video {
+  width: 100%;
+  border-radius: 14rpx;
+  margin-bottom: 14rpx;
+}
+
+.test-inline-voices {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.test-voice-bar {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  padding: 20rpx 24rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(145deg, rgba(79, 140, 108, 0.1), rgba(45, 90, 63, 0.06));
+  border: 1rpx solid rgba(83, 117, 91, 0.16);
+}
+
+.test-voice-icon {
+  flex-shrink: 0;
+  font-size: 30rpx;
+}
+
+.test-voice-text {
+  color: #2d5a3f;
+  font-size: 24rpx;
+  font-weight: 600;
 }

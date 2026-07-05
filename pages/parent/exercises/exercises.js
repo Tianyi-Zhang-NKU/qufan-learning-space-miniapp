@@ -17,7 +17,8 @@ function buildFeedbackRecord(feedback) {
     mediaFiles: feedback.mediaFiles || [],
     imageCount: feedback.imageCount || 0,
     videoCount: feedback.videoCount || 0,
-    voiceCount: feedback.voiceCount || 0
+    voiceCount: feedback.voiceCount || 0,
+    passed: !!feedback.passed
   };
 }
 
@@ -51,6 +52,8 @@ Page({
     testType: '',
     testTypeLabel: '',
     sessionTests: [],
+    testCurrentIndex: 0,
+    testCurrentSession: null,
 
     // ---- All-records mode ----
     allRecordsGroups: [],
@@ -64,9 +67,9 @@ Page({
     const all = query.all || '';
 
     if (all === '1') {
-      // Cross-course review entry now lives in the feedback page.
+      // From profile page: 我的错题本
       this.setData({ mode: 'allRecords' });
-      wx.setNavigationBarTitle({ title: '全部错题反馈' });
+      wx.setNavigationBarTitle({ title: '我的错题本' });
     } else if (courseId && sessionId && type) {
       // From schedule page: one lesson's pre/post test records
       this.setData({
@@ -80,7 +83,7 @@ Page({
         title: `${typeLabel(type)}错题`
       });
     } else if (courseId && type) {
-      // From home page: course-level pre/post test buttons
+      // From home page: pre/post test buttons
       this.setData({
         mode: 'testList',
         testType: type,
@@ -97,7 +100,7 @@ Page({
         courseId,
         sessionId
       });
-      wx.setNavigationBarTitle({ title: '课程错题' });
+      wx.setNavigationBarTitle({ title: '课后反馈' });
     } else if (courseId) {
       // From course list: session list for a course
       this.setData({ mode: 'sessions', courseId });
@@ -157,16 +160,10 @@ Page({
       sessionIndex: s.sessionIndex,
       date: s.date || '',
       time: s.startTime ? `${s.startTime}-${s.endTime}` : '',
-      recordCount: s.feedbackCount || 0,
-      preCount: s.preFeedbackCount || 0,
-      postCount: s.postFeedbackCount || 0,
-      generalCount: Math.max(0, (s.feedbackCount || 0) - (s.preFeedbackCount || 0) - (s.postFeedbackCount || 0))
+      recordCount: s.feedbackCount || 0
     }));
 
     const totalRecords = sessionInfo.reduce((sum, s) => sum + s.recordCount, 0);
-    const preTotal = sessionInfo.reduce((sum, s) => sum + s.preCount, 0);
-    const postTotal = sessionInfo.reduce((sum, s) => sum + s.postCount, 0);
-    const generalTotal = sessionInfo.reduce((sum, s) => sum + s.generalCount, 0);
     const nextSession = sessions.find((s) => s.status === 'scheduled') || sessions[sessions.length - 1] || {};
 
     return {
@@ -179,9 +176,6 @@ Page({
       sessionCount: sessions.length,
       sessionInfo,
       totalRecords,
-      preTotal,
-      postTotal,
-      generalTotal,
       nextSessionTime: nextSession.startTime
         ? `${nextSession.date || ''} ${nextSession.startTime}-${nextSession.endTime || ''}`
         : ''
@@ -217,7 +211,7 @@ Page({
             sessionId: s.id,
             sessionTitle: s.sessionTitle || s.displayTitle || `第${s.sessionIndex}次课`,
             sessionIndex: s.sessionIndex,
-            label: `第${s.sessionIndex}次课课程错题`,
+            label: `第${s.sessionIndex}次课课后反馈`,
             date: s.date || '',
             time: s.startTime ? `${s.startTime}-${s.endTime}` : '',
             teacherName: s.teacherName || course.teacherName || '',
@@ -269,7 +263,7 @@ Page({
 
         this.setData({
           courseName: course.name || '',
-          sessionLabel: `第${session.sessionIndex || ''}次课课程错题`,
+          sessionLabel: `第${session.sessionIndex || ''}次课课后反馈`,
           sessionDetail: {
             sessionTitle: session.sessionTitle || session.displayTitle || '',
             date: session.date || '',
@@ -322,10 +316,7 @@ Page({
         );
         const feedbacks = detail.lessonFeedbacks || [];
 
-        const scopedSessions = this.data.sessionId
-          ? sessions.filter((session) => session.id === this.data.sessionId)
-          : sessions;
-        const sessionTests = scopedSessions.map((s) => {
+        const sessionTests = sessions.map((s) => {
           const records = feedbacks
             .filter((feedback) =>
               feedback.courseSessionId === s.id
@@ -346,9 +337,12 @@ Page({
           };
         });
 
+        const lastIndex = sessionTests.length > 0 ? sessionTests.length - 1 : 0;
         this.setData({
           courseName: course.name || '',
           sessionTests,
+          testCurrentIndex: lastIndex,
+          testCurrentSession: sessionTests[lastIndex] || null,
           loading: false
         });
       })
@@ -369,12 +363,42 @@ Page({
       .catch((error) => Notice.alert(error.message || '详情加载失败'));
   },
 
-  goTypeList(event) {
-    const { id, type } = event.currentTarget.dataset;
-    if (!id || !type) return;
-    wx.navigateTo({
-      url: `/pages/parent/exercises/exercises?courseId=${id}&type=${type}`
+  switchTestTab(event) {
+    const index = event.currentTarget.dataset.index;
+    this.setData({
+      testCurrentIndex: index,
+      testCurrentSession: this.data.sessionTests[index]
     });
+  },
+
+  previewInlineImage(event) {
+    const current = event.currentTarget.dataset.current;
+    const urls = (event.currentTarget.dataset.urls || []).map((f) => f.previewUrl).filter(Boolean);
+    wx.previewImage({
+      current,
+      urls: urls.length ? urls : [current]
+    });
+  },
+
+  playInlineVoice(event) {
+    const url = event.currentTarget.dataset.url;
+    if (!url) return;
+    const innerAudioContext = wx.createInnerAudioContext();
+    innerAudioContext.src = url;
+    innerAudioContext.play();
+    innerAudioContext.onEnded(() => {
+      innerAudioContext.destroy();
+    });
+    innerAudioContext.onError(() => {
+      innerAudioContext.destroy();
+      Notice.alert('语音播放失败');
+    });
+  },
+
+  toggleRecordExpand(event) {
+    const index = event.currentTarget.dataset.index;
+    const key = `testCurrentSession.records[${index}].expanded`;
+    this.setData({ [key]: !this.data.testCurrentSession.records[index].expanded });
   },
 
   // ================================================================

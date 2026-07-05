@@ -1,15 +1,12 @@
 const Api = require('../../../services/api');
 const Guard = require('../../../utils/page-guard');
 const Notice = require('../../../utils/notice');
-const FeedbackTypes = require('../../../utils/feedback-types');
 
 Page({
   data: {
     session: {},
     courseId: '',
     courseName: '',
-    courseSessionId: '',
-    sessionLabel: '',
     feedbackType: 'post',
     feedbackTypeLabel: '课后测错题',
     courseInfo: {
@@ -24,13 +21,12 @@ Page({
   },
 
   onLoad(options) {
-    const { courseId, courseName, feedbackType, courseSessionId } = options;
-    const type = FeedbackTypes.normalizeFeedbackType(feedbackType);
-    const typeLabel = FeedbackTypes.feedbackTypeWrongLabel(type);
+    const { courseId, courseName, feedbackType } = options;
+    const type = ['pre', 'post', 'general'].includes(feedbackType) ? feedbackType : 'post';
+    const typeLabel = type === 'pre' ? '课前测错题' : type === 'post' ? '课后测错题' : '课后反馈';
     this.setData({
       courseId: courseId || '',
       courseName: decodeURIComponent(courseName || ''),
-      courseSessionId: courseSessionId || '',
       feedbackType: type,
       feedbackTypeLabel: typeLabel
     });
@@ -51,7 +47,6 @@ Page({
     Api.getTeacherCourseDetail(this.data.courseId)
       .then((data) => {
         const course = data.course || {};
-        const selectedSession = (data.sessions || []).find((item) => item.id === this.data.courseSessionId) || null;
         const courseInfo = {
           subject: course.subject || '',
           grade: course.grade || '',
@@ -61,9 +56,8 @@ Page({
         };
 
         // 计算每个学生的反馈数量
-        const feedbacks = (data.lessonFeedbacks || []).filter((feedback) =>
-          (feedback.feedbackType || 'post') === this.data.feedbackType
-          && (!this.data.courseSessionId || feedback.courseSessionId === this.data.courseSessionId)
+        const feedbacks = (data.lessonFeedbacks || []).filter(
+          (feedback) => (feedback.feedbackType || 'post') === this.data.feedbackType
         );
         const totalFeedbackCount = feedbacks.length;
 
@@ -79,7 +73,6 @@ Page({
 
         this.setData({
           courseInfo,
-          sessionLabel: selectedSession ? `${selectedSession.displayTitle || selectedSession.sessionTitle} · ${selectedSession.date || ''} ${selectedSession.startTime || ''}-${selectedSession.endTime || ''}` : '全部课次',
           students,
           totalFeedbackCount
         });
@@ -91,7 +84,7 @@ Page({
   goFeedbackDetail(event) {
     const { studentId, studentName } = event.currentTarget.dataset;
     wx.navigateTo({
-      url: `/pages/teacher/feedback-detail/feedback-detail?courseId=${this.data.courseId}&courseName=${encodeURIComponent(this.data.courseName)}&studentId=${studentId}&studentName=${encodeURIComponent(studentName)}&feedbackType=${this.data.feedbackType}&courseSessionId=${this.data.courseSessionId || ''}`
+      url: `/pages/teacher/feedback-detail/feedback-detail?courseId=${this.data.courseId}&courseName=${encodeURIComponent(this.data.courseName)}&studentId=${studentId}&studentName=${encodeURIComponent(studentName)}&feedbackType=${this.data.feedbackType}`
     });
   }
 });

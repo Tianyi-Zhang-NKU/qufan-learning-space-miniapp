@@ -53,22 +53,10 @@
           <text class="course-name">{{item.courseName}} · {{item.sessionTitle}}</text>
           <text class="course-topic">{{item.topic || '未设置主题'}}</text>
           <view class="course-meta">
-            <view class="course-meta-item">
-              <image class="course-meta-icon" src="/assets/icons/teacher.svg" mode="aspectFit"></image>
-              <text>{{item.teacherName}}</text>
-            </view>
-            <view class="course-meta-item">
-              <image class="course-meta-icon" src="/assets/icons/clock.svg" mode="aspectFit"></image>
-              <text>{{item.startTime}} - {{item.endTime}}</text>
-            </view>
-            <view class="course-meta-item">
-              <image class="course-meta-icon" src="/assets/icons/location.svg" mode="aspectFit"></image>
-              <text>{{item.classroomName}}</text>
-            </view>
-            <view class="course-meta-item">
-              <image class="course-meta-icon" src="/assets/icons/users.svg" mode="aspectFit"></image>
-              <text>{{item.studentCount}} 人</text>
-            </view>
+            <text class="course-meta-item">👩‍🏫 {{item.teacherName}}</text>
+            <text class="course-meta-item">🕐 {{item.startTime}} - {{item.endTime}}</text>
+            <text class="course-meta-item">📍 {{item.classroomName}}</text>
+            <text class="course-meta-item">👥 {{item.studentCount}} 人</text>
           </view>
         </view>
         <view class="course-actions">
@@ -92,7 +80,7 @@
             data-course-name="{{item.courseName}}"
             data-session-id="{{item.id}}"
             bindtap="goFeedback"
-          >课程错题</button>
+          >课后反馈</button>
           <button
             class="qf-btn small test-btn live-test"
             data-session-id="{{item.id}}"

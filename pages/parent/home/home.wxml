@@ -10,26 +10,6 @@
       </view>
     </view>
 
-    <!-- Summary strip -->
-    <view class="home-summary-strip">
-      <view class="home-summary-item">
-        <text class="home-summary-value">{{courses.length}}</text>
-        <text class="home-summary-label">已报课程</text>
-      </view>
-      <view class="home-summary-item">
-        <text class="home-summary-value">{{courses[0].sessionCount || 0}}</text>
-        <text class="home-summary-label">课次安排</text>
-      </view>
-      <view class="home-summary-item">
-        <text class="home-summary-value">课前测</text>
-        <text class="home-summary-label">预习巩固</text>
-      </view>
-      <view class="home-summary-item">
-        <text class="home-summary-value">课后测</text>
-        <text class="home-summary-label">效果检验</text>
-      </view>
-    </view>
-
     <!-- Section title -->
     <view class="qf-section">我的课程</view>
 
@@ -57,23 +37,31 @@
             <text class="course-name">{{item.name}}</text>
             <text class="qf-tag ok" wx:if="{{item.subject}}">{{item.subject}}</text>
           </view>
-          <text class="course-grade" wx:if="{{item.grade}}">{{item.grade}}</text>
+          <view class="course-header-right">
+            <view class="progress-bar-wrap">
+              <text class="progress-label">{{item.passedCount}}/{{item.sessionCount}}</text>
+              <view class="progress-bar-bg">
+                <view class="progress-bar-fill" style="width: {{item.sessionCount ? (item.passedCount / item.sessionCount * 100) : 0}}%"></view>
+              </view>
+              <text class="progress-hint">通关进度</text>
+            </view>
+          </view>
         </view>
 
         <!-- Course info: teacher, time, location -->
         <view class="course-info">
           <view class="course-info-row">
-            <image class="course-info-icon" src="/assets/icons/teacher.svg" mode="aspectFit"></image>
+            <text class="course-info-icon">👨‍🏫</text>
             <text class="course-info-label">任课教师</text>
             <text class="course-info-value">{{item.teacherName || '待分配'}}</text>
           </view>
           <view class="course-info-row">
-            <image class="course-info-icon" src="/assets/icons/location.svg" mode="aspectFit"></image>
+            <text class="course-info-icon">📍</text>
             <text class="course-info-label">上课地点</text>
             <text class="course-info-value">{{item.classroomName}}</text>
           </view>
           <view class="course-info-row" wx:if="{{item.nextSessionTime}}">
-            <image class="course-info-icon" src="/assets/icons/clock.svg" mode="aspectFit"></image>
+            <text class="course-info-icon">🕐</text>
             <text class="course-info-label">最近上课</text>
             <text class="course-info-value">{{item.nextSessionTime}}</text>
           </view>
@@ -95,17 +83,17 @@
           </view>
         </scroll-view>
 
-        <!-- Action buttons: pre-test / post-test -->
+        <!-- Action buttons: quiz / summary -->
         <view class="course-actions tests-row">
           <button
             class="qf-btn test-btn pre-test-btn"
             data-id="{{item.id}}"
-            bindtap="goPreTests"
+            bindtap="goQuiz"
           >
-            <image class="test-btn-icon" src="/assets/icons/pre-test.svg" mode="aspectFit"></image>
+            <text class="test-btn-icon">📝</text>
             <view class="test-btn-text">
-              <text class="test-btn-title">课前测</text>
-              <text class="test-btn-sub" wx:if="{{item.totalPreCount}}">{{item.totalPreCount}} 份记录</text>
+              <text class="test-btn-title">课堂小测</text>
+              <text class="test-btn-sub" wx:if="{{item.totalPreCount + item.totalPostCount}}">{{item.totalPreCount + item.totalPostCount}} 份记录</text>
               <text class="test-btn-sub" wx:else>暂无记录</text>
             </view>
           </button>
@@ -113,13 +101,12 @@
           <button
             class="qf-btn test-btn post-test-btn"
             data-id="{{item.id}}"
-            bindtap="goPostTests"
+            bindtap="goSummary"
           >
-            <image class="test-btn-icon" src="/assets/icons/post-test.svg" mode="aspectFit"></image>
+            <text class="test-btn-icon">📋</text>
             <view class="test-btn-text">
-              <text class="test-btn-title">课后测</text>
-              <text class="test-btn-sub" wx:if="{{item.totalPostCount}}">{{item.totalPostCount}} 份记录</text>
-              <text class="test-btn-sub" wx:else>暂无记录</text>
+              <text class="test-btn-title">课堂总结</text>
+              <text class="test-btn-sub">查看总结</text>
             </view>
           </button>
         </view>
@@ -131,7 +118,7 @@
             data-url="/pages/live-player/live-player?id={{item.nextSessionId}}"
             bindtap="goLive"
           >
-            <image class="test-btn-icon" src="/assets/icons/live.svg" mode="aspectFit"></image>
+            <text class="test-btn-icon">▶</text>
             <view class="test-btn-text">
               <text class="test-btn-title">课程直播</text>
               <text class="test-btn-sub">{{item.nextSessionTime || '暂无直播安排'}}</text>

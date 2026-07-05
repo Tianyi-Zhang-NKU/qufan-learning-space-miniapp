@@ -4,7 +4,7 @@ const FeedbackTypes = require('../utils/feedback-types');
 
 let activeSession = null;
 
-const TODAY = '2026-06-06';
+const TODAY = '2026-06-03';
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'heic'];
 const VIDEO_EXTS = ['mp4', 'mov', 'm4v', 'webm'];
 const VOICE_EXTS = ['m4a', 'mp3', 'aac', 'wav'];
@@ -217,7 +217,7 @@ function liveTone(status) {
 function cameraStatusText(status) {
   if (status === 'ready') return '可用';
   if (status === 'testing') return '联调中';
-  return '待配置';
+  return '待接入';
 }
 
 function assignmentWithFile(item) {
@@ -234,9 +234,9 @@ function assignmentWithFile(item) {
 function decorateMedia(file) {
   if (!file) return null;
   const messageMap = {
-    image: '图片反馈可在小程序内查看。',
-    video: '视频反馈可在小程序内播放。',
-    voice: '语音反馈可在小程序内收听。'
+    image: '图片反馈可在小程序内查看，正式部署后由后端签发临时预览地址。',
+    video: '视频反馈可在小程序内播放，正式部署后由后端签发临时播放地址。',
+    voice: '语音反馈可在小程序内收听，正式部署后由后端签发临时播放地址。'
   };
   return {
     ...file,
@@ -300,7 +300,7 @@ function decorateSession(item, options = {}) {
     feedbackCount: feedbacks.length,
     preFeedbackCount,
     postFeedbackCount,
-    liveStatusText: '课堂入口准备中',
+    liveStatusText: 'ClassIn 接口待接入',
     liveTone: 'warn'
   };
 }
@@ -311,6 +311,8 @@ function decorateCourse(item, options = {}) {
   const sessions = getCourseSessions(item.id).map((session) => decorateSession(session, options));
   const studentId = options.studentId || '';
   const feedbacks = getFeedbacks({ courseId: item.id, studentId, visibleToStudent: options.visibleToStudent });
+  const generalFeedbacks = feedbacks.filter((f) => (f.feedbackType || 'post') === 'general');
+  const passedSessionIds = new Set(generalFeedbacks.filter((f) => f.passed).map((f) => f.courseSessionId));
   return {
     ...item,
     teacherName: teacher.name || teacher.fullName || '',
@@ -323,9 +325,10 @@ function decorateCourse(item, options = {}) {
     recentSessionTitle: sessions[0] ? sessions[0].displayTitle : '',
     feedbackCount: feedbacks.length,
     feedbackStudentCount: new Set(feedbacks.map((f) => f.studentId)).size,
+    passedCount: passedSessionIds.size,
     assignments: getCourseAssignments(item.id),
     wrongRecords: [],
-    liveStatusText: '课堂入口准备中',
+    liveStatusText: 'ClassIn 接口待接入',
     liveTone: 'warn'
   };
 }
@@ -501,7 +504,7 @@ function classInEntryForSession(courseId, courseSessionId) {
     || db.liveRooms.find((item) => item.classroomId === classroom.id)
     || {};
   return {
-    status: liveRoom.status || 'open',
+    status: liveRoom.status || 'ready',
     provider: 'classin',
     message: liveRoom.message || '课堂入口已准备。',
     classinEntryUrl: liveRoom.classinEntryUrl || 'https://www.classin.com/',
@@ -709,6 +712,7 @@ const mockApi = {
       videoFileIds: videoFileIds.slice(),
       voiceFileIds: voiceFileIds.slice(),
       attachFileIds: attachFileIds.slice(),
+      passed: !!payload.passed,
       createdAt: nowLabel(),
       visibleToStudent: payload.visibleToStudent !== false
     };
@@ -748,7 +752,7 @@ const mockApi = {
         { label: '我的课程', value: courses.length },
         { label: '今日课程', value: todayCourses.length },
         { label: '老师反馈', value: recentFeedbacks.length },
-        { label: '直播入口', value: '已建档' }
+        { label: '直播入口', value: '预留' }
       ],
       courses,
       courseGroups: courses,
@@ -828,7 +832,7 @@ const mockApi = {
     return delay({
       kind: 'optionalFile',
       file: optionalFile,
-      message: '这是可选资料文件，可在有地址时预览或下载。',
+      message: '这是可选资料文件，非第一版主流程。真实部署后由后端签发临时地址。',
       canPreview: ['pdf', 'doc', 'docx'].includes(optionalFile.ext),
       canDownload: true,
       downloadable: true,
@@ -845,7 +849,7 @@ const mockApi = {
       status: media.url ? 'ready' : 'pending',
       file: decorateMedia(media),
       downloadUrl: media.url || '',
-      message: media.url ? '图片下载地址已生成。' : '暂无图片下载地址。'
+      message: media.url ? '图片下载地址已生成。' : '图片下载地址需要后端或云函数签发，当前为 mock 占位。'
     });
   },
 
@@ -859,7 +863,7 @@ const mockApi = {
       file: decorateMedia(media),
       playUrl: media.url || media.tempPath || '',
       downloadable: false,
-      message: media.url || media.tempPath ? '语音播放地址已生成。' : '暂无语音播放地址。'
+      message: media.url || media.tempPath ? '语音播放地址已生成。' : '语音播放地址需要后端或云函数签发，当前为 mock 占位。'
     });
   },
 
@@ -878,7 +882,7 @@ const mockApi = {
           .filter(Boolean).length,
         feedbackCount: getFeedbacks({ courseId: course.id }).length,
         recentOrNextSession: decorated.sessions[0] || null,
-        liveStatusText: '课堂入口准备中',
+        liveStatusText: 'ClassIn 接口待接入',
         liveTone: 'warn'
       };
     });
@@ -890,7 +894,7 @@ const mockApi = {
         { label: '课程数', value: db.courses.length },
         { label: '反馈数', value: db.lessonFeedbacks.length },
         { label: '手机号映射', value: db.phoneAccounts.length },
-        { label: '直播配置', value: '已建档' }
+        { label: '直播配置', value: '待接入' }
       ],
       relationOverview,
       todaySessions,
@@ -948,8 +952,6 @@ const mockApi = {
         courses: courses.map((course) => ({
           id: course.id,
           name: course.name,
-          subject: course.subject || '',
-          grade: course.grade || '',
           teacherName: (findTeacher(course.teacherId) || {}).name || '',
           classroomName: (findClassroom(course.classroomId) || {}).name || '',
           feedbackCount: getFeedbacks({ studentId: student.id, courseId: course.id }).length,
@@ -1690,9 +1692,9 @@ const mockApi = {
 
 function callByMode(mode, methodName, payload) {
   if (!hasWx()) {
-    return Promise.reject(makeError('ADAPTER_PLACEHOLDER', `${mode} 服务暂不可用。`, { methodName, payload }));
+    return Promise.reject(makeError('ADAPTER_PLACEHOLDER', `${mode} adapter 待接入真实服务。`, { methodName, payload }));
   }
-  return Promise.reject(makeError('ADAPTER_PLACEHOLDER', `${mode} 服务暂不可用。`, { methodName, payload }));
+  return Promise.reject(makeError('ADAPTER_PLACEHOLDER', `${mode} adapter 已保留，当前仅 mock 完整实现。`, { methodName, payload }));
 }
 
 function createPlaceholderAdapter(mode) {

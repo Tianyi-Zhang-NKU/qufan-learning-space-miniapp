@@ -39,6 +39,8 @@
     </view>
 
     <view wx:if="{{existingFeedback}}" class="qf-card existing-feedback">
+      <view class="existing-stamp passed" wx:if="{{feedbackType === 'general' && existingFeedback.passed}}">已通关</view>
+      <view class="existing-stamp not-passed" wx:elif="{{feedbackType === 'general' && !existingFeedback.passed}}">暂未通关</view>
       <view class="existing-header">
         <text class="qf-h3">已有{{existingFeedback.feedbackTypeText}}</text>
         <text class="qf-muted">{{existingFeedback.createdAt}}</text>
@@ -62,40 +64,56 @@
         auto-height
         bindinput="onTextInput"
       ></textarea>
+      <view class="textarea-toolbar">
+        <button class="emoji-btn" catchtap="toggleEmojiPanel">
+          <text class="emoji-btn-icon">😊</text>
+          <text class="emoji-btn-text">表情</text>
+        </button>
+        <view class="clear-text-btn" wx:if="{{feedbackText}}" catchtap="clearFeedbackText">×</view>
+      </view>
+      <view wx:if="{{showEmojiPanel}}" class="emoji-panel">
+        <view
+          wx:for="{{emojiList}}"
+          wx:key="*this"
+          class="emoji-item"
+          data-emoji="{{item}}"
+          catchtap="insertEmoji"
+        >{{item}}</view>
+      </view>
     </view>
 
-    <view class="qf-section">图片 / 视频</view>
+    <view class="qf-section">图片 / 文档</view>
     <view class="qf-card tight">
-      <view wx:if="{{imageFiles.length || videoFiles.length}}" class="media-preview-list">
+      <view wx:if="{{imageFiles.length || docFiles.length}}" class="media-preview-list">
         <view wx:for="{{imageFiles}}" wx:key="id" class="media-preview-item">
           <image wx:if="{{item.tempPath}}" class="preview-thumb" src="{{item.tempPath}}" mode="aspectFill"></image>
-          <view wx:else class="preview-thumb-placeholder">
-            <image class="preview-thumb-icon" src="/assets/icons/image.svg" mode="aspectFit"></image>
-          </view>
+          <view wx:else class="preview-thumb-placeholder">图</view>
           <text class="preview-name">{{item.name}}</text>
           <button class="remove-btn" data-id="{{item.id}}" data-type="image" bindtap="removeMedia">×</button>
         </view>
-        <view wx:for="{{videoFiles}}" wx:key="id" class="media-preview-item">
-          <view class="preview-thumb video-thumb">
-            <image class="preview-thumb-icon" src="/assets/icons/video.svg" mode="aspectFit"></image>
-          </view>
+        <view wx:for="{{docFiles}}" wx:key="id" class="media-preview-item">
+          <view class="preview-thumb doc-thumb">文档</view>
           <text class="preview-name">{{item.name}}</text>
-          <button class="remove-btn" data-id="{{item.id}}" data-type="video" bindtap="removeMedia">×</button>
+          <button class="remove-btn" data-id="{{item.id}}" data-type="doc" bindtap="removeMedia">×</button>
         </view>
       </view>
-      <button class="upload-btn" bindtap="chooseMedia">
-        <image class="upload-btn-icon" src="/assets/icons/upload.svg" mode="aspectFit"></image>
-        <text>添加图片或视频</text>
-      </button>
+      <view class="upload-btn-row">
+        <button class="upload-btn flex-btn" bindtap="chooseImage">
+          <text class="upload-btn-icon">＋</text>
+          <text>添加图片</text>
+        </button>
+        <button class="upload-btn flex-btn" bindtap="chooseDocument">
+          <text class="upload-btn-icon">📄</text>
+          <text>上传文档</text>
+        </button>
+      </view>
     </view>
 
     <view class="qf-section">语音讲解</view>
     <view class="qf-card tight">
       <view wx:if="{{voiceFiles.length}}" class="voice-preview-list">
         <view wx:for="{{voiceFiles}}" wx:key="id" class="voice-preview-item">
-          <view class="voice-mark">
-            <image class="voice-mark-img" src="/assets/icons/voice.svg" mode="aspectFit"></image>
-          </view>
+          <view class="voice-mark">声</view>
           <view class="voice-info">
             <text class="voice-name">{{item.name}}</text>
             <text class="voice-meta">{{item.duration || 1}} 秒</text>
@@ -105,13 +123,24 @@
       </view>
       <view class="record-actions">
         <button wx:if="{{!recording}}" class="upload-btn record-btn" bindtap="startRecord">
-          <image class="upload-btn-icon" src="/assets/icons/record.svg" mode="aspectFit"></image>
+          <text class="upload-btn-icon">●</text>
           <text>开始录音</text>
         </button>
         <button wx:else class="upload-btn record-btn recording" bindtap="stopRecord">
-          <image class="upload-btn-icon" src="/assets/icons/stop.svg" mode="aspectFit"></image>
+          <text class="upload-btn-icon">■</text>
           <text>结束录音</text>
         </button>
+      </view>
+    </view>
+
+    <view class="pass-toggle-area" wx:if="{{feedbackType === 'general'}}">
+      <view class="qf-card tight pass-toggle-card">
+        <view class="pass-toggle-row" bindtap="togglePass">
+          <text class="pass-toggle-label">是否通关</text>
+          <view class="pass-toggle-switch {{passed ? 'on' : ''}}">
+            <view class="pass-toggle-knob"></view>
+          </view>
+        </view>
       </view>
     </view>
 

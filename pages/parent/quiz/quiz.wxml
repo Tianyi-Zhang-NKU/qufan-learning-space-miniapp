@@ -1,0 +1,52 @@
+<view class="qf-page qf-page-fixed">
+  <z-bg mode="dark"></z-bg>
+
+  <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
+    <view class="qf-top">
+      <view class="qf-brand">
+        <text class="qf-brand-title">课堂小测</text>
+        <text class="qf-brand-sub">{{courseName}} · 选择测试类型</text>
+      </view>
+    </view>
+
+    <view class="content-area">
+      <view class="quiz-options">
+        <view
+          class="qf-card quiz-option-card"
+          data-type="pre"
+          bindtap="goTest"
+        >
+          <view class="quiz-option-icon">📝</view>
+          <view class="quiz-option-body">
+            <text class="quiz-option-title">课前测</text>
+            <text class="quiz-option-desc">预习巩固，检验课前准备</text>
+          </view>
+          <view class="quiz-option-right">
+            <text class="quiz-option-count" wx:if="{{preCount}}">{{preCount}} 份记录</text>
+            <text class="quiz-option-count muted" wx:else>暂无记录</text>
+            <text class="quiz-option-arrow">›</text>
+          </view>
+        </view>
+
+        <view
+          class="qf-card quiz-option-card"
+          data-type="post"
+          bindtap="goTest"
+        >
+          <view class="quiz-option-icon">✅</view>
+          <view class="quiz-option-body">
+            <text class="quiz-option-title">课后测</text>
+            <text class="quiz-option-desc">效果检验，巩固课堂所学</text>
+          </view>
+          <view class="quiz-option-right">
+            <text class="quiz-option-count" wx:if="{{postCount}}">{{postCount}} 份记录</text>
+            <text class="quiz-option-count muted" wx:else>暂无记录</text>
+            <text class="quiz-option-arrow">›</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="qf-safe-bottom"></view>
+  </scroll-view>
+</view>
