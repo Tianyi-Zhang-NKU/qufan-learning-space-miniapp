@@ -1,21 +1,21 @@
 const FEEDBACK_TYPES = [
   {
     value: 'pre',
-    shortLabel: '课前测',
-    wrongLabel: '课前测错题',
-    feedbackLabel: '课前测错题反馈'
+    shortLabel: '课前练习',
+    wrongLabel: '课堂小测',
+    feedbackLabel: '课堂小测学习反馈'
   },
   {
     value: 'post',
-    shortLabel: '课后测',
-    wrongLabel: '课后测错题',
-    feedbackLabel: '课后测错题反馈'
+    shortLabel: '课后巩固',
+    wrongLabel: '本讲总结',
+    feedbackLabel: '本讲总结学习反馈'
   },
   {
     value: 'general',
-    shortLabel: '其他题目',
-    wrongLabel: '课程错题',
-    feedbackLabel: '课程错题反馈'
+    shortLabel: '本讲总结',
+    wrongLabel: '本讲反馈',
+    feedbackLabel: '本讲总结反馈'
   }
 ];
 

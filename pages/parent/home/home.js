@@ -7,6 +7,7 @@ Page({
     session: {},
     studentName: '',
     courses: [],
+    honors: [],
     loading: true
   },
 
@@ -19,14 +20,18 @@ Page({
 
   load() {
     this.setData({ loading: true });
-    Api.getStudentDashboard()
-      .then((dashboard) => {
+    Promise.all([
+      Api.getStudentDashboard(),
+      Api.getStudentHonors ? Api.getStudentHonors({}) : Promise.resolve({ certificates: [] })
+    ])
+      .then(([dashboard, honors]) => {
         const courses = (dashboard.courses || []).map((course) =>
           this.buildCourseCard(course)
         );
         this.setData({
           studentName: (dashboard.currentStudent || {}).name || (dashboard.currentChild || {}).name || '',
           courses,
+          honors: honors.certificates || [],
           loading: false
         });
       })

@@ -6,7 +6,7 @@
       <view class="qf-top">
         <view class="qf-brand">
           <text class="qf-brand-title">{{teacherName}} 老师</text>
-          <text class="qf-brand-sub">今日提醒 · 课程合集 · 错题反馈</text>
+          <text class="qf-brand-sub">今日提醒 · 课程合集 · 学习反馈</text>
         </view>
       </view>
 
@@ -27,12 +27,33 @@
       </view>
       <view wx:else class="qf-empty">今天暂无课程安排</view>
 
+      <view class="qf-section">教师待办</view>
+      <view wx:if="{{teacherTodos.length}}" class="todo-list">
+        <view wx:for="{{teacherTodos}}" wx:key="id" class="qf-card todo-card">
+          <view class="todo-main">
+            <text class="todo-title">{{item.studentName}} · {{item.sessionTitle}}</text>
+            <text class="todo-meta">{{item.courseName}} · {{item.sessionTopic || '本讲总结'}} · {{item.wrongCount}} 道待复盘</text>
+          </view>
+          <button
+            class="mini-action primary"
+            data-course-id="{{item.courseId}}"
+            data-course-name="{{item.courseName}}"
+            data-session-id="{{item.courseSessionId}}"
+            data-student-id="{{item.studentId}}"
+            data-student-name="{{item.studentName}}"
+            data-feedback-type="general"
+            bindtap="goFeedbackDetail"
+          >确认通关</button>
+        </view>
+      </view>
+      <view wx:else class="qf-empty compact">暂无待确认通关事项</view>
+
       <view class="qf-section">课程合集</view>
       <view class="collection-launch" bindtap="openCourseCollection">
         <image class="launch-icon" src="/assets/icons/course.svg" mode="aspectFit"></image>
         <view class="launch-body">
           <text class="launch-title">我的课程合集</text>
-          <text class="launch-sub">按课程进入课次合集，或按学生路径录入错题反馈</text>
+          <text class="launch-sub">按课程进入课次合集，或按学生路径录入学习反馈</text>
         </view>
         <view class="launch-meta">
           <text class="launch-count">{{courses.length}}</text>

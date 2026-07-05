@@ -85,7 +85,7 @@ Page({
     const type = event.currentTarget.dataset.type;
     const session = this.data.detail.courseSession || {};
     const course = this.data.detail.course || {};
-    const typeText = type === 'pre' ? '课前测' : '课后测';
+    const typeText = type === 'pre' ? '课前练习' : '课后巩固';
     Api.publishAssignment({
       courseId: course.id,
       courseSessionId: session.id,

@@ -6,7 +6,7 @@
     <view class="qf-top">
       <view class="qf-brand">
         <text class="qf-brand-title">{{courseName}} · {{feedbackTypeLabel}}</text>
-        <text class="qf-brand-sub">{{sessionLabel}} · 点击学生录入错题反馈</text>
+        <text class="qf-brand-sub">{{sessionLabel}} · 点击学生录入学习反馈</text>
       </view>
     </view>
 
@@ -24,16 +24,16 @@
     <!-- 学生名单 -->
     <view wx:if="{{students.length}}" class="qf-section">学生名单</view>
     <view wx:if="{{students.length}}" class="qf-card tight">
-      <view class="student-list">
+      <view class="student-grid">
         <view
           wx:for="{{students}}"
           wx:key="id"
-          class="student-item qf-list-item"
+          class="student-grid-item"
           data-student-id="{{item.id}}"
           data-student-name="{{item.name}}"
           bindtap="goFeedbackDetail"
         >
-          <view class="student-row">
+          <view class="student-grid-tile">
             <view class="student-avatar">
               <text class="avatar-text">{{item.name[0] || '生'}}</text>
             </view>
@@ -41,7 +41,7 @@
               <text class="student-name">{{item.name}}</text>
               <text class="student-meta">{{item.grade || ''}} · 已有 {{item.feedbackCount || 0}} 条{{feedbackTypeLabel}}</text>
             </view>
-            <view class="student-arrow">›</view>
+            <text class="student-action-text">进入</text>
           </view>
         </view>
       </view>

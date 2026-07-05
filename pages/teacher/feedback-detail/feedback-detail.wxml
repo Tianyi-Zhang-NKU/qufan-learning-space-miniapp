@@ -4,9 +4,17 @@
   <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
     <view class="qf-top">
       <view class="qf-brand">
-        <text class="qf-brand-title">{{studentName}} · 错题反馈</text>
+        <text class="qf-brand-title">{{studentName}} · 学习反馈</text>
         <text class="qf-brand-sub">{{courseName}} · 选择课次和反馈类型</text>
       </view>
+    </view>
+
+    <view class="pass-quick-card" wx:if="{{activeSessionId}}">
+      <view class="pass-quick-copy">
+        <text class="pass-quick-title">本讲通关确认</text>
+        <text class="pass-quick-sub">确认后学生端进度、电子章和荣誉记录同步更新</text>
+      </view>
+      <button class="pass-quick-btn" bindtap="confirmPassNow" disabled="{{submitting}}">确认通关</button>
     </view>
 
     <view class="session-nav-wrapper">
@@ -46,10 +54,11 @@
         <text class="qf-muted">{{existingFeedback.createdAt}}</text>
       </view>
       <text class="existing-text">{{existingFeedback.text}}</text>
-      <view wx:if="{{existingFeedback.imageCount || existingFeedback.videoCount || existingFeedback.voiceCount}}" class="existing-media-tags">
+      <view wx:if="{{existingFeedback.imageCount || existingFeedback.videoCount || existingFeedback.voiceCount || existingFeedback.attachFileCount}}" class="existing-media-tags">
         <text wx:if="{{existingFeedback.imageCount}}" class="media-tag">图片 {{existingFeedback.imageCount}}</text>
         <text wx:if="{{existingFeedback.videoCount}}" class="media-tag">视频 {{existingFeedback.videoCount}}</text>
         <text wx:if="{{existingFeedback.voiceCount}}" class="media-tag">语音 {{existingFeedback.voiceCount}}</text>
+        <text wx:if="{{existingFeedback.attachFileCount}}" class="media-tag">文档 {{existingFeedback.attachFileCount}}</text>
       </view>
     </view>
 
@@ -146,7 +155,7 @@
 
     <view class="submit-area">
       <button class="qf-btn full submit-btn" bindtap="submitFeedback" disabled="{{submitting || recording}}">
-        {{submitting ? '提交中…' : recording ? '录音中，请先结束' : '保存错题反馈'}}
+        {{submitting ? '提交中…' : recording ? '录音中，请先结束' : '保存学习反馈'}}
       </button>
     </view>
 

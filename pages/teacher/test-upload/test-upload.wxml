@@ -52,12 +52,28 @@
       </view>
     </view>
 
+    <view class="qf-section">本课题目框</view>
+    <view class="qf-card tight question-slot-card">
+      <view wx:if="{{questionSlots.length}}" class="question-slot-list">
+        <view wx:for="{{questionSlots}}" wx:key="id" class="question-slot-item">
+          <text class="question-order">{{item.order}}</text>
+          <view class="question-main">
+            <text class="question-title">{{item.title}}</text>
+            <text class="question-file">{{item.file.name || '暂无资料文件'}}</text>
+          </view>
+        </view>
+      </view>
+      <view wx:else class="empty-inline">还没有题目框，上传资料后会自动建立</view>
+    </view>
     <!-- 上传入口 -->
-    <view class="qf-section">上传{{typeLabel}}文件</view>
+    <view class="qf-section">上传{{typeLabel}}题目资料</view>
+    <view class="qf-card tight question-title-card">
+      <input class="question-title-input" value="{{newQuestionTitle}}" placeholder="题目名称，例如 第1题：细胞结构辨析" bindinput="onQuestionTitleInput" />
+    </view>
     <view class="qf-card upload-area" bindtap="chooseFile">
       <view wx:if="{{!uploading}}" class="upload-placeholder">
         <image class="upload-icon" src="/assets/icons/upload.svg" mode="aspectFit"></image>
-        <text class="upload-title">点击上传 PDF / Word 文件</text>
+        <text class="upload-title">点击上传题目 PDF / Word 文件</text>
         <text class="upload-hint">支持 .pdf、.doc、.docx 格式</text>
       </view>
       <view wx:else class="upload-progress">

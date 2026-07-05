@@ -144,12 +144,12 @@ async function run() {
   assert(appWxss.includes('#E9E6DA') && appWxss.includes('#10224A') && appWxss.includes('#FFFDF6'), 'app.wxss should expose the new paper theme colors');
 
   const feedbackTypes = require('../utils/feedback-types');
-  assert(feedbackTypes.feedbackTypeText('pre') === '课前测错题反馈', 'shared feedback type text should format pre-test feedback');
-  assert(feedbackTypes.feedbackTypeText('post') === '课后测错题反馈', 'shared feedback type text should format post-test feedback');
-  assert(feedbackTypes.feedbackTypeText('general') === '课程错题反馈', 'shared feedback type text should format general feedback');
-  assert(feedbackTypes.feedbackTypeText('unknown') === '课后测错题反馈', 'unknown feedback type should keep the existing post-test fallback');
-  assert(feedbackTypes.feedbackTypeWrongLabel('general') === '课程错题', 'shared feedback type labels should support teacher wrong-feedback tabs');
-  assert(feedbackTypes.feedbackTypeShortLabel('general') === '其他题目', 'shared feedback type labels should preserve parent general-type wording');
+  assert(feedbackTypes.feedbackTypeText('pre') === '课堂小测学习反馈', 'shared feedback type text should format pre-test feedback');
+  assert(feedbackTypes.feedbackTypeText('post') === '本讲总结学习反馈', 'shared feedback type text should format post-test feedback');
+  assert(feedbackTypes.feedbackTypeText('general') === '本讲总结反馈', 'shared feedback type text should format general feedback');
+  assert(feedbackTypes.feedbackTypeText('unknown') === '本讲总结学习反馈', 'unknown feedback type should keep the existing post-test fallback');
+  assert(feedbackTypes.feedbackTypeWrongLabel('general') === '本讲反馈', 'shared feedback type labels should support teacher wrong-feedback tabs');
+  assert(feedbackTypes.feedbackTypeShortLabel('general') === '本讲总结', 'shared feedback type labels should preserve parent general-type wording');
 
   const scheduleCalendar = require('../utils/schedule-calendar');
   const calendarDays = scheduleCalendar.buildCalendarDays(2026, 6, '2026-06-06', new Set(['2026-06-06']), '2026-06-07');
@@ -214,6 +214,14 @@ async function run() {
   assert(readText('pages/admin/home/home.wxml').includes('/pages/live-player/live-player'), 'admin course collection should expose course live entry');
   assert(adminHomeWxml.includes('课次数量') && adminHomeWxml.includes('onSessionCountInput') && adminHomeWxml.includes('onSessionDraftInput') && adminHomeWxml.includes('onSessionClassroomChange'), 'admin course editor should expose editable session count, classroom and time fields');
   assert(adminHomeJs.includes('syncCourseSessionsForEditor') && adminHomeJs.includes('saveCourseEditor'), 'admin course editor should persist course session count and lesson edits');
+  assert(teacherHomeWxml.includes('教师待办') && teacherHomeWxml.includes('confirmPass') === false && teacherHomeWxml.includes('确认通关'), 'teacher home should expose pass-confirmation todo cards');
+  assert(readText('pages/teacher/home/home.js').includes('getTeacherTodos') && readText('pages/teacher/home/home.wxss').includes('todo-card'), 'teacher home should load and style teacher todos');
+  assert(readText('pages/teacher/feedback-detail/feedback-detail.wxml').includes('pass-quick-card') && readText('pages/teacher/feedback-detail/feedback-detail.js').includes('confirmPassNow'), 'feedback detail should expose fixed pass confirmation action');
+  assert(readText('pages/teacher/test-upload/test-upload.wxml').includes('本课题目框') && readText('pages/teacher/test-upload/test-upload.js').includes('createLessonQuestions'), 'teacher upload page should create question slots for wrong workbook');
+  assert(readText('pages/teacher/feedback-students/feedback-students.wxml').includes('student-grid') && readText('pages/teacher/feedback-students/feedback-students.wxss').includes('grid-template-columns: repeat(4'), 'teacher student list should use compact avatar grid');
+  assert(readText('pages/parent/home/home.wxml').includes('我的荣誉') && readText('pages/parent/home/home.js').includes('getStudentHonors'), 'student home should expose honor certificates');
+  assert(readText('pages/parent/summary/summary.wxml').includes('honor-card') && readText('pages/parent/summary/summary.wxml').includes('feedback-docs'), 'lesson summary should show honors and feedback documents inline');
+  assert(readText('pages/parent/exercises/exercises.wxml').includes('workbook-export-card') && readText('pages/parent/exercises/exercises.js').includes('exportStudentWrongWorkbook'), 'wrong workbook should expose printable PDF export');
 
   const loginWxss = readText('pages/login/login.wxss');
   const loginWxml = readText('pages/login/login.wxml');
@@ -260,8 +268,16 @@ async function run() {
   const Api = require('../services/api');
   assert(typeof Api.loginByPhone === 'function', 'loginByPhone missing');
   assert(typeof Api.createLessonFeedback === 'function', 'createLessonFeedback missing');
+  assert(typeof Api.uploadFeedbackFile === 'function', 'uploadFeedbackFile missing');
   assert(typeof Api.uploadFeedbackVideo === 'function', 'uploadFeedbackVideo missing');
   assert(typeof Api.requestClassInLiveEntry === 'function', 'requestClassInLiveEntry missing');
+  assert(typeof Api.getTeacherTodos === 'function', 'teacher todo API missing');
+  assert(typeof Api.confirmStudentPass === 'function', 'pass confirmation API missing');
+  assert(typeof Api.createLessonQuestions === 'function', 'lesson question upload API missing');
+  assert(typeof Api.markStudentWrongQuestions === 'function', 'wrong-question selection API missing');
+  assert(typeof Api.getStudentWrongWorkbook === 'function', 'student wrong workbook API missing');
+  assert(typeof Api.exportStudentWrongWorkbook === 'function', 'wrong workbook export API missing');
+  assert(typeof Api.getStudentHonors === 'function', 'student honors API missing');
   assert(typeof Api.updateCourse === 'function' && typeof Api.deleteCourse === 'function', 'admin course CRUD missing');
   assert(typeof Api.updateCourseSession === 'function' && typeof Api.deleteCourseSession === 'function', 'course session edit/delete APIs missing');
   assert(typeof Api.updateStudent === 'function' && typeof Api.deleteStudent === 'function', 'admin student CRUD missing');
@@ -313,6 +329,13 @@ async function run() {
   });
   assert(uploadedVoice.type === 'voice' && uploadedVoice.downloadable === false, 'feedback voice metadata should not be downloadable');
 
+  const uploadedDoc = await Api.uploadFeedbackFile({
+    fileName: 'smoke-feedback.docx',
+    size: 4096,
+    tempPath: ''
+  });
+  assert(uploadedDoc.ext === 'docx' && uploadedDoc.canPreview, 'feedback document should be uploadable and previewable');
+
   const createdFeedback = await Api.createLessonFeedback({
     studentId: 'stu_001',
     teacherId: 'teacher_001',
@@ -322,14 +345,70 @@ async function run() {
     feedbackType: 'pre',
     imageFileIds: [uploadedImage.id],
     videoFileIds: [uploadedVideo.id],
-    voiceFileIds: [uploadedVoice.id]
+    voiceFileIds: [uploadedVoice.id],
+    attachFileIds: [uploadedDoc.id]
   });
   assert(createdFeedback.id, 'teacher should create lesson feedback');
-  assert(createdFeedback.feedbackType === 'pre' && createdFeedback.feedbackTypeText === '课前测错题反馈', 'feedback should preserve pre/post wrong-feedback type');
+  assert(createdFeedback.feedbackType === 'pre' && createdFeedback.feedbackTypeText === '课堂小测学习反馈', 'feedback should preserve pre/post wrong-feedback type');
   assert(createdFeedback.text.includes('Smoke'), 'feedback should support text');
   assert(createdFeedback.imageFiles.length === 1, 'feedback should support image media');
   assert(createdFeedback.videoFiles.length === 1, 'feedback should support video media');
   assert(createdFeedback.voiceFiles.length === 1, 'feedback should support voice media');
+  assert(createdFeedback.attachFiles.length === 1, 'feedback should support document attachments');
+
+  const editedFeedback = await Api.createLessonFeedback({
+    studentId: 'stu_001',
+    teacherId: 'teacher_001',
+    courseId: 'course_bio_001',
+    courseSessionId: 'lesson_bio_001_01',
+    text: 'Smoke 二次编辑反馈 😊\n已补充主讲老师点评',
+    feedbackType: 'pre',
+    imageFileIds: [uploadedImage.id],
+    voiceFileIds: [uploadedVoice.id],
+    attachFileIds: [uploadedDoc.id]
+  });
+  assert(editedFeedback.id === createdFeedback.id, 'repeated lesson feedback save should update the same student/session/type record');
+  assert(editedFeedback.editCount >= 2 && editedFeedback.updatedAt, 'edited feedback should expose edit history metadata');
+
+  const uploadedQuestionFile = await Api.uploadFeedbackFile({
+    fileName: 'smoke-question.pdf',
+    size: 8192,
+    tempPath: ''
+  });
+  const lessonQuestions = await Api.createLessonQuestions({
+    courseId: 'course_bio_001',
+    courseSessionId: 'lesson_bio_001_01',
+    questions: [
+      { title: '细胞结构辨析', order: 1, fileId: uploadedQuestionFile.id },
+      { title: '显微镜使用步骤', order: 2 }
+    ]
+  });
+  assert(lessonQuestions.questions.length === 2 && lessonQuestions.questions[0].file, 'teacher should pre-upload lesson question slots with files');
+
+  const wrongSelection = await Api.markStudentWrongQuestions({
+    studentId: 'stu_001',
+    courseId: 'course_bio_001',
+    courseSessionId: 'lesson_bio_001_01',
+    questionIds: lessonQuestions.questions.map((item) => item.id),
+    accuracy: 60,
+    rankText: '超过班级 40% 同学'
+  });
+  assert(wrongSelection.questionIds.length === 2 && wrongSelection.accuracy === 60, 'teacher should mark wrong questions by student');
+
+  const todosBeforePass = await Api.getTeacherTodos();
+  assert(todosBeforePass.pendingPassCount >= 1, 'teacher todos should include pending pass confirmations');
+  assert(todosBeforePass.items.some((item) => item.studentId === 'stu_001' && item.courseSessionId === 'lesson_bio_001_01'), 'teacher todos should list pending student/session pass items');
+
+  const passResult = await Api.confirmStudentPass({
+    studentId: 'stu_001',
+    courseId: 'course_bio_001',
+    courseSessionId: 'lesson_bio_001_01',
+    passed: true,
+    comment: 'Smoke 确认通关'
+  });
+  assert(passResult.passed && passResult.feedback.passed, 'teacher should confirm pass for one student/session');
+  const todosAfterPass = await Api.getTeacherTodos();
+  assert(!todosAfterPass.items.some((item) => item.studentId === 'stu_001' && item.courseSessionId === 'lesson_bio_001_01'), 'confirmed pass item should disappear from teacher todos');
 
   await expectReject(Api.createLessonFeedback({
     studentId: 'stu_004',
@@ -352,6 +431,13 @@ async function run() {
   assert(studentFeedbacks.feedbacks.some((item) => item.id === createdFeedback.id), 'student should see newly created feedback');
   const preWrongFeedbacks = await Api.getStudentLessonFeedbacks({ courseId: 'course_bio_001', feedbackType: 'pre' });
   assert(preWrongFeedbacks.feedbacks.every((item) => item.feedbackType === 'pre'), 'student pre-test view should show only pre wrong feedbacks');
+  const workbook = await Api.getStudentWrongWorkbook({ courseId: 'course_bio_001' });
+  assert(workbook.records.some((item) => item.courseSessionId === 'lesson_bio_001_01' && item.questions.length === 2), 'student wrong workbook should aggregate selected wrong questions');
+  assert(workbook.summary.totalWrongQuestions >= 2 && workbook.summary.accuracyText, 'student wrong workbook should expose totals and accuracy text');
+  const exportedWorkbook = await Api.exportStudentWrongWorkbook({ courseId: 'course_bio_001', format: 'pdf' });
+  assert(exportedWorkbook.format === 'pdf' && exportedWorkbook.fileName.endsWith('.pdf') && exportedWorkbook.printable, 'parent should export wrong workbook as a printable single file');
+  const honors = await Api.getStudentHonors({ courseId: 'course_bio_001' });
+  assert(honors.certificates.some((item) => item.studentName === '陈一诺' && item.courseName), 'student honors should expose named course certificates');
   await expectReject(Api.getFeedbackDetail('feedback_002'), 'NO_PERMISSION');
 
   const imagePreview = await Api.getMediaPreview(uploadedImage.id);

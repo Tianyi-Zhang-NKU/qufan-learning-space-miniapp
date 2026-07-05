@@ -63,6 +63,8 @@ Page({
     filteredCourses: [],
     activeCourse: null,
     filteredStudents: [],
+    teacherTodos: [],
+    pendingPassCount: 0,
     courseSearchQuery: '',
     studentSearchQuery: '',
     expandedCourseKey: '',
@@ -77,8 +79,8 @@ Page({
   },
 
   loadCourses() {
-    Api.getTeacherCourses()
-      .then((result) => {
+    Promise.all([Api.getTeacherCourses(), Api.getTeacherTodos ? Api.getTeacherTodos() : Promise.resolve({ items: [], pendingPassCount: 0 })])
+      .then(([result, todos]) => {
         const courses = (result.courseGroups || result.courses || []).map(decorateCourse);
         const teacher = result.teacher || {};
         const todayCourses = courses
@@ -95,7 +97,9 @@ Page({
           teacherName: teacher.name || teacher.fullName || this.data.session.displayName || '教师',
           courses,
           todayCourses,
-          filteredCourses: courses
+          filteredCourses: courses,
+          teacherTodos: todos.items || [],
+          pendingPassCount: todos.pendingPassCount || 0
         });
         this.applyCourseSearch(this.data.courseSearchQuery);
       })

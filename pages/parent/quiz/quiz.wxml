@@ -18,7 +18,7 @@
         >
           <view class="quiz-option-icon">📝</view>
           <view class="quiz-option-body">
-            <text class="quiz-option-title">课前测</text>
+            <text class="quiz-option-title">课前练习</text>
             <text class="quiz-option-desc">预习巩固，检验课前准备</text>
           </view>
           <view class="quiz-option-right">
@@ -35,7 +35,7 @@
         >
           <view class="quiz-option-icon">✅</view>
           <view class="quiz-option-body">
-            <text class="quiz-option-title">课后测</text>
+            <text class="quiz-option-title">课后巩固</text>
             <text class="quiz-option-desc">效果检验，巩固课堂所学</text>
           </view>
           <view class="quiz-option-right">

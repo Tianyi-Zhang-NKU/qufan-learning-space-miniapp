@@ -1,6 +1,6 @@
 <view class="screen exercises-screen">
   <z-bg></z-bg>
-  <z-page-head kicker="OPTIONAL TESTS" title="可选测验资料" desc="课前测、课后测可作为弱功能保留，第一版主流程仍是课后反馈。"></z-page-head>
+  <z-page-head kicker="OPTIONAL TESTS" title="可选测验资料" desc="课前练习、课后巩固可作为弱功能保留，第一版主流程仍是课后反馈。"></z-page-head>
 
   <z-card mode="hero">
     <z-section-title title="今天" right="可选记录" right-type-alias="status"></z-section-title>

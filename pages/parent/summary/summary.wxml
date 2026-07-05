@@ -4,7 +4,7 @@
   <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
     <view class="qf-top">
       <view class="qf-brand">
-        <text class="qf-brand-title">课堂总结</text>
+        <text class="qf-brand-title">本讲总结</text>
         <text class="qf-brand-sub">{{courseName}} · 按课次查看反馈</text>
       </view>
     </view>
@@ -12,12 +12,18 @@
     <view wx:if="{{loading}}" class="qf-empty"><text>加载中…</text></view>
 
     <view wx:elif="{{!summaries.length}}" class="qf-empty">
-      <text>暂无课堂总结</text>
+      <text>暂无本讲总结</text>
       <text class="qf-muted">课程结束后老师会发布反馈</text>
     </view>
 
     <view wx:else class="content-area">
-      <!-- Session tab bar -->
+      <view wx:if="{{honors.length}}" class="honor-strip">
+        <view wx:for="{{honors}}" wx:key="id" class="honor-card">
+          <text class="honor-title">{{item.title}}</text>
+          <text class="honor-name">{{item.studentName}}</text>
+          <text class="honor-progress">{{item.progressText}}</text>
+        </view>
+      </view>      <!-- Session tab bar -->
       <scroll-view
         scroll-x
         enhanced
@@ -68,6 +74,13 @@
                 data-current="{{img.previewUrl}}"
                 bindtap="previewImage"
               ></image>
+            </view>
+
+            <view wx:if="{{item.attachFiles.length}}" class="feedback-docs">
+              <view wx:for="{{item.attachFiles}}" wx:for-item="doc" wx:key="id" class="feedback-doc-row">
+                <text class="feedback-doc-icon">文</text>
+                <text class="feedback-doc-name">{{doc.name}}</text>
+              </view>
             </view>
 
             <!-- Voice -->

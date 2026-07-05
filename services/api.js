@@ -8,9 +8,11 @@ const TODAY = '2026-06-03';
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'heic'];
 const VIDEO_EXTS = ['mp4', 'mov', 'm4v', 'webm'];
 const VOICE_EXTS = ['m4a', 'mp3', 'aac', 'wav'];
+const DOCUMENT_EXTS = ['pdf', 'doc', 'docx'];
 const IMAGE_MAX_SIZE = 10 * 1024 * 1024;
 const VIDEO_MAX_SIZE = 200 * 1024 * 1024;
 const VOICE_MAX_SIZE = 20 * 1024 * 1024;
+const DOCUMENT_MAX_SIZE = 50 * 1024 * 1024;
 
 function hasWx() {
   return typeof wx !== 'undefined';
@@ -122,6 +124,11 @@ function findFeedback(id) {
   return db.lessonFeedbacks.find((item) => item.id === id);
 }
 
+function ensureCollection(name) {
+  if (!Array.isArray(db[name])) db[name] = [];
+  return db[name];
+}
+
 function addUnique(list, value) {
   if (!Array.isArray(list) || !value || list.includes(value)) return;
   list.push(value);
@@ -220,14 +227,36 @@ function cameraStatusText(status) {
   return '待接入';
 }
 
+function decorateOptionalFile(file) {
+  if (!file) return null;
+  const ext = file.ext || getExt(file.name);
+  return {
+    ...file,
+    ext,
+    canPreview: DOCUMENT_EXTS.includes(ext),
+    canDownload: true,
+    downloadable: true,
+    previewUrl: file.downloadUrl || file.tempPath || '',
+    message: '资料文件可预览，正式部署后由后端签发临时地址。'
+  };
+}
+
 function assignmentWithFile(item) {
   const file = item.fileId ? findOptionalFile(item.fileId) : null;
   const courseSession = findCourseSession(item.courseSessionId);
   return {
     ...item,
-    typeText: item.type === 'pre' ? '课前测' : '课后测',
-    file: file || null,
+    typeText: item.type === 'pre' ? '课堂小测' : '本讲总结',
+    file: decorateOptionalFile(file),
     courseSession: courseSession ? decorateSession(courseSession) : null
+  };
+}
+
+function questionWithFile(item) {
+  const file = item.fileId ? findOptionalFile(item.fileId) : null;
+  return {
+    ...item,
+    file: decorateOptionalFile(file)
   };
 }
 
@@ -257,7 +286,7 @@ function feedbackWithMedia(item) {
   const imageFiles = (item.imageFileIds || []).map(findMedia).filter(Boolean).map(decorateMedia);
   const videoFiles = (item.videoFileIds || []).map(findMedia).filter(Boolean).map(decorateMedia);
   const voiceFiles = (item.voiceFileIds || []).map(findMedia).filter(Boolean).map(decorateMedia);
-  const attachFiles = (item.attachFileIds || []).map(findOptionalFile).filter(Boolean);
+  const attachFiles = (item.attachFileIds || []).map(findOptionalFile).filter(Boolean).map(decorateOptionalFile);
   return {
     ...item,
     feedbackType,
@@ -363,14 +392,17 @@ function canAccessFeedback(session, feedback) {
 
 function canAccessMedia(session, fileId) {
   const feedback = db.lessonFeedbacks.find((item) => {
-    const ids = (item.imageFileIds || []).concat(item.videoFileIds || [], item.voiceFileIds || []);
+    const ids = (item.imageFileIds || []).concat(item.videoFileIds || [], item.voiceFileIds || [], item.attachFileIds || []);
     return ids.includes(fileId);
   });
   if (feedback) return canAccessFeedback(session, feedback);
   const optionalFile = findOptionalFile(fileId);
   if (!optionalFile) return false;
   const assignment = db.assignments.find((item) => item.fileId === optionalFile.id);
-  return assignment ? canAccessCourse(session, assignment.courseId) : session.role === 'admin';
+  if (assignment) return canAccessCourse(session, assignment.courseId);
+  const question = ensureCollection('lessonQuestions').find((item) => item.fileId === optionalFile.id);
+  if (question) return canAccessCourse(session, question.courseId);
+  return session.role === 'admin';
 }
 
 function buildSession(account) {
@@ -473,9 +505,9 @@ function mediaPlaceholder(type, payload, session) {
   const validation = validateMediaUpload(payload, type);
   const idPrefix = type === 'image' ? 'media_img' : type === 'video' ? 'media_video' : 'media_voice';
   const defaultName = {
-    image: '错题反馈图片.jpg',
-    video: '错题反馈视频.mp4',
-    voice: '错题反馈语音.m4a'
+    image: '学习反馈图片.jpg',
+    video: '学习反馈视频.mp4',
+    voice: '学习反馈语音.m4a'
   };
   const id = nextId(idPrefix, db.mediaFiles);
   const file = {
@@ -496,6 +528,129 @@ function mediaPlaceholder(type, payload, session) {
   return file;
 }
 
+function validateDocumentUpload(payload) {
+  const ext = getExt(payload.fileName || payload.name || '');
+  const size = Number(payload.size || 0);
+  if (!DOCUMENT_EXTS.includes(ext)) throw makeError('UNSUPPORTED_FILE_TYPE', '仅支持 PDF / Word 文档。');
+  if (size > DOCUMENT_MAX_SIZE) throw makeError('FILE_TOO_LARGE', '文档不能超过 50MB。');
+  return { ext, size };
+}
+
+function optionalFilePlaceholder(payload, session, ownerType) {
+  const validation = validateDocumentUpload(payload);
+  const id = nextId('file_optional', db.files);
+  const file = {
+    id,
+    name: payload.fileName || payload.name || `学习资料.${validation.ext}`,
+    ext: validation.ext,
+    mimeType: payload.mimeType || '',
+    size: validation.size,
+    ownerType: ownerType || 'feedbackAttachment',
+    ownerId: payload.ownerId || '',
+    uploadedBy: session.teacherId || session.adminId || session.accountId,
+    uploadedAt: nowLabel(),
+    fileID: '',
+    downloadUrl: payload.downloadUrl || payload.tempPath || '',
+    tempPath: payload.tempPath || '',
+    placeholder: true,
+    optional: true
+  };
+  db.files.unshift(file);
+  return file;
+}
+
+function getLessonQuestions(filter = {}) {
+  return ensureCollection('lessonQuestions')
+    .filter((item) => !filter.courseId || item.courseId === filter.courseId)
+    .filter((item) => !filter.courseSessionId || item.courseSessionId === filter.courseSessionId)
+    .sort((a, b) => (a.order || 0) - (b.order || 0))
+    .map(questionWithFile);
+}
+
+function getWrongSelections(filter = {}) {
+  return ensureCollection('wrongQuestionSelections')
+    .filter((item) => !filter.studentId || item.studentId === filter.studentId)
+    .filter((item) => !filter.courseId || item.courseId === filter.courseId)
+    .filter((item) => !filter.courseSessionId || item.courseSessionId === filter.courseSessionId);
+}
+
+function decorateWrongSelection(item) {
+  const course = findCourse(item.courseId) || {};
+  const courseSession = findCourseSession(item.courseSessionId) || {};
+  const questions = getLessonQuestions({ courseId: item.courseId, courseSessionId: item.courseSessionId })
+    .filter((question) => item.questionIds.includes(question.id));
+  return {
+    ...item,
+    courseName: course.name || '',
+    courseSessionTitle: courseSession.displayTitle || courseSession.sessionTitle || '',
+    sessionTopic: courseSession.topic || '',
+    questions,
+    wrongCount: questions.length,
+    accuracyText: item.accuracy !== undefined ? `${item.accuracy}%` : '',
+    rankText: item.rankText || ''
+  };
+}
+
+function buildStudentWrongWorkbook(studentId, filter = {}) {
+  const records = getWrongSelections({ studentId, courseId: filter.courseId || '', courseSessionId: filter.courseSessionId || '' })
+    .map(decorateWrongSelection)
+    .filter((item) => item.questions.length);
+  const totalWrongQuestions = records.reduce((sum, item) => sum + item.questions.length, 0);
+  const accuracyValues = records.map((item) => Number(item.accuracy)).filter((value) => !Number.isNaN(value));
+  const averageAccuracy = accuracyValues.length
+    ? Math.round(accuracyValues.reduce((sum, value) => sum + value, 0) / accuracyValues.length)
+    : null;
+  return {
+    currentStudent: findStudent(studentId),
+    records,
+    summary: {
+      totalSessions: records.length,
+      totalWrongQuestions,
+      averageAccuracy,
+      accuracyText: averageAccuracy === null ? '待录入' : `${averageAccuracy}%`,
+      printable: true
+    }
+  };
+}
+
+function buildStudentHonors(studentId, filter = {}) {
+  const student = findStudent(studentId) || {};
+  const courses = db.courses.filter((course) => course.studentIds.includes(studentId) && (!filter.courseId || course.id === filter.courseId));
+  const certificates = [];
+  const passHistory = [];
+  courses.forEach((course) => {
+    const sessions = getCourseSessions(course.id);
+    const passedFeedbacks = getFeedbacks({ studentId, courseId: course.id, feedbackType: 'general', visibleToStudent: true })
+      .filter((feedback) => feedback.passed);
+    passedFeedbacks.forEach((feedback) => {
+      const courseSession = findCourseSession(feedback.courseSessionId) || {};
+      passHistory.push({
+        id: feedback.id,
+        courseId: course.id,
+        courseName: course.name,
+        courseSessionId: feedback.courseSessionId,
+        sessionTitle: courseSession.displayTitle || courseSession.sessionTitle || '',
+        studentName: student.name || '',
+        confirmedAt: feedback.updatedAt || feedback.createdAt || '',
+        teacherName: (findTeacher(feedback.teacherId) || {}).name || ''
+      });
+    });
+    if (passedFeedbacks.length) {
+      certificates.push({
+        id: `certificate_${course.id}_${studentId}`,
+        studentId,
+        studentName: student.name || '',
+        courseId: course.id,
+        courseName: course.name,
+        title: `${course.name} 通关证书`,
+        progressText: `${passedFeedbacks.length}/${sessions.length} 讲已通关`,
+        sealText: '趣帆学习通关认证',
+        issuedAt: passedFeedbacks[passedFeedbacks.length - 1].updatedAt || passedFeedbacks[passedFeedbacks.length - 1].createdAt || nowLabel()
+      });
+    }
+  });
+  return { currentStudent: student, certificates, passHistory };
+}
 function classInEntryForSession(courseId, courseSessionId) {
   const course = findCourse(courseId) || {};
   const courseSession = findCourseSession(courseSessionId) || {};
@@ -652,6 +807,7 @@ const mockApi = {
       courseSession: decorateSession(courseSession),
       students,
       assignments: getCourseAssignments(courseSession.courseId, courseSession.id),
+      questions: getLessonQuestions({ courseId: courseSession.courseId, courseSessionId: courseSession.id }),
       lessonFeedbacks: feedbacks,
       feedbacks,
       wrongRecords: []
@@ -700,25 +856,76 @@ const mockApi = {
     if (!String(payload.text || '').trim() && !imageFileIds.length && !videoFileIds.length && !voiceFileIds.length && !attachFileIds.length) {
       throw makeError('VALIDATION_ERROR', '请填写文字反馈或添加图片/视频/语音。');
     }
-    const record = {
-      id: nextId('feedback', db.lessonFeedbacks),
+
+    const existing = db.lessonFeedbacks.find((item) =>
+      item.studentId === student.id
+      && item.courseId === course.id
+      && item.courseSessionId === courseSession.id
+      && (item.feedbackType || 'post') === feedbackType
+    );
+    const timestamp = nowLabel();
+    const nextFields = {
       studentId: student.id,
       teacherId,
       courseId: course.id,
       courseSessionId: courseSession.id,
       feedbackType,
       text: String(payload.text || '').trim(),
-      imageFileIds: imageFileIds.slice(),
-      videoFileIds: videoFileIds.slice(),
-      voiceFileIds: voiceFileIds.slice(),
-      attachFileIds: attachFileIds.slice(),
-      passed: !!payload.passed,
-      createdAt: nowLabel(),
+      imageFileIds: Array.isArray(payload.imageFileIds) ? imageFileIds.slice() : null,
+      videoFileIds: Array.isArray(payload.videoFileIds) ? videoFileIds.slice() : null,
+      voiceFileIds: Array.isArray(payload.voiceFileIds) ? voiceFileIds.slice() : null,
+      attachFileIds: Array.isArray(payload.attachFileIds) ? attachFileIds.slice() : null,
       visibleToStudent: payload.visibleToStudent !== false
     };
-    db.lessonFeedbacks.unshift(record);
-    pushAudit(session.identityId, 'create_lesson_feedback', 'lessonFeedback', record.id, `为 ${student.name} 保存${FeedbackTypes.feedbackTypeText(feedbackType)}`);
+
+    let record;
+    if (existing) {
+      existing.editHistory = existing.editHistory || [];
+      existing.editHistory.push({
+        editedAt: existing.updatedAt || existing.createdAt || timestamp,
+        teacherId: existing.teacherId,
+        text: existing.text || '',
+        imageFileIds: (existing.imageFileIds || []).slice(),
+        videoFileIds: (existing.videoFileIds || []).slice(),
+        voiceFileIds: (existing.voiceFileIds || []).slice(),
+        attachFileIds: (existing.attachFileIds || []).slice(),
+        passed: !!existing.passed
+      });
+      Object.assign(existing, nextFields, {
+        imageFileIds: nextFields.imageFileIds || (existing.imageFileIds || []).slice(),
+        videoFileIds: nextFields.videoFileIds || (existing.videoFileIds || []).slice(),
+        voiceFileIds: nextFields.voiceFileIds || (existing.voiceFileIds || []).slice(),
+        attachFileIds: nextFields.attachFileIds || (existing.attachFileIds || []).slice(),
+        passed: payload.passed !== undefined ? !!payload.passed : !!existing.passed,
+        updatedAt: timestamp,
+        editCount: existing.editHistory.length + 1
+      });
+      record = existing;
+      pushAudit(session.identityId, 'update_lesson_feedback', 'lessonFeedback', record.id, `更新 ${student.name} 的${FeedbackTypes.feedbackTypeText(feedbackType)}`);
+    } else {
+      record = {
+        id: nextId('feedback', db.lessonFeedbacks),
+        ...nextFields,
+        imageFileIds: nextFields.imageFileIds || [],
+        videoFileIds: nextFields.videoFileIds || [],
+        voiceFileIds: nextFields.voiceFileIds || [],
+        attachFileIds: nextFields.attachFileIds || [],
+        passed: !!payload.passed,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+        editHistory: [],
+        editCount: 1
+      };
+      db.lessonFeedbacks.unshift(record);
+      pushAudit(session.identityId, 'create_lesson_feedback', 'lessonFeedback', record.id, `为 ${student.name} 保存${FeedbackTypes.feedbackTypeText(feedbackType)}`);
+    }
     return delay(feedbackWithMedia(record));
+  },
+
+  uploadFeedbackFile(payload = {}) {
+    const session = requireRole(['teacher', 'admin']);
+    const file = optionalFilePlaceholder(payload, session, 'feedbackAttachment');
+    return delay(decorateOptionalFile(file));
   },
 
   uploadFeedbackImage(payload = {}) {
@@ -1079,6 +1286,175 @@ const mockApi = {
     return this.getCourseGroupDetail(id);
   },
 
+  getTeacherTodos() {
+    const session = requireRole(['teacher', 'admin']);
+    const items = [];
+    teacherCourses(session).forEach((course) => {
+      getCourseSessions(course.id).forEach((courseSession) => {
+        const hasActivity = courseSession.status === 'finished'
+          || getFeedbacks({ courseId: course.id, courseSessionId: courseSession.id }).length > 0
+          || getWrongSelections({ courseId: course.id, courseSessionId: courseSession.id }).length > 0;
+        if (!hasActivity) return;
+        getCourseStudents(course.id).forEach((student) => {
+          const passed = getFeedbacks({
+            studentId: student.id,
+            courseId: course.id,
+            courseSessionId: courseSession.id,
+            feedbackType: 'general'
+          }).some((feedback) => feedback.passed);
+          if (passed) return;
+          const wrongSelection = getWrongSelections({ studentId: student.id, courseId: course.id, courseSessionId: courseSession.id })[0] || null;
+          items.push({
+            id: `todo_${courseSession.id}_${student.id}`,
+            type: 'pass_confirmation',
+            courseId: course.id,
+            courseName: course.name,
+            courseSessionId: courseSession.id,
+            sessionTitle: courseSession.displayTitle || courseSession.sessionTitle || '',
+            sessionTopic: courseSession.topic || '',
+            studentId: student.id,
+            studentName: student.name,
+            wrongCount: wrongSelection ? wrongSelection.questionIds.length : 0,
+            statusText: '待确认通关'
+          });
+        });
+      });
+    });
+    return delay({ pendingPassCount: items.length, items });
+  },
+
+  confirmStudentPass(payload = {}) {
+    const session = requireRole(['teacher', 'admin']);
+    const course = findCourse(payload.courseId);
+    const courseSession = findCourseSession(payload.courseSessionId);
+    const student = findStudent(payload.studentId);
+    if (!course || !courseSession || !student) throw makeError('VALIDATION_ERROR', '课程、课次或学生不存在。');
+    if (courseSession.courseId !== course.id) throw makeError('VALIDATION_ERROR', '课次不属于当前课程。');
+    if (!canTeacherAccessCourse(session, course.id)) throw makeError('NO_PERMISSION', '当前账号不能确认这门课的通关。');
+    return this.createLessonFeedback({
+      studentId: student.id,
+      teacherId: session.teacherId || course.teacherId,
+      courseId: course.id,
+      courseSessionId: courseSession.id,
+      feedbackType: 'general',
+      text: payload.comment || '老师已确认本讲通关。',
+      imageFileIds: payload.imageFileIds || [],
+      videoFileIds: payload.videoFileIds || [],
+      voiceFileIds: payload.voiceFileIds || [],
+      attachFileIds: payload.attachFileIds || [],
+      passed: payload.passed !== false,
+      visibleToStudent: true
+    }).then((feedback) => ({ passed: feedback.passed, feedback }));
+  },
+
+  createLessonQuestions(payload = {}) {
+    const session = requireRole(['teacher', 'admin']);
+    const course = findCourse(payload.courseId);
+    const courseSession = findCourseSession(payload.courseSessionId);
+    if (!course || !courseSession) throw makeError('VALIDATION_ERROR', '课程或课次不存在。');
+    if (courseSession.courseId !== course.id) throw makeError('VALIDATION_ERROR', '课次不属于当前课程。');
+    if (!canTeacherAccessCourse(session, course.id)) throw makeError('NO_PERMISSION', '当前账号不能维护这门课的题目。');
+    const store = ensureCollection('lessonQuestions');
+    const incoming = Array.isArray(payload.questions) ? payload.questions : [];
+    if (!incoming.length) throw makeError('VALIDATION_ERROR', '请至少添加一道题目。');
+    const existingForSession = store.filter((item) => item.courseId === course.id && item.courseSessionId === courseSession.id);
+    const created = incoming.map((question, index) => {
+      if (question.fileId && !findOptionalFile(question.fileId)) throw makeError('VALIDATION_ERROR', '题目资料文件不存在。');
+      const current = question.id ? store.find((item) => item.id === question.id) : null;
+      const record = current || {
+        id: nextId('question', store),
+        courseId: course.id,
+        courseSessionId: courseSession.id,
+        createdAt: nowLabel()
+      };
+      Object.assign(record, {
+        title: String(question.title || `第${existingForSession.length + index + 1}题`).trim(),
+        order: Number(question.order || index + 1),
+        fileId: question.fileId || '',
+        points: Number(question.points || 0),
+        updatedAt: nowLabel(),
+        uploadedBy: session.teacherId || session.adminId
+      });
+      if (!current) store.push(record);
+      return questionWithFile(record);
+    });
+    pushAudit(session.identityId, 'upsert_lesson_questions', 'courseSession', courseSession.id, `维护 ${created.length} 道课次题目`);
+    return delay({ course: decorateCourse(course), courseSession: decorateSession(courseSession), questions: created });
+  },
+
+  markStudentWrongQuestions(payload = {}) {
+    const session = requireRole(['teacher', 'admin']);
+    const course = findCourse(payload.courseId);
+    const courseSession = findCourseSession(payload.courseSessionId);
+    const student = findStudent(payload.studentId);
+    if (!course || !courseSession || !student) throw makeError('VALIDATION_ERROR', '课程、课次或学生不存在。');
+    if (courseSession.courseId !== course.id || !course.studentIds.includes(student.id)) throw makeError('VALIDATION_ERROR', '学生或课次不属于当前课程。');
+    if (!canTeacherAccessCourse(session, course.id)) throw makeError('NO_PERMISSION', '当前账号不能标记这门课的错题。');
+    const validQuestionIds = getLessonQuestions({ courseId: course.id, courseSessionId: courseSession.id }).map((item) => item.id);
+    const questionIds = (payload.questionIds || []).filter((id) => validQuestionIds.includes(id));
+    const store = ensureCollection('wrongQuestionSelections');
+    let record = store.find((item) => item.studentId === student.id && item.courseId === course.id && item.courseSessionId === courseSession.id);
+    if (!record) {
+      record = {
+        id: nextId('wrong_selection', store),
+        studentId: student.id,
+        courseId: course.id,
+        courseSessionId: courseSession.id,
+        createdAt: nowLabel()
+      };
+      store.push(record);
+    }
+    Object.assign(record, {
+      questionIds,
+      accuracy: payload.accuracy !== undefined ? Number(payload.accuracy) : undefined,
+      rankText: payload.rankText || '',
+      note: payload.note || '',
+      updatedAt: nowLabel(),
+      updatedBy: session.teacherId || session.adminId
+    });
+    pushAudit(session.identityId, 'mark_wrong_questions', 'wrongQuestionSelection', record.id, `标记 ${student.name} ${questionIds.length} 道错题`);
+    return delay(decorateWrongSelection(record));
+  },
+
+  getStudentWrongWorkbook(payload = {}) {
+    const session = requireRole('parent');
+    return delay(buildStudentWrongWorkbook(session.studentId, payload));
+  },
+
+  exportStudentWrongWorkbook(payload = {}) {
+    const session = requireRole('parent');
+    const workbook = buildStudentWrongWorkbook(session.studentId, payload);
+    const student = findStudent(session.studentId) || {};
+    const format = payload.format === 'docx' ? 'docx' : 'pdf';
+    const file = {
+      id: nextId('file_export', db.files),
+      name: `${student.name || '学生'}错题本.${format}`,
+      ext: format,
+      mimeType: format === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      size: Math.max(1, workbook.summary.totalWrongQuestions) * 1024,
+      ownerType: 'wrongWorkbookExport',
+      ownerId: student.id || '',
+      uploadedBy: session.accountId,
+      uploadedAt: nowLabel(),
+      fileID: '',
+      downloadUrl: '',
+      placeholder: true,
+      optional: true
+    };
+    db.files.unshift(file);
+    return delay({
+      format,
+      fileName: file.name,
+      file: decorateOptionalFile(file),
+      printable: true,
+      workbook
+    });
+  },
+
+  getStudentHonors(payload = {}) {
+    const session = requireRole('parent');
+    return delay(buildStudentHonors(session.studentId, payload));
+  },
   getStudentsByCourse(courseId) {
     return this.getTeacherStudentsByCourse(courseId);
   },

@@ -3,8 +3,8 @@ const Guard = require('../../../utils/page-guard');
 const Notice = require('../../../utils/notice');
 
 const FEEDBACK_TYPES = [
-  { value: 'pre', label: '课前测错题' },
-  { value: 'post', label: '课后测错题' },
+  { value: 'pre', label: '课堂小测错题' },
+  { value: 'post', label: '本讲总结错题' },
   { value: 'general', label: '课后反馈' }
 ];
 
@@ -59,7 +59,7 @@ Page({
       feedbackType: ['pre', 'post', 'general'].includes(feedbackType) ? feedbackType : 'post'
     });
     this.initRecorder();
-    wx.setNavigationBarTitle({ title: `错题反馈 - ${this.data.studentName}` });
+    wx.setNavigationBarTitle({ title: `学习反馈 - ${this.data.studentName}` });
   },
 
   onShow() {
@@ -317,22 +317,22 @@ Page({
         const imageResults = results.slice(0, this.data.imageFiles.length);
         const voiceResults = results.slice(this.data.imageFiles.length, this.data.imageFiles.length + this.data.voiceFiles.length);
         const docResults = results.slice(this.data.imageFiles.length + this.data.voiceFiles.length);
-        return Api.createLessonFeedback({
+        const payload = {
           studentId: this.data.studentId,
           teacherId: this.data.session.teacherId,
           courseId: this.data.courseId,
           courseSessionId: this.data.activeSessionId,
           feedbackType: this.data.feedbackType,
           text: this.data.feedbackText.trim(),
-          imageFileIds: imageResults.map((file) => file.id),
-          videoFileIds: [],
-          voiceFileIds: voiceResults.map((file) => file.id),
-          attachFileIds: docResults.map((file) => file.id),
           passed: this.data.passed
-        });
+        };
+        if (imageResults.length || !this.data.existingFeedback) payload.imageFileIds = imageResults.map((file) => file.id);
+        if (voiceResults.length || !this.data.existingFeedback) payload.voiceFileIds = voiceResults.map((file) => file.id);
+        if (docResults.length || !this.data.existingFeedback) payload.attachFileIds = docResults.map((file) => file.id);
+        return Api.createLessonFeedback(payload);
       })
       .then(() => {
-        Notice.toast('错题反馈已保存');
+        Notice.toast('学习反馈已保存');
         this.setData({
           submitting: false,
           feedbackText: '',
@@ -349,6 +349,26 @@ Page({
       });
   },
 
+  confirmPassNow() {
+    if (!this.data.activeSessionId || this.data.submitting) return;
+    this.setData({ submitting: true });
+    Api.confirmStudentPass({
+      studentId: this.data.studentId,
+      courseId: this.data.courseId,
+      courseSessionId: this.data.activeSessionId,
+      passed: true,
+      comment: this.data.feedbackText.trim() || '老师已确认本讲通关。'
+    })
+      .then(() => {
+        Notice.toast('已确认通关');
+        this.setData({ submitting: false, passed: true, feedbackType: 'general' });
+        this.loadSessionFeedback(this.data.activeSessionId);
+      })
+      .catch((error) => {
+        this.setData({ submitting: false });
+        Notice.alert(error.message || '确认通关失败');
+      });
+  },
   formatSize(bytes) {
     if (!bytes) return '0 B';
     const k = 1024;

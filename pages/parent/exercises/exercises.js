@@ -14,10 +14,12 @@ function buildFeedbackRecord(feedback) {
     imageFiles: feedback.imageFiles || [],
     videoFiles: feedback.videoFiles || [],
     voiceFiles: feedback.voiceFiles || [],
+    attachFiles: feedback.attachFiles || [],
     mediaFiles: feedback.mediaFiles || [],
     imageCount: feedback.imageCount || 0,
     videoCount: feedback.videoCount || 0,
     voiceCount: feedback.voiceCount || 0,
+    attachFileCount: feedback.attachFileCount || 0,
     passed: !!feedback.passed
   };
 }
@@ -57,7 +59,10 @@ Page({
 
     // ---- All-records mode ----
     allRecordsGroups: [],
-    allRecordsTotal: 0
+    allRecordsTotal: 0,
+    workbookSummary: {},
+    workbookRecords: [],
+    exportingWorkbook: false
   },
 
   onLoad(query) {
@@ -304,7 +309,7 @@ Page({
   },
 
   // ================================================================
-  //  Mode 4: Test list — 课前测/课后测
+  //  Mode 4: Test list — 课前练习/课后巩固
   // ================================================================
   loadTestList() {
     this.setData({ loading: true });
@@ -358,7 +363,7 @@ Page({
     Api.getFeedbackDetail(feedbackId)
       .then((feedback) => {
         const content = feedback.text || '该记录仅包含媒体反馈。';
-        Notice.alert(content, feedback.feedbackTypeText || '错题反馈');
+        Notice.alert(content, feedback.feedbackTypeText || '学习反馈');
       })
       .catch((error) => Notice.alert(error.message || '详情加载失败'));
   },
@@ -409,9 +414,10 @@ Page({
     // Load all feedbacks + courses to build grouped view
     Promise.all([
       Api.getStudentLessonFeedbacks({}),
-      Api.getStudentCourses()
+      Api.getStudentCourses(),
+      Api.getStudentWrongWorkbook ? Api.getStudentWrongWorkbook({}) : Promise.resolve({ records: [], summary: {} })
     ])
-      .then(([feedbackResult, courseResult]) => {
+      .then(([feedbackResult, courseResult, workbook]) => {
         const feedbacks = feedbackResult.feedbacks || [];
         const courses = courseResult.courses || courseResult.courseGroups || [];
 
@@ -450,6 +456,8 @@ Page({
         this.setData({
           allRecordsGroups: groups,
           allRecordsTotal: total,
+          workbookSummary: workbook.summary || {},
+          workbookRecords: workbook.records || [],
           loading: false
         });
       })
@@ -462,6 +470,19 @@ Page({
   // ================================================================
   //  Legacy / shared utilities
   // ================================================================
+  exportWorkbook() {
+    if (this.data.exportingWorkbook) return;
+    this.setData({ exportingWorkbook: true });
+    Api.exportStudentWrongWorkbook({ format: 'pdf' })
+      .then((result) => {
+        this.setData({ exportingWorkbook: false });
+        Notice.alert(`已生成 ${result.fileName}`, '错题本导出');
+      })
+      .catch((error) => {
+        this.setData({ exportingWorkbook: false });
+        Notice.alert(error.message || '导出失败');
+      });
+  },
   previewMedia(event) {
     wx.navigateTo({ url: `/pages/file-preview/file-preview?id=${event.currentTarget.dataset.id}` });
   },

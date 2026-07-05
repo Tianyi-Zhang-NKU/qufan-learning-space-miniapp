@@ -9,6 +9,8 @@ Page({
     summaries: [],
     currentIndex: 0,
     currentSummary: null,
+    honors: [],
+    passHistory: [],
     loading: true
   },
 
@@ -30,8 +32,11 @@ Page({
       return;
     }
 
-    Api.getStudentCourseDetail(courseId)
-      .then((detail) => {
+    Promise.all([
+      Api.getStudentCourseDetail(courseId),
+      Api.getStudentHonors ? Api.getStudentHonors({ courseId }) : Promise.resolve({ certificates: [], passHistory: [] })
+    ])
+      .then(([detail, honors]) => {
         const course = detail.course || {};
         const sessions = (detail.sessions || []).sort(
           (a, b) => a.sessionIndex - b.sessionIndex
@@ -59,7 +64,8 @@ Page({
               createdAt: f.createdAt || '',
               passed: !!f.passed,
               imageFiles: f.imageFiles || [],
-              voiceFiles: f.voiceFiles || []
+              voiceFiles: f.voiceFiles || [],
+              attachFiles: f.attachFiles || []
             }))
           };
         });
@@ -71,6 +77,8 @@ Page({
           summaries,
           currentIndex: lastIndex,
           currentSummary: summaries[lastIndex] || null,
+          honors: honors.certificates || [],
+          passHistory: honors.passHistory || [],
           loading: false
         });
       })

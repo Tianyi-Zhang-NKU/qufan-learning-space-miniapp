@@ -177,7 +177,7 @@
 
         <view wx:if="{{!sessionRecords.length}}" class="qf-empty">
           <text>暂无错题记录</text>
-          <text class="qf-muted">老师批改后会上传错题反馈</text>
+          <text class="qf-muted">老师批改后会上传学习反馈</text>
         </view>
 
         <view wx:else class="records-single-list">
@@ -253,6 +253,13 @@
         <view class="qf-brand">
           <text class="qf-brand-title">📖 我的错题本</text>
           <text class="qf-brand-sub">全部课程 · 共 {{allRecordsTotal}} 条错题记录</text>
+      <view class="workbook-export-card">
+        <view class="workbook-export-copy">
+          <text class="workbook-export-title">可打印错题本</text>
+          <text class="workbook-export-sub">{{workbookSummary.totalWrongQuestions || 0}} 道错题 · 正确率 {{workbookSummary.accuracyText || '待录入'}}</text>
+        </view>
+        <button class="workbook-export-btn" bindtap="exportWorkbook" disabled="{{exportingWorkbook}}">{{exportingWorkbook ? '生成中…' : '导出 PDF'}}</button>
+      </view>
         </view>
       </view>
 
@@ -260,7 +267,7 @@
 
       <view wx:elif="{{!allRecordsGroups.length}}" class="qf-empty">
         <text>暂无错题记录</text>
-        <text class="qf-muted">老师批改后会上传错题反馈</text>
+        <text class="qf-muted">老师批改后会上传学习反馈</text>
       </view>
 
       <view wx:else class="content-area">
@@ -292,11 +299,12 @@
                   <text class="all-record-teacher">{{item.teacherName}}</text>
                 </view>
                 <text class="all-record-text">{{item.text || '（图片/视频/语音反馈）'}}</text>
-                <view class="all-record-tags" wx:if="{{item.imageCount || item.videoCount || item.voiceCount}}">
+                <view class="all-record-tags" wx:if="{{item.imageCount || item.videoCount || item.voiceCount || item.attachFileCount}}">
                   <text class="detail-tag">{{item.feedbackTypeText}}</text>
                   <text wx:if="{{item.imageCount}}" class="detail-tag">📷 {{item.imageCount}} 张</text>
                   <text wx:if="{{item.videoCount}}" class="detail-tag">🎬 {{item.videoCount}} 个</text>
                   <text wx:if="{{item.voiceCount}}" class="detail-tag">🎙️ {{item.voiceCount}} 条</text>
+                  <text wx:if="{{item.attachFileCount}}" class="detail-tag">📄 {{item.attachFileCount}} 份</text>
                 </view>
                 <view wx:if="{{item.imageFiles.length}}" class="all-record-media">
                   <button
@@ -338,14 +346,14 @@
   </block>
 
   <!-- ================================================================
-       Mode 4: Test List — 课前测/课后测 (tab bar)
+       Mode 4: Test List — 课前练习/课后巩固 (tab bar)
        ================================================================ -->
   <block wx:elif="{{mode === 'testList'}}">
     <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
       <view class="qf-top">
         <view class="qf-brand">
           <text class="qf-brand-title">{{testTypeLabel}}</text>
-          <text class="qf-brand-sub">{{courseName}} · 按课次查看错题反馈</text>
+          <text class="qf-brand-sub">{{courseName}} · 按课次查看学习反馈</text>
         </view>
       </view>
 
@@ -435,7 +443,7 @@
               </view>
             </view>
             <view wx:else class="records-empty">
-              <text>暂无{{testTypeLabel}}错题反馈</text>
+              <text>暂无{{testTypeLabel}}学习反馈</text>
             </view>
           </view>
         </view>

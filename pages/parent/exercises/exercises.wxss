@@ -1,5 +1,5 @@
 /* ================================================================
-   Exercises / 反馈 Page — 课程错题 + 课前/课后测
+   Exercises / 反馈 Page — 本讲反馈 + 课前/课后巩固
    ================================================================ */
 
 /* ---- Shared layout ---- */
@@ -465,7 +465,7 @@
 }
 
 /* ================================================================
-   Mode 4: Test List — 课前测 / 课后测
+   Mode 4: Test List — 课前练习 / 课后巩固
    ================================================================ */
 
 /* Session tabs scrollable bar */
@@ -764,4 +764,47 @@
   color: #2d5a3f;
   font-size: 24rpx;
   font-weight: 600;
+}
+
+.workbook-export-card {
+  margin: 20rpx 0 24rpx;
+  padding: 22rpx 24rpx;
+  border-radius: 8rpx;
+  background: #FFFDF6;
+  border: 1rpx solid rgba(16, 34, 74, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.workbook-export-copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.workbook-export-title {
+  color: #10224A;
+  font-size: 30rpx;
+  font-weight: 800;
+}
+
+.workbook-export-sub {
+  color: #617064;
+  font-size: 24rpx;
+}
+
+.workbook-export-btn {
+  margin: 0;
+  min-width: 152rpx;
+  height: 64rpx;
+  line-height: 64rpx;
+  border-radius: 8rpx;
+  background: #10224A;
+  color: #fff;
+  font-size: 24rpx;
+  font-weight: 700;
 }

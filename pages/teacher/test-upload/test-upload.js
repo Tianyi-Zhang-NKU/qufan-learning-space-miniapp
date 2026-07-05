@@ -9,12 +9,14 @@ Page({
     courseId: '',
     courseName: '',
     type: 'pre',        // 'pre' 或 'post'
-    typeLabel: '课前测',
+    typeLabel: '课前练习',
     sessions: [],
     assignments: [],
     currentSession: null,
     activeSessionId: '',
     uploadedFiles: [],
+    questionSlots: [],
+    newQuestionTitle: '',
     uploading: false,
     uploadingFileName: ''
   },
@@ -58,6 +60,7 @@ Page({
           currentSession
         });
         this.loadAssignments(assignments);
+        this.loadQuestions();
       })
       .catch((error) => Notice.alert(error.message || '课程数据加载失败'));
   },
@@ -68,6 +71,7 @@ Page({
     const currentSession = this.data.sessions.find((s) => s.id === sessionId);
     this.setData({ activeSessionId: sessionId, currentSession });
     this.loadAssignments(this.data.assignments);
+    this.loadQuestions();
   },
 
   /** 加载已上传的 assignment 文件 */
@@ -88,6 +92,18 @@ Page({
     this.setData({ uploadedFiles: files });
   },
 
+  loadQuestions() {
+    if (!this.data.activeSessionId || !Api.getTeacherLessonDetail) return;
+    Api.getTeacherLessonDetail(this.data.activeSessionId)
+      .then((detail) => {
+        this.setData({ questionSlots: detail.questions || [] });
+      })
+      .catch(() => this.setData({ questionSlots: [] }));
+  },
+
+  onQuestionTitleInput(event) {
+    this.setData({ newQuestionTitle: event.detail.value || '' });
+  },
   /** 选择文件上传 */
   chooseFile() {
     if (this.data.uploading) return;
@@ -119,14 +135,23 @@ Page({
       fileName: fileName,
       size: file.size || 0
     })
+      .then(() => Api.uploadFeedbackFile({ fileName, tempPath: file.path || file.tempFilePath || '', size: file.size || 0 }))
+      .then((uploadedFile) => Api.createLessonQuestions({
+        courseId: this.data.courseId,
+        courseSessionId: this.data.activeSessionId,
+        questions: [{
+          title: this.data.newQuestionTitle.trim() || `${this.data.typeLabel}题目 ${this.data.questionSlots.length + 1}`,
+          order: this.data.questionSlots.length + 1,
+          fileId: uploadedFile.id
+        }]
+      }))
       .then(() => {
-        Notice.toast('上传成功');
-        this.setData({ uploading: false, uploadingFileName: '' });
-        // 重新加载数据
+        Notice.toast('题目资料已上传');
+        this.setData({ uploading: false, uploadingFileName: '', newQuestionTitle: '' });
         this.loadCourseData();
       })
       .catch((error) => {
-        this.setData({ uploading: false, uploadingFileName: '' });
+        this.setData({ uploading: false });
         Notice.alert(error.message || '上传失败，请重试');
       });
   },

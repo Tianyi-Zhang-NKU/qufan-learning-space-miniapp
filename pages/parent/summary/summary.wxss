@@ -236,3 +236,71 @@
   color: rgba(45, 75, 64, 0.4);
   font-size: 21rpx;
 }
+
+.honor-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-bottom: 22rpx;
+}
+
+.honor-card {
+  padding: 24rpx;
+  border-radius: 8rpx;
+  background: linear-gradient(135deg, #FFFDF6 0%, #F5FAF1 100%);
+  border: 1rpx solid rgba(31, 122, 77, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.honor-title {
+  color: #10224A;
+  font-size: 30rpx;
+  font-weight: 800;
+}
+
+.honor-name {
+  color: #1f7a4d;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.honor-progress {
+  color: #617064;
+  font-size: 24rpx;
+}
+
+.feedback-docs {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.feedback-doc-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 14rpx 16rpx;
+  border-radius: 8rpx;
+  background: #F6F8F2;
+}
+
+.feedback-doc-icon {
+  width: 42rpx;
+  height: 42rpx;
+  border-radius: 8rpx;
+  background: #10224A;
+  color: #fff;
+  text-align: center;
+  line-height: 42rpx;
+  font-size: 22rpx;
+}
+
+.feedback-doc-name {
+  flex: 1;
+  min-width: 0;
+  color: #10224A;
+  font-size: 24rpx;
+}

@@ -8,7 +8,7 @@ Page({
     courseId: '',
     courseName: '',
     feedbackType: 'post',
-    feedbackTypeLabel: '课后测错题',
+    feedbackTypeLabel: '本讲总结错题',
     courseInfo: {
       subject: '',
       grade: '',
@@ -23,7 +23,7 @@ Page({
   onLoad(options) {
     const { courseId, courseName, feedbackType } = options;
     const type = ['pre', 'post', 'general'].includes(feedbackType) ? feedbackType : 'post';
-    const typeLabel = type === 'pre' ? '课前测错题' : type === 'post' ? '课后测错题' : '课后反馈';
+    const typeLabel = type === 'pre' ? '课堂小测错题' : type === 'post' ? '本讲总结错题' : '课后反馈';
     this.setData({
       courseId: courseId || '',
       courseName: decodeURIComponent(courseName || ''),
