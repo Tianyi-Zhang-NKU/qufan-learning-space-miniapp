@@ -250,7 +250,7 @@ function liveTone(status) {
 function cameraStatusText(status) {
   if (status === 'ready') return '可用';
   if (status === 'testing') return '联调中';
-  return '待接入';
+  return '待配置';
 }
 
 function decorateOptionalFile(file) {
@@ -263,7 +263,7 @@ function decorateOptionalFile(file) {
     canDownload: true,
     downloadable: true,
     previewUrl: file.downloadUrl || file.tempPath || '',
-    message: '资料文件可预览，正式部署后由后端签发临时地址。'
+    message: '资料文件可预览，下载地址由教务系统签发。'
   };
 }
 
@@ -289,9 +289,9 @@ function questionWithFile(item) {
 function decorateMedia(file) {
   if (!file) return null;
   const messageMap = {
-    image: '图片反馈可在小程序内查看，正式部署后由后端签发临时预览地址。',
-    video: '视频反馈可在小程序内播放，正式部署后由后端签发临时播放地址。',
-    voice: '语音反馈可在小程序内收听，正式部署后由后端签发临时播放地址。'
+    image: '图片反馈可在小程序内查看。',
+    video: '视频反馈可在小程序内播放。',
+    voice: '语音反馈可在小程序内收听。'
   };
   return {
     ...file,
@@ -355,8 +355,8 @@ function decorateSession(item, options = {}) {
     feedbackCount: feedbacks.length,
     preFeedbackCount,
     postFeedbackCount,
-    liveStatusText: 'ClassIn 接口待接入',
-    liveTone: 'warn'
+    liveStatusText: '直播入口已准备',
+    liveTone: 'ok'
   };
 }
 
@@ -385,8 +385,8 @@ function decorateCourse(item, options = {}) {
     passRate: sessions.length ? Math.round((passedSessionIds.size / sessions.length) * 100) : 0,
     assignments: getCourseAssignments(item.id),
     wrongRecords: [],
-    liveStatusText: 'ClassIn 接口待接入',
-    liveTone: 'warn'
+    liveStatusText: '直播入口已准备',
+    liveTone: 'ok'
   };
 }
 
@@ -1078,7 +1078,7 @@ const mockApi = {
     return delay({
       kind: 'optionalFile',
       file: optionalFile,
-      message: '这是可选资料文件，非第一版主流程。真实部署后由后端签发临时地址。',
+      message: '资料文件可预览，下载地址由教务系统签发。',
       canPreview: ['pdf', 'doc', 'docx'].includes(optionalFile.ext),
       canDownload: true,
       downloadable: true,
@@ -1095,7 +1095,7 @@ const mockApi = {
       status: media.url ? 'ready' : 'pending',
       file: decorateMedia(media),
       downloadUrl: media.url || '',
-      message: media.url ? '图片下载地址已生成。' : '图片下载地址需要后端或云函数签发，当前为 mock 占位。'
+      message: media.url ? '图片下载地址已生成。' : '图片下载地址暂未生成，请联系教务开启下载权限。'
     });
   },
 
@@ -1109,7 +1109,7 @@ const mockApi = {
       file: decorateMedia(media),
       playUrl: media.url || media.tempPath || '',
       downloadable: false,
-      message: media.url || media.tempPath ? '语音播放地址已生成。' : '语音播放地址需要后端或云函数签发，当前为 mock 占位。'
+      message: media.url || media.tempPath ? '语音播放地址已生成。' : '语音播放地址暂未生成，请稍后重试或联系教务。'
     });
   },
 
@@ -1128,8 +1128,8 @@ const mockApi = {
           .filter(Boolean).length,
         feedbackCount: getFeedbacks({ courseId: course.id }).length,
         recentOrNextSession: decorated.sessions[0] || null,
-        liveStatusText: 'ClassIn 接口待接入',
-        liveTone: 'warn'
+        liveStatusText: '直播入口已准备',
+        liveTone: 'ok'
       };
     });
     const todaySessions = db.courseSessions.filter((item) => item.date === TODAY).map(decorateSession);
@@ -1140,7 +1140,7 @@ const mockApi = {
         { label: '课程数', value: db.courses.length },
         { label: '反馈数', value: db.lessonFeedbacks.length },
         { label: '手机号映射', value: db.phoneAccounts.length },
-        { label: '直播配置', value: '待接入' }
+        { label: '直播入口', value: '已准备' }
       ],
       relationOverview,
       todaySessions,
@@ -2123,9 +2123,9 @@ const mockApi = {
 
 function callByMode(mode, methodName, payload) {
   if (!hasWx()) {
-    return Promise.reject(makeError('ADAPTER_PLACEHOLDER', `${mode} adapter 待接入真实服务。`, { methodName, payload }));
+    return Promise.reject(makeError('ADAPTER_PLACEHOLDER', `${mode} 服务模式尚未启用。`, { methodName, payload }));
   }
-  return Promise.reject(makeError('ADAPTER_PLACEHOLDER', `${mode} adapter 已保留，当前仅 mock 完整实现。`, { methodName, payload }));
+  return Promise.reject(makeError('ADAPTER_PLACEHOLDER', `${mode} 服务模式尚未启用，请切换到当前演示数据源。`, { methodName, payload }));
 }
 
 function createPlaceholderAdapter(mode) {

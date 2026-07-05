@@ -209,6 +209,8 @@ async function run() {
   assert(styleGuide.includes('浅纸感管理风') && styleGuide.includes('#E9E6DA') && styleGuide.includes('#10224A'), 'style guide should document the light paper management theme');
   assert(componentContract.includes('浅纸感管理风') && componentContract.includes('#FFFDF6'), 'component contract should document the updated shared component theme');
   assert(appWxss.includes('#E9E6DA') && appWxss.includes('#10224A') && appWxss.includes('#FFFDF6'), 'app.wxss should expose the new paper theme colors');
+  const apiSource = readText('services/api.js');
+  assert(!apiSource.includes('mock 占位') && !apiSource.includes('ClassIn 接口待接入') && !apiSource.includes('adapter 待接入真实服务'), 'service copy should avoid engineering placeholder wording');
 
   const feedbackTypes = require('../utils/feedback-types');
   assert(feedbackTypes.feedbackTypeText('pre') === '课堂小测学习反馈', 'shared feedback type text should format pre-test feedback');
@@ -266,6 +268,7 @@ async function run() {
   assert(adminHomeJs.includes('GRADE_OPTIONS') && adminHomeJs.includes('SUBJECT_OPTIONS'), 'admin filters should use full grade and subject option catalogs');
   assert(adminHomeWxml.includes('bindchange="onGradeFilterChange"') && adminHomeWxml.includes('bindchange="onSubjectFilterChange"'), 'admin filters should be picker dropdowns');
   assert(adminHomeWxml.includes('bindchange="onEditorSubjectChange"') && adminHomeWxml.includes('bindchange="onEditorGradeChange"'), 'course editor subject and grade should be picker dropdowns');
+  assert(adminHomeWxml.includes('cameraStatusText'), 'admin classroom list should display human-readable camera status');
 
   const adminManageWxml = readText('pages/admin/manage/manage.wxml');
   assert(adminManageWxml.includes('导入学生') && !adminManageWxml.includes('导入课程'), 'admin data management should only keep import-student action');

@@ -250,7 +250,7 @@
             </view>
             <view class="item-main">
               <text class="item-title">{{item.name}}</text>
-              <text class="item-sub">{{item.campus || '主校区'}} · 容量{{item.capacity || '-'}}人 · {{item.cameraStatus || '-'}}</text>
+              <text class="item-sub">{{item.campus || '主校区'}} · 容量{{item.capacity || '-'}}人 · {{item.cameraStatusText || '-'}}</text>
             </view>
             <view class="item-side">
               <text class="side-number">{{item.sessionTotal}}</text>

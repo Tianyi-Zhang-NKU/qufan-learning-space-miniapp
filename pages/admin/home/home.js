@@ -220,11 +220,13 @@ function buildClassrooms(bootstrap) {
       .sort((a, b) => `${a.date || ''}${a.startTime || ''}`.localeCompare(`${b.date || ''}${b.startTime || ''}`));
     const courseNames = uniq(roomSessions.map((session) => session.courseName));
     const teacherNames = uniq(roomSessions.map((session) => session.teacherName));
+    const statusOption = CAMERA_OPTIONS.find((option) => option.value === room.cameraStatus) || CAMERA_OPTIONS[0];
     const searchText = [
       room.name,
       room.campus,
       room.capacity,
       room.cameraStatus,
+      statusOption.label,
       courseNames.join(' '),
       teacherNames.join(' ')
     ].join(' ');
@@ -233,6 +235,7 @@ function buildClassrooms(bootstrap) {
       sessions: roomSessions,
       courseNames,
       teacherNames,
+      cameraStatusText: statusOption.label,
       courseTotal: courseNames.length,
       sessionTotal: roomSessions.length,
       searchText
