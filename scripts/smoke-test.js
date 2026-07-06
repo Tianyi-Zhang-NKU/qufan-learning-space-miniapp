@@ -282,8 +282,11 @@ async function run() {
   assert(!readText('pages/parent/home/home.wxss').includes('justify-content: flex-start') && !readText('pages/parent/home/home.wxss').includes('padding-left: 34rpx'), 'student live button should keep centered text');
   assert(readText('pages/parent/courses/courses.js').includes('/pages/parent/exercises/exercises?courseId=') && !readText('pages/parent/courses/courses.js').includes('/pages/course-detail/course-detail?id=${sessionId}'), 'student schedule test buttons should navigate to the parent wrong-feedback page with course and session context');
   assert(!readText('pages/parent/home/home.js').includes('/pages/course-detail/course-detail'), 'student home should not keep removed course-detail navigation');
-  assert(readText('pages/parent/exercises/exercises.js').includes('courseId && sessionId && type'), 'student wrong-feedback page should support session-scoped pre/post test entries');
+  const parentExercisesJs = readText('pages/parent/exercises/exercises.js');
+  assert(parentExercisesJs.includes('courseId && sessionId && type'), 'student wrong-feedback page should support session-scoped pre/post test entries');
+  assert(parentExercisesJs.includes('requestedIndex') && parentExercisesJs.includes('item.sessionId === this.data.sessionId'), 'student session-scoped test entry should open the requested lesson instead of defaulting to the latest lesson');
   assert(teacherHomeWxml.includes('/pages/live-player/live-player'), 'teacher home should expose course live entry');
+  assert(readText('pages/live-player/live-player.js').includes('query.sessionId'), 'live player should accept teacher-home sessionId links as well as id/courseSessionId links');
   assert(readText('pages/teacher/courses/courses.wxml').includes('current="/pages/teacher/courses/courses"'), 'teacher schedule page tabbar current should point to itself');
   assert(readText('pages/teacher/courses/courses.wxml').includes('bindtap="editSession"') && readText('pages/teacher/courses/courses.wxml').includes('session-editor'), 'teacher schedule should expose lesson rename/topic editor');
   assert(!readText('pages/teacher/courses/courses.wxml').includes('课前错题') && !readText('pages/teacher/courses/courses.wxml').includes('课后错题'), 'teacher schedule should use classroom quiz/summary wording instead of pre/post wrong-question copy');
@@ -298,9 +301,11 @@ async function run() {
   assert(readText('pages/teacher/test-upload/test-upload.wxml').includes('本课题目框') && readText('pages/teacher/test-upload/test-upload.js').includes('createLessonQuestions'), 'teacher upload page should create question slots for wrong workbook');
   const teacherFeedbackStudentsWxml = readText('pages/teacher/feedback-students/feedback-students.wxml');
   const teacherFeedbackStudentsJs = readText('pages/teacher/feedback-students/feedback-students.js');
+  const teacherFeedbackDetailJs = readText('pages/teacher/feedback-detail/feedback-detail.js');
   assert(teacherFeedbackStudentsWxml.includes('student-grid') && readText('pages/teacher/feedback-students/feedback-students.wxss').includes('grid-template-columns: repeat(4'), 'teacher student list should use compact avatar grid');
   assert(teacherFeedbackStudentsWxml.includes('student-search-card') && teacherFeedbackStudentsJs.includes('filteredStudents'), 'teacher student list should support searching large class rosters');
   assert(teacherFeedbackStudentsJs.includes('courseSessionId') && teacherFeedbackStudentsJs.includes('&courseSessionId='), 'teacher student list should preserve session context when opening feedback detail');
+  assert(teacherFeedbackDetailJs.includes('courseSessionId') && teacherFeedbackDetailJs.includes('activeSessionId: courseSessionId') && teacherFeedbackDetailJs.includes('sessions.some((item) => item.id === requestedSessionId)'), 'teacher feedback detail should honor and validate the session context from todos/course entry');
   assert(readText('pages/parent/home/home.wxml').includes('我的荣誉') && readText('pages/parent/home/home.wxml').includes('home-honor-seal') && readText('pages/parent/home/home.js').includes('getStudentHonors'), 'student home should expose honor certificates with electronic seal');
   const parentSummaryWxml = readText('pages/parent/summary/summary.wxml');
   const parentSummaryJs = readText('pages/parent/summary/summary.js');

@@ -55,13 +55,14 @@ Page({
   },
 
   onLoad(options) {
-    const { courseId, courseName, studentId, studentName, feedbackType } = options;
+    const { courseId, courseName, studentId, studentName, feedbackType, courseSessionId } = options;
     this.setData({
       courseId: courseId || '',
       courseName: decodeURIComponent(courseName || ''),
       studentId: studentId || '',
       studentName: decodeURIComponent(studentName || ''),
-      feedbackType: ['pre', 'post', 'general'].includes(feedbackType) ? feedbackType : 'post'
+      feedbackType: ['pre', 'post', 'general'].includes(feedbackType) ? feedbackType : 'post',
+      activeSessionId: courseSessionId || ''
     });
     this.initRecorder();
     wx.setNavigationBarTitle({ title: `学习反馈 - ${this.data.studentName}` });
@@ -112,7 +113,10 @@ Page({
     Api.getTeacherCourseDetail(this.data.courseId)
       .then((data) => {
         const sessions = data.sessions || [];
-        const activeSessionId = this.data.activeSessionId || (sessions.length ? sessions[0].id : '');
+        const requestedSessionId = this.data.activeSessionId;
+        const activeSessionId = sessions.some((item) => item.id === requestedSessionId)
+          ? requestedSessionId
+          : (sessions.length ? sessions[0].id : '');
         this.setData({ sessions, activeSessionId });
         if (activeSessionId) this.loadSessionFeedback(activeSessionId);
       })

@@ -342,12 +342,17 @@ Page({
           };
         });
 
-        const lastIndex = sessionTests.length > 0 ? sessionTests.length - 1 : 0;
+        const requestedIndex = this.data.sessionId
+          ? sessionTests.findIndex((item) => item.sessionId === this.data.sessionId)
+          : -1;
+        const defaultIndex = requestedIndex >= 0
+          ? requestedIndex
+          : (sessionTests.length > 0 ? sessionTests.length - 1 : 0);
         this.setData({
           courseName: course.name || '',
           sessionTests,
-          testCurrentIndex: lastIndex,
-          testCurrentSession: sessionTests[lastIndex] || null,
+          testCurrentIndex: defaultIndex,
+          testCurrentSession: sessionTests[defaultIndex] || null,
           loading: false
         });
       })

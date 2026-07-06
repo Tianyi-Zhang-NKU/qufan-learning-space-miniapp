@@ -15,7 +15,7 @@ Page({
   },
 
   onLoad(query) {
-    this.setData({ id: query.id || query.courseSessionId || '' });
+    this.setData({ id: query.id || query.courseSessionId || query.sessionId || '' });
   },
 
   onShow() {
