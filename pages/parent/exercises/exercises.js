@@ -199,8 +199,11 @@ Page({
   // ================================================================
   loadSessionList() {
     this.setData({ loading: true });
-    Api.getStudentCourseDetail(this.data.courseId)
-      .then((detail) => {
+    Promise.all([
+      Api.getStudentCourseDetail(this.data.courseId),
+      Api.getStudentWrongWorkbook ? Api.getStudentWrongWorkbook({ courseId: this.data.courseId }) : Promise.resolve({ records: [], summary: {} })
+    ])
+      .then(([detail, workbook]) => {
         const course = detail.course || {};
         const sessions = (detail.sessions || []).sort(
           (a, b) => a.sessionIndex - b.sessionIndex
@@ -230,6 +233,8 @@ Page({
           courseName: course.name || '',
           courseSubject: course.subject || '',
           sessionList,
+          workbookSummary: workbook.summary || {},
+          workbookRecords: workbook.records || [],
           loading: false
         });
       })
@@ -252,8 +257,13 @@ Page({
   // ================================================================
   loadSessionRecords() {
     this.setData({ loading: true });
-    Api.getStudentCourseDetail(this.data.courseId)
-      .then((detail) => {
+    Promise.all([
+      Api.getStudentCourseDetail(this.data.courseId),
+      Api.getStudentWrongWorkbook
+        ? Api.getStudentWrongWorkbook({ courseId: this.data.courseId, courseSessionId: this.data.sessionId })
+        : Promise.resolve({ records: [], summary: {} })
+    ])
+      .then(([detail, workbook]) => {
         const course = detail.course || {};
         const sessions = detail.sessions || [];
         const feedbacks = detail.lessonFeedbacks || [];
@@ -279,6 +289,8 @@ Page({
             statusText: session.statusText || ''
           },
           sessionRecords: records,
+          workbookSummary: workbook.summary || {},
+          workbookRecords: workbook.records || [],
           loading: false
         });
       })
@@ -309,7 +321,7 @@ Page({
   },
 
   // ================================================================
-  //  Mode 4: Test list — 课前练习/课后巩固
+  //  Mode 4: Test list — 课堂小测/本讲总结
   // ================================================================
   loadTestList() {
     this.setData({ loading: true });
@@ -473,13 +485,25 @@ Page({
   },
 
   // ================================================================
-  //  Legacy / shared utilities
+  //  Shared utilities
   // ================================================================
   exportWorkbook(event) {
     if (this.data.exportingWorkbook) return;
     const format = (event.currentTarget.dataset.format || 'pdf');
+    const scope = event.currentTarget.dataset.scope || this.data.mode;
+    const payload = {
+      format,
+      courseId: this.data.courseId,
+      courseSessionId: this.data.sessionId
+    };
+    if (scope === 'all') {
+      payload.courseId = '';
+      payload.courseSessionId = '';
+    } else if (scope === 'course') {
+      payload.courseSessionId = '';
+    }
     this.setData({ exportingWorkbook: true });
-    Api.exportStudentWrongWorkbook({ format })
+    Api.exportStudentWrongWorkbook(payload)
       .then((result) => {
         this.setData({ exportingWorkbook: false });
         Notice.alert(`已生成 ${result.fileName}`, '错题本导出');

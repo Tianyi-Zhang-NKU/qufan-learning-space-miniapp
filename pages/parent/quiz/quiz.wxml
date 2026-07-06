@@ -18,8 +18,8 @@
         >
           <view class="quiz-option-icon"><image class="quiz-option-img" src="/assets/icons/pre-test.svg" mode="aspectFit"></image></view>
           <view class="quiz-option-body">
-            <text class="quiz-option-title">课前练习</text>
-            <text class="quiz-option-desc">预习巩固，检验课前准备</text>
+            <text class="quiz-option-title">课堂小测</text>
+            <text class="quiz-option-desc">课堂练习照片、评语和语音反馈</text>
           </view>
           <view class="quiz-option-right">
             <text class="quiz-option-count" wx:if="{{preCount}}">{{preCount}} 份记录</text>
@@ -35,8 +35,8 @@
         >
           <view class="quiz-option-icon"><image class="quiz-option-img" src="/assets/icons/post-test.svg" mode="aspectFit"></image></view>
           <view class="quiz-option-body">
-            <text class="quiz-option-title">课后巩固</text>
-            <text class="quiz-option-desc">效果检验，巩固课堂所学</text>
+            <text class="quiz-option-title">本讲总结</text>
+            <text class="quiz-option-desc">本讲学习结果和错题复盘</text>
           </view>
           <view class="quiz-option-right">
             <text class="quiz-option-count" wx:if="{{postCount}}">{{postCount}} 份记录</text>

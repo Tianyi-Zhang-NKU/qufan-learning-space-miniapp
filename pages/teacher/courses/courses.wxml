@@ -73,14 +73,18 @@
             data-course-name="{{item.courseName}}"
             data-session-id="{{item.id}}"
             bindtap="goPostTest"
-          >总结错题</button>
+          >本讲总结</button>
           <button
             class="qf-btn small test-btn feedback-btn-action"
             data-course-id="{{item.courseId}}"
             data-course-name="{{item.courseName}}"
             data-session-id="{{item.id}}"
             bindtap="goFeedback"
-          >本讲总结</button>
+          >通关确认</button>
+          <navigator
+            class="qf-btn small test-btn"
+            url="/pages/teacher/test-upload/test-upload?courseId={{item.courseId}}&courseName={{item.courseName}}&type=pre&courseSessionId={{item.id}}"
+          >题目资料</navigator>
           <button
             class="qf-btn small test-btn live-test"
             data-session-id="{{item.id}}"

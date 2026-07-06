@@ -1,21 +1,21 @@
 const FEEDBACK_TYPES = [
   {
     value: 'pre',
-    shortLabel: '课前练习',
+    shortLabel: '课堂小测',
     wrongLabel: '课堂小测',
     feedbackLabel: '课堂小测学习反馈'
   },
   {
     value: 'post',
-    shortLabel: '课后巩固',
+    shortLabel: '本讲总结',
     wrongLabel: '本讲总结',
     feedbackLabel: '本讲总结学习反馈'
   },
   {
     value: 'general',
-    shortLabel: '本讲总结',
-    wrongLabel: '本讲反馈',
-    feedbackLabel: '本讲总结反馈'
+    shortLabel: '通关确认',
+    wrongLabel: '通关确认',
+    feedbackLabel: '通关确认反馈'
   }
 ];
 

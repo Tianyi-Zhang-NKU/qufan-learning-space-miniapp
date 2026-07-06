@@ -55,7 +55,7 @@ function weeklySessions(config) {
       status: finished ? 'finished' : 'scheduled',
       statusText: finished ? '已结束' : '未开始',
       liveRoomId: `live_${config.classroomId}`,
-      note: finished ? '已完成线下讲解，课后学习反馈可查看。' : '每周固定课次，直播入口和学习反馈入口已准备。'
+      note: finished ? '已完成线下讲解，本讲学习反馈可查看。' : '每周固定课次，直播入口和学习反馈入口已准备。'
     };
   });
 }
@@ -456,7 +456,7 @@ const db = {
       courseSessionId: 'lesson_bio_001_01',
       teacherId: 'teacher_001',
       type: 'pre',
-      title: '细胞结构课前练习记录',
+      title: '细胞结构课堂小测记录',
       status: 'optional',
       statusText: '可选记录',
       fileId: 'file_optional_pdf_001',
@@ -468,7 +468,7 @@ const db = {
       courseSessionId: 'lesson_math_001_01',
       teacherId: 'teacher_003',
       type: 'post',
-      title: '一次函数课后巩固记录',
+      title: '一次函数本讲总结记录',
       status: 'optional',
       statusText: '可选记录',
       fileId: '',
@@ -484,7 +484,7 @@ const db = {
       courseId: 'course_bio_001',
       courseSessionId: 'lesson_bio_001_01',
       feedbackType: 'pre',
-      text: '本次课前练习错在细胞器功能区分，已当面讲解，建议回家复看笔记。',
+      text: '本次课堂小测错在细胞器功能区分，已当面讲解，建议回家复看笔记。',
       imageFileIds: ['media_img_001'],
       videoFileIds: ['media_video_001'],
       voiceFileIds: ['media_voice_001'],
@@ -601,7 +601,7 @@ const db = {
     {
       id: 'media_voice_002',
       type: 'voice',
-      name: '数学课后语音.mp3',
+      name: '数学本讲总结语音.mp3',
       url: DEMO_AUDIO_URL,
       tempPath: '',
       storageKey: 'feedback/course_math_001/lesson_math_001_01/stu_002/voice_001.m4a',
@@ -629,7 +629,7 @@ const db = {
   files: [
     {
       id: 'file_optional_pdf_001',
-      name: '细胞结构课前练习记录.pdf',
+      name: '细胞结构课堂小测记录.pdf',
       ext: 'pdf',
       mimeType: 'application/pdf',
       size: 734003,
@@ -644,7 +644,7 @@ const db = {
     },
     {
       id: 'file_optional_docx_001',
-      name: '一次函数课后巩固记录.docx',
+      name: '一次函数本讲总结记录.docx',
       ext: 'docx',
       mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       size: 524288,

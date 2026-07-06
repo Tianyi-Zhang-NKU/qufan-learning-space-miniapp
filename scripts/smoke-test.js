@@ -215,10 +215,12 @@ async function run() {
   const feedbackTypes = require('../utils/feedback-types');
   assert(feedbackTypes.feedbackTypeText('pre') === '课堂小测学习反馈', 'shared feedback type text should format pre-test feedback');
   assert(feedbackTypes.feedbackTypeText('post') === '本讲总结学习反馈', 'shared feedback type text should format post-test feedback');
-  assert(feedbackTypes.feedbackTypeText('general') === '本讲总结反馈', 'shared feedback type text should format general feedback');
+  assert(feedbackTypes.feedbackTypeText('general') === '通关确认反馈', 'shared feedback type text should format general feedback as pass confirmation');
   assert(feedbackTypes.feedbackTypeText('unknown') === '本讲总结学习反馈', 'unknown feedback type should keep the existing post-test fallback');
-  assert(feedbackTypes.feedbackTypeWrongLabel('general') === '本讲反馈', 'shared feedback type labels should support teacher wrong-feedback tabs');
-  assert(feedbackTypes.feedbackTypeShortLabel('general') === '本讲总结', 'shared feedback type labels should preserve parent general-type wording');
+  assert(feedbackTypes.feedbackTypeWrongLabel('general') === '通关确认', 'shared feedback type labels should support teacher pass-confirmation tabs');
+  assert(feedbackTypes.feedbackTypeShortLabel('pre') === '课堂小测', 'shared pre feedback short label should use client-facing classroom quiz wording');
+  assert(feedbackTypes.feedbackTypeShortLabel('post') === '本讲总结', 'shared post feedback short label should use client-facing lesson summary wording');
+  assert(feedbackTypes.feedbackTypeShortLabel('general') === '通关确认', 'shared general feedback short label should describe teacher pass confirmation');
 
   const scheduleCalendar = require('../utils/schedule-calendar');
   const calendarDays = scheduleCalendar.buildCalendarDays(2026, 6, '2026-06-06', new Set(['2026-06-06']), '2026-06-07');
@@ -281,11 +283,15 @@ async function run() {
   assert(readText('pages/parent/home/home.wxss').includes('course-schedule-scroll') && readText('pages/parent/home/home.wxss').includes('max-height'), 'student home schedule scroll should limit visible rows');
   assert(!readText('pages/parent/home/home.wxss').includes('justify-content: flex-start') && !readText('pages/parent/home/home.wxss').includes('padding-left: 34rpx'), 'student live button should keep centered text');
   assert(readText('pages/parent/courses/courses.js').includes('/pages/parent/exercises/exercises?courseId=') && !readText('pages/parent/courses/courses.js').includes('/pages/course-detail/course-detail?id=${sessionId}'), 'student schedule test buttons should navigate to the parent wrong-feedback page with course and session context');
+  const parentCoursesWxml = readText('pages/parent/courses/courses.wxml');
+  assert(parentCoursesWxml.includes('>课堂小测</button>') && parentCoursesWxml.includes('>本讲总结</button>'), 'student schedule actions should use classroom quiz and lesson summary wording');
+  assert(!parentCoursesWxml.includes('课前练习') && !parentCoursesWxml.includes('课后巩固'), 'student schedule should not expose legacy pre/post practice wording');
   assert(!readText('pages/parent/home/home.js').includes('/pages/course-detail/course-detail'), 'student home should not keep removed course-detail navigation');
   const parentExercisesJs = readText('pages/parent/exercises/exercises.js');
   assert(parentExercisesJs.includes('courseId && sessionId && type'), 'student wrong-feedback page should support session-scoped pre/post test entries');
   assert(parentExercisesJs.includes('requestedIndex') && parentExercisesJs.includes('item.sessionId === this.data.sessionId'), 'student session-scoped test entry should open the requested lesson instead of defaulting to the latest lesson');
   assert(teacherHomeWxml.includes('/pages/live-player/live-player'), 'teacher home should expose course live entry');
+  assert(teacherHomeWxml.includes('/pages/teacher/test-upload/test-upload?courseId=') && teacherHomeWxml.includes('题目资料'), 'teacher course collection should expose lesson question upload entry');
   assert(readText('pages/live-player/live-player.js').includes('query.sessionId'), 'live player should accept teacher-home sessionId links as well as id/courseSessionId links');
   assert(readText('pages/teacher/courses/courses.wxml').includes('current="/pages/teacher/courses/courses"'), 'teacher schedule page tabbar current should point to itself');
   assert(readText('pages/teacher/courses/courses.wxml').includes('bindtap="editSession"') && readText('pages/teacher/courses/courses.wxml').includes('session-editor'), 'teacher schedule should expose lesson rename/topic editor');
@@ -320,6 +326,10 @@ async function run() {
   const parentExercisesWxml = readText('pages/parent/exercises/exercises.wxml');
   assert(parentExercisesWxml.includes('workbook-export-card') && readText('pages/parent/exercises/exercises.js').includes('exportStudentWrongWorkbook'), 'wrong workbook should expose printable PDF export');
   assert(parentExercisesWxml.includes('data-format="docx"') && parentExercisesWxml.includes('导出 Word'), 'wrong workbook should also expose printable Word export');
+  assert(parentExercisesWxml.includes('data-scope="course"') && parentExercisesWxml.includes('data-scope="session"'), 'wrong workbook export should expose course and session scoped export actions');
+  assert(parentExercisesJs.includes('courseId: this.data.courseId') && parentExercisesJs.includes('courseSessionId: this.data.sessionId'), 'wrong workbook export should pass active course/session filters to the API');
+  assert(parentExercisesWxml.includes('record-inline-images') && parentExercisesWxml.includes('record-voice-bar'), 'single-session and all-record wrong feedback should render media inline instead of forcing secondary view buttons');
+  assert(parentExercisesWxml.includes('workbook-record-list') && parentExercisesWxml.includes('workbook-question-item'), 'wrong workbook should render aggregated wrong-question records, not only export totals');
   const allRecordsStart = parentExercisesWxml.indexOf("mode === 'allRecords'");
   const workbookExportStart = parentExercisesWxml.indexOf('workbook-export-card', allRecordsStart);
   const allRecordsContentStart = parentExercisesWxml.indexOf('wx:else class="content-area"', allRecordsStart);
@@ -500,6 +510,27 @@ async function run() {
   });
   assert(wrongSelection.questionIds.length === 2 && wrongSelection.accuracy === 60, 'teacher should mark wrong questions by student');
 
+  const uploadedSecondQuestionFile = await Api.uploadFeedbackFile({
+    fileName: 'smoke-question-02.pdf',
+    size: 4096,
+    tempPath: ''
+  });
+  const secondLessonQuestions = await Api.createLessonQuestions({
+    courseId: 'course_bio_001',
+    courseSessionId: 'lesson_bio_001_02',
+    questions: [
+      { title: '遗传规律判断', order: 1, fileId: uploadedSecondQuestionFile.id }
+    ]
+  });
+  await Api.markStudentWrongQuestions({
+    studentId: 'stu_001',
+    courseId: 'course_bio_001',
+    courseSessionId: 'lesson_bio_001_02',
+    questionIds: secondLessonQuestions.questions.map((item) => item.id),
+    accuracy: 80,
+    rankText: '超过班级 60% 同学'
+  });
+
   const lessonDetailAfterWrongSelection = await Api.getTeacherLessonDetail('lesson_bio_001_01');
   assert(lessonDetailAfterWrongSelection.wrongSelections.some((item) => item.studentId === 'stu_001' && item.questionIds.length === 2), 'teacher lesson detail should expose saved wrong-question selections');
 
@@ -556,9 +587,13 @@ async function run() {
   assert(preWrongFeedbacks.feedbacks.every((item) => item.feedbackType === 'pre'), 'student pre-test view should show only pre wrong feedbacks');
   const workbook = await Api.getStudentWrongWorkbook({ courseId: 'course_bio_001' });
   assert(workbook.records.some((item) => item.courseSessionId === 'lesson_bio_001_01' && item.questions.length === 2), 'student wrong workbook should aggregate selected wrong questions');
-  assert(workbook.summary.totalWrongQuestions >= 2 && workbook.summary.accuracyText, 'student wrong workbook should expose totals and accuracy text');
+  assert(workbook.summary.totalWrongQuestions >= 3 && workbook.summary.accuracyText, 'student wrong workbook should expose course totals and accuracy text');
+  const sessionWorkbook = await Api.getStudentWrongWorkbook({ courseId: 'course_bio_001', courseSessionId: 'lesson_bio_001_01' });
+  assert(sessionWorkbook.summary.totalWrongQuestions === 2 && sessionWorkbook.records.every((item) => item.courseSessionId === 'lesson_bio_001_01'), 'student wrong workbook should support session-scoped filtering');
   const exportedWorkbook = await Api.exportStudentWrongWorkbook({ courseId: 'course_bio_001', format: 'pdf' });
   assert(exportedWorkbook.format === 'pdf' && exportedWorkbook.fileName.endsWith('.pdf') && exportedWorkbook.printable, 'parent should export wrong workbook as a printable single file');
+  const exportedSessionWorkbook = await Api.exportStudentWrongWorkbook({ courseId: 'course_bio_001', courseSessionId: 'lesson_bio_001_01', format: 'pdf' });
+  assert(exportedSessionWorkbook.workbook.summary.totalWrongQuestions === 2, 'parent should export only the active lesson when a session filter is provided');
   const exportedWordWorkbook = await Api.exportStudentWrongWorkbook({ courseId: 'course_bio_001', format: 'docx' });
   assert(exportedWordWorkbook.format === 'docx' && exportedWordWorkbook.fileName.endsWith('.docx') && exportedWordWorkbook.printable, 'parent should export wrong workbook as a printable Word file');
   const honors = await Api.getStudentHonors({ courseId: 'course_bio_001' });

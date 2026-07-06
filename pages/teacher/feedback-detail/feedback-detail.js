@@ -5,7 +5,7 @@ const Notice = require('../../../utils/notice');
 const FEEDBACK_TYPES = [
   { value: 'pre', label: '课堂小测错题' },
   { value: 'post', label: '本讲总结错题' },
-  { value: 'general', label: '本讲总结' }
+  { value: 'general', label: '通关确认' }
 ];
 
 const EMOJI_LIST = [

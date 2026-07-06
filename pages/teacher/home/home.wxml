@@ -131,7 +131,7 @@
                     data-session-id="{{session.id}}"
                     data-feedback-type="pre"
                     bindtap="goFeedbackStudents"
-                  >课前</button>
+                  >小测</button>
                   <button
                     class="mini-action"
                     data-course-id="{{item.id}}"
@@ -139,7 +139,7 @@
                     data-session-id="{{session.id}}"
                     data-feedback-type="post"
                     bindtap="goFeedbackStudents"
-                  >课后</button>
+                  >总结</button>
                   <button
                     class="mini-action"
                     data-course-id="{{item.id}}"
@@ -147,7 +147,10 @@
                     data-session-id="{{session.id}}"
                     data-feedback-type="general"
                     bindtap="goFeedbackStudents"
-                  >其他</button>
+                  >通关</button>
+                  <navigator class="mini-action" url="/pages/teacher/test-upload/test-upload?courseId={{item.id}}&courseName={{item.name}}&type=pre&courseSessionId={{session.id}}">
+                    题目资料
+                  </navigator>
                   <navigator class="mini-live" url="/pages/live-player/live-player?sessionId={{session.id}}">
                     <image class="qf-inline-icon" src="/assets/icons/live.svg" mode="aspectFit"></image>
                   </navigator>
@@ -199,7 +202,7 @@
         </view>
         <view class="detail-title-block">
           <text class="qf-brand-title">学生路径</text>
-          <text class="qf-brand-sub">{{activeCourse.name}} · 先选学生，再选课次和错题类型</text>
+          <text class="qf-brand-sub">{{activeCourse.name}} · 先选学生，再选课次和反馈类型</text>
         </view>
       </view>
     </block>

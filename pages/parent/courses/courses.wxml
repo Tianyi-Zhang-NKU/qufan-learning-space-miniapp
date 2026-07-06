@@ -73,14 +73,14 @@
             data-session-id="{{item.id}}"
             data-type="pre"
             bindtap="goTest"
-          >课前练习</button>
+          >课堂小测</button>
           <button
             class="qf-btn small test-btn post-test"
             data-course-id="{{item.courseId}}"
             data-session-id="{{item.id}}"
             data-type="post"
             bindtap="goTest"
-          >课后巩固</button>
+          >本讲总结</button>
           <button
             class="qf-btn small test-btn live-test"
             data-session-id="{{item.id}}"

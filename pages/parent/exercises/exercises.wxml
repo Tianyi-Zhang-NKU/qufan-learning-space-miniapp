@@ -94,6 +94,40 @@
       </view>
 
       <view wx:else class="content-area">
+        <view class="workbook-export-card">
+          <view class="workbook-export-copy">
+            <text class="workbook-export-title">本课程可打印错题本</text>
+            <text class="workbook-export-sub">{{workbookSummary.totalWrongQuestions || 0}} 道错题 · 正确率 {{workbookSummary.accuracyText || '待录入'}}</text>
+          </view>
+          <view class="workbook-export-actions">
+            <button class="workbook-export-btn" data-format="pdf" data-scope="course" bindtap="exportWorkbook" disabled="{{exportingWorkbook}}">{{exportingWorkbook ? '生成中…' : '导出 PDF'}}</button>
+            <button class="workbook-export-btn secondary" data-format="docx" data-scope="course" bindtap="exportWorkbook" disabled="{{exportingWorkbook}}">导出 Word</button>
+          </view>
+        </view>
+        <view wx:if="{{workbookRecords.length}}" class="workbook-record-list">
+          <view wx:for="{{workbookRecords}}" wx:key="id" class="workbook-record-card">
+            <view class="workbook-record-head">
+              <view class="workbook-record-title-block">
+                <text class="workbook-record-title">{{item.courseSessionTitle || '课次错题'}}</text>
+                <text class="workbook-record-meta">{{item.courseName}} · {{item.wrongCount}} 道错题</text>
+              </view>
+              <view class="workbook-record-badges">
+                <text wx:if="{{item.accuracyText}}" class="workbook-badge">{{item.accuracyText}}</text>
+                <text wx:if="{{item.rankText}}" class="workbook-badge muted">{{item.rankText}}</text>
+              </view>
+            </view>
+            <view class="workbook-question-list">
+              <view wx:for="{{item.questions}}" wx:for-item="question" wx:key="id" class="workbook-question-item">
+                <text class="workbook-question-order">{{question.order}}</text>
+                <view class="workbook-question-main">
+                  <text class="workbook-question-title">{{question.title}}</text>
+                  <text class="workbook-question-file">{{question.file.name || '暂无资料文件'}}</text>
+                </view>
+                <button wx:if="{{question.file.id}}" class="workbook-question-file-btn" data-id="{{question.file.id}}" catchtap="previewRecordMedia">资料</button>
+              </view>
+            </view>
+          </view>
+        </view>
         <view
           wx:for="{{sessionList}}"
           wx:key="sessionId"
@@ -172,6 +206,41 @@
           </view>
         </view>
 
+        <view class="workbook-export-card">
+          <view class="workbook-export-copy">
+            <text class="workbook-export-title">本讲可打印错题本</text>
+            <text class="workbook-export-sub">{{workbookSummary.totalWrongQuestions || 0}} 道错题 · 正确率 {{workbookSummary.accuracyText || '待录入'}}</text>
+          </view>
+          <view class="workbook-export-actions">
+            <button class="workbook-export-btn" data-format="pdf" data-scope="session" bindtap="exportWorkbook" disabled="{{exportingWorkbook}}">{{exportingWorkbook ? '生成中…' : '导出 PDF'}}</button>
+            <button class="workbook-export-btn secondary" data-format="docx" data-scope="session" bindtap="exportWorkbook" disabled="{{exportingWorkbook}}">导出 Word</button>
+          </view>
+        </view>
+        <view wx:if="{{workbookRecords.length}}" class="workbook-record-list">
+          <view wx:for="{{workbookRecords}}" wx:key="id" class="workbook-record-card">
+            <view class="workbook-record-head">
+              <view class="workbook-record-title-block">
+                <text class="workbook-record-title">{{item.courseSessionTitle || '课次错题'}}</text>
+                <text class="workbook-record-meta">{{item.courseName}} · {{item.wrongCount}} 道错题</text>
+              </view>
+              <view class="workbook-record-badges">
+                <text wx:if="{{item.accuracyText}}" class="workbook-badge">{{item.accuracyText}}</text>
+                <text wx:if="{{item.rankText}}" class="workbook-badge muted">{{item.rankText}}</text>
+              </view>
+            </view>
+            <view class="workbook-question-list">
+              <view wx:for="{{item.questions}}" wx:for-item="question" wx:key="id" class="workbook-question-item">
+                <text class="workbook-question-order">{{question.order}}</text>
+                <view class="workbook-question-main">
+                  <text class="workbook-question-title">{{question.title}}</text>
+                  <text class="workbook-question-file">{{question.file.name || '暂无资料文件'}}</text>
+                </view>
+                <button wx:if="{{question.file.id}}" class="workbook-question-file-btn" data-id="{{question.file.id}}" catchtap="previewRecordMedia">资料</button>
+              </view>
+            </view>
+          </view>
+        </view>
+
         <!-- Only THIS session's wrong records -->
         <view class="qf-section">错题记录（共 {{sessionRecords.length}} 条）</view>
 
@@ -185,8 +254,6 @@
             wx:for="{{sessionRecords}}"
             wx:key="id"
             class="qf-card record-detail-card"
-            data-id="{{item.id}}"
-            bindtap="viewRecordDetail"
           >
             <view class="record-detail-top">
               <text class="record-detail-date">{{item.createdAt}}</text>
@@ -202,19 +269,20 @@
               <text wx:if="{{item.voiceCount}}" class="detail-tag">语音 {{item.voiceCount}} 条</text>
             </view>
 
-            <!-- Image thumbnails + view buttons -->
-            <view wx:if="{{item.imageFiles.length}}" class="record-detail-media">
-              <button
+            <view wx:if="{{item.imageFiles.length}}" class="record-inline-images test-inline-images">
+              <image
                 wx:for="{{item.imageFiles}}"
                 wx:for-item="media"
                 wx:key="id"
-                class="qf-btn ghost small media-btn"
-                data-id="{{media.id}}"
-                catchtap="previewRecordMedia"
-              >查看图片</button>
+                class="test-inline-img"
+                mode="widthFix"
+                src="{{media.previewUrl}}"
+                data-urls="{{item.imageFiles}}"
+                data-current="{{media.previewUrl}}"
+                bindtap="previewInlineImage"
+              ></image>
             </view>
 
-            <!-- Video play buttons -->
             <view wx:if="{{item.videoFiles.length}}" class="record-detail-media">
               <button
                 wx:for="{{item.videoFiles}}"
@@ -226,16 +294,30 @@
               >播放视频</button>
             </view>
 
-            <!-- Voice play buttons -->
-            <view wx:if="{{item.voiceFiles.length}}" class="record-detail-media">
-              <button
+            <view wx:if="{{item.voiceFiles.length}}" class="record-inline-voices test-inline-voices">
+              <view
                 wx:for="{{item.voiceFiles}}"
                 wx:for-item="voice"
                 wx:key="id"
-                class="qf-btn ghost small media-btn"
+                class="record-voice-bar test-voice-bar"
+                data-url="{{voice.previewUrl}}"
                 data-id="{{voice.id}}"
+                bindtap="playInlineVoice"
+              >
+                <image class="test-voice-icon" src="/assets/icons/voice.svg" mode="aspectFit"></image>
+                <text class="test-voice-text">点击播放语音</text>
+              </view>
+            </view>
+
+            <view wx:if="{{item.attachFiles.length}}" class="record-detail-media">
+              <button
+                wx:for="{{item.attachFiles}}"
+                wx:for-item="doc"
+                wx:key="id"
+                class="qf-btn ghost small media-btn"
+                data-id="{{doc.id}}"
                 catchtap="previewRecordMedia"
-              >播放语音</button>
+              >{{doc.name}}</button>
             </view>
           </view>
         </view>
@@ -269,8 +351,32 @@
             <text class="workbook-export-sub">{{workbookSummary.totalWrongQuestions || 0}} 道错题 · 正确率 {{workbookSummary.accuracyText || '待录入'}}</text>
           </view>
           <view class="workbook-export-actions">
-            <button class="workbook-export-btn" data-format="pdf" bindtap="exportWorkbook" disabled="{{exportingWorkbook}}">{{exportingWorkbook ? '生成中…' : '导出 PDF'}}</button>
-            <button class="workbook-export-btn secondary" data-format="docx" bindtap="exportWorkbook" disabled="{{exportingWorkbook}}">导出 Word</button>
+            <button class="workbook-export-btn" data-format="pdf" data-scope="all" bindtap="exportWorkbook" disabled="{{exportingWorkbook}}">{{exportingWorkbook ? '生成中…' : '导出 PDF'}}</button>
+            <button class="workbook-export-btn secondary" data-format="docx" data-scope="all" bindtap="exportWorkbook" disabled="{{exportingWorkbook}}">导出 Word</button>
+          </view>
+        </view>
+        <view wx:if="{{workbookRecords.length}}" class="workbook-record-list">
+          <view wx:for="{{workbookRecords}}" wx:key="id" class="workbook-record-card">
+            <view class="workbook-record-head">
+              <view class="workbook-record-title-block">
+                <text class="workbook-record-title">{{item.courseSessionTitle || '课次错题'}}</text>
+                <text class="workbook-record-meta">{{item.courseName}} · {{item.wrongCount}} 道错题</text>
+              </view>
+              <view class="workbook-record-badges">
+                <text wx:if="{{item.accuracyText}}" class="workbook-badge">{{item.accuracyText}}</text>
+                <text wx:if="{{item.rankText}}" class="workbook-badge muted">{{item.rankText}}</text>
+              </view>
+            </view>
+            <view class="workbook-question-list">
+              <view wx:for="{{item.questions}}" wx:for-item="question" wx:key="id" class="workbook-question-item">
+                <text class="workbook-question-order">{{question.order}}</text>
+                <view class="workbook-question-main">
+                  <text class="workbook-question-title">{{question.title}}</text>
+                  <text class="workbook-question-file">{{question.file.name || '暂无资料文件'}}</text>
+                </view>
+                <button wx:if="{{question.file.id}}" class="workbook-question-file-btn" data-id="{{question.file.id}}" catchtap="previewRecordMedia">资料</button>
+              </view>
+            </view>
           </view>
         </view>
         <block wx:for="{{allRecordsGroups}}" wx:key="{{item.courseName}}{{item.sessionTitle}}">
@@ -293,8 +399,6 @@
                 wx:for="{{item.records}}"
                 wx:key="id"
                 class="all-record-item"
-                data-id="{{item.id}}"
-                bindtap="viewRecordDetail"
               >
                 <view class="all-record-top">
                   <text class="all-record-date">{{item.createdAt}}</text>
@@ -308,15 +412,18 @@
                   <text wx:if="{{item.voiceCount}}" class="detail-tag">语音 {{item.voiceCount}} 条</text>
                   <text wx:if="{{item.attachFileCount}}" class="detail-tag">文档 {{item.attachFileCount}} 份</text>
                 </view>
-                <view wx:if="{{item.imageFiles.length}}" class="all-record-media">
-                  <button
+                <view wx:if="{{item.imageFiles.length}}" class="record-inline-images test-inline-images">
+                  <image
                     wx:for="{{item.imageFiles}}"
                     wx:for-item="media"
                     wx:key="id"
-                    class="qf-btn ghost small"
-                    data-id="{{media.id}}"
-                    catchtap="previewRecordMedia"
-                  >查看图片</button>
+                    class="test-inline-img"
+                    mode="widthFix"
+                    src="{{media.previewUrl}}"
+                    data-urls="{{item.imageFiles}}"
+                    data-current="{{media.previewUrl}}"
+                    bindtap="previewInlineImage"
+                  ></image>
                 </view>
                 <view wx:if="{{item.videoFiles.length}}" class="all-record-media">
                   <button
@@ -328,15 +435,29 @@
                     catchtap="previewRecordMedia"
                   >播放视频</button>
                 </view>
-                <view wx:if="{{item.voiceFiles.length}}" class="all-record-media">
-                  <button
+                <view wx:if="{{item.voiceFiles.length}}" class="record-inline-voices test-inline-voices">
+                  <view
                     wx:for="{{item.voiceFiles}}"
                     wx:for-item="voice"
                     wx:key="id"
-                    class="qf-btn ghost small"
+                    class="record-voice-bar test-voice-bar"
+                    data-url="{{voice.previewUrl}}"
                     data-id="{{voice.id}}"
+                    bindtap="playInlineVoice"
+                  >
+                    <image class="test-voice-icon" src="/assets/icons/voice.svg" mode="aspectFit"></image>
+                    <text class="test-voice-text">点击播放语音</text>
+                  </view>
+                </view>
+                <view wx:if="{{item.attachFiles.length}}" class="all-record-media">
+                  <button
+                    wx:for="{{item.attachFiles}}"
+                    wx:for-item="doc"
+                    wx:key="id"
+                    class="qf-btn ghost small"
+                    data-id="{{doc.id}}"
                     catchtap="previewRecordMedia"
-                  >播放语音</button>
+                  >{{doc.name}}</button>
                 </view>
               </view>
             </view>
@@ -348,7 +469,7 @@
   </block>
 
   <!-- ================================================================
-       Mode 4: Test List — 课前练习/课后巩固 (tab bar)
+       Mode 4: Test List — 课堂小测/本讲总结 (tab bar)
        ================================================================ -->
   <block wx:elif="{{mode === 'testList'}}">
     <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">

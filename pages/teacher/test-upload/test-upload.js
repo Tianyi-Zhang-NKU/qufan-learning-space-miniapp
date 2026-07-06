@@ -8,8 +8,8 @@ Page({
     session: {},
     courseId: '',
     courseName: '',
-    type: 'pre',        // 'pre' 或 'post'
-    typeLabel: '课前练习',
+    type: 'pre',
+    typeLabel: '课堂小测',
     sessions: [],
     assignments: [],
     currentSession: null,
@@ -22,13 +22,14 @@ Page({
   },
 
   onLoad(options) {
-    const { courseId, courseName, type } = options;
+    const { courseId, courseName, type, courseSessionId } = options;
     const typeLabel = FeedbackTypes.feedbackTypeShortLabel(type === 'pre' ? 'pre' : 'post');
     this.setData({
       courseId: courseId || '',
       courseName: decodeURIComponent(courseName || ''),
       type: type || 'pre',
-      typeLabel
+      typeLabel,
+      activeSessionId: courseSessionId || ''
     });
     wx.setNavigationBarTitle({ title: `${typeLabel} - ${this.data.courseName}` });
   },
