@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "z-logo": "/components/z-logo/z-logo"
+  }
+}

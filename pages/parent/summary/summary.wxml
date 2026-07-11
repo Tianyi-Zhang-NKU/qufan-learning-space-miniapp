@@ -1,0 +1,143 @@
+<view class="qf-page qf-page-fixed">
+  <z-bg mode="dark"></z-bg>
+
+  <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
+    <view class="qf-top">
+      <view class="qf-brand">
+        <text class="qf-brand-title">本讲总结</text>
+        <text class="qf-brand-sub">{{courseName}} · 按课次查看反馈</text>
+      </view>
+    </view>
+
+    <view wx:if="{{loading}}" class="qf-empty"><text>加载中…</text></view>
+
+    <view wx:elif="{{!summaries.length}}" class="qf-empty">
+      <text>暂无本讲总结</text>
+      <text class="qf-muted">课程结束后老师会发布反馈</text>
+    </view>
+
+    <view wx:else class="content-area">
+      <view wx:if="{{honors.length}}" class="honor-strip">
+        <view wx:for="{{honors}}" wx:key="id" class="honor-card">
+          <text class="honor-title">{{item.title}}</text>
+          <text class="honor-name">{{item.studentName}}</text>
+          <text class="honor-progress">{{item.progressText}}</text>
+          <view class="honor-seal-row">
+            <text class="honor-seal">{{item.sealText || '趣帆学习通关认证'}}</text>
+            <text class="honor-issued">{{item.issuedAt}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{passHistory.length}}" class="pass-history-panel">
+        <view class="pass-history-head">
+          <text class="pass-history-title">通关历史</text>
+          <text class="pass-history-count">{{passHistory.length}} 次确认</text>
+        </view>
+        <view wx:for="{{passHistory}}" wx:key="id" class="pass-history-row">
+          <view class="pass-history-dot"></view>
+          <view class="pass-history-main">
+            <text class="pass-history-session">{{item.sessionTitle}}</text>
+            <text class="pass-history-meta">{{item.teacherName}} · {{item.confirmedAt}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- Session tab bar -->
+      <scroll-view
+        scroll-x
+        enhanced
+        show-scrollbar="{{false}}"
+        class="session-tabs-scroll"
+        scroll-into-view="tab-{{currentIndex}}"
+        scroll-with-animation
+      >
+        <view class="session-tabs">
+          <view
+            wx:for="{{summaries}}"
+            wx:key="sessionId"
+            id="tab-{{index}}"
+            class="session-tab {{index === currentIndex ? 'active' : ''}}"
+            data-index="{{index}}"
+            bindtap="switchTab"
+          >
+            <text class="session-tab-text">第{{item.sessionIndex}}次课</text>
+          </view>
+        </view>
+      </scroll-view>
+
+      <!-- Current session feedback -->
+      <view wx:if="{{currentSummary}}">
+        <view wx:if="{{currentSummary.feedbacks.length}}">
+          <view
+            wx:for="{{currentSummary.feedbacks}}"
+            wx:key="id"
+            class="qf-card feedback-card"
+          >
+            <!-- Pass stamp -->
+            <view wx:if="{{item.passed}}" class="pass-stamp">已通关</view>
+            <view wx:else class="pass-stamp not-passed">暂未通关</view>
+
+            <!-- Images -->
+            <view wx:if="{{item.imageFiles.length}}" class="feedback-images">
+              <image
+                wx:for="{{item.imageFiles}}"
+                wx:for-item="img"
+                wx:key="id"
+                class="feedback-img"
+                mode="widthFix"
+                src="{{img.previewUrl}}"
+                data-urls="{{item.imageFiles}}"
+                data-current="{{img.previewUrl}}"
+                bindtap="previewImage"
+              ></image>
+            </view>
+
+            <!-- Text -->
+            <text class="feedback-text" wx:if="{{item.text}}">{{item.text}}</text>
+
+            <view wx:if="{{item.attachFiles.length}}" class="feedback-docs">
+              <view wx:for="{{item.attachFiles}}" wx:for-item="doc" wx:key="id" class="feedback-doc-row">
+                <text class="feedback-doc-icon">文</text>
+                <text class="feedback-doc-name">{{doc.name}}</text>
+              </view>
+            </view>
+
+            <!-- Voice -->
+            <view wx:if="{{item.voiceFiles.length}}" class="feedback-voices">
+              <view
+                wx:for="{{item.voiceFiles}}"
+                wx:for-item="voice"
+                wx:key="id"
+                class="feedback-voice-bar"
+                data-url="{{voice.previewUrl}}"
+                bindtap="playVoice"
+              >
+                <image class="feedback-voice-icon" src="/assets/icons/voice.svg" mode="aspectFit"></image>
+                <text class="feedback-voice-text">点击播放语音</text>
+              </view>
+            </view>
+            <view wx:else class="feedback-voice-bar disabled">
+              <image class="feedback-voice-icon" src="/assets/icons/voice.svg" mode="aspectFit"></image>
+              <text class="feedback-voice-text">暂无语音</text>
+            </view>
+
+            <view class="feedback-meta">
+              <text class="feedback-teacher">{{item.teacherName}}</text>
+              <text class="feedback-time">{{item.createdAt}}</text>
+            </view>
+          </view>
+        </view>
+
+        <view wx:else class="qf-card feedback-card">
+          <view class="summary-empty-box">
+            <text class="summary-empty">暂无本讲总结</text>
+            <text class="summary-empty-hint">老师批改后会发布反馈</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="qf-safe-bottom"></view>
+  </scroll-view>
+</view>

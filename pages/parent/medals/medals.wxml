@@ -1,0 +1,51 @@
+<view class="qf-page qf-page-fixed">
+  <z-bg mode="dark"></z-bg>
+
+  <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
+    <view class="qf-top">
+      <view class="qf-brand">
+        <text class="qf-brand-title">奖章墙</text>
+        <text class="qf-brand-sub">{{studentName}} · 已获得 {{unlockedCount}}/{{totalCount}} 枚奖章</text>
+      </view>
+    </view>
+
+    <view wx:if="{{loading}}" class="qf-empty">
+      <text>加载中…</text>
+    </view>
+
+    <view wx:elif="{{!medals.length}}" class="qf-empty">
+      <text>暂无课程</text>
+      <text class="qf-muted">报名课程后即可查看奖章进度</text>
+    </view>
+
+    <view wx:else class="medal-grid">
+      <view
+        wx:for="{{medals}}"
+        wx:key="courseId"
+        class="medal-item {{item.unlocked ? 'unlocked' : 'locked'}}"
+      >
+        <view class="medal-icon-wrap">
+          <view class="medal-icon {{item.unlocked ? 'medal-gold' : 'medal-grey'}}">
+            <text class="medal-emoji">{{item.unlocked ? '🏅' : '🔒'}}</text>
+          </view>
+        </view>
+        <text class="medal-course-name">{{item.courseName}}</text>
+        <text class="medal-subject" wx:if="{{item.subject}}">{{item.subject}}</text>
+        <view class="medal-progress">
+          <view class="medal-progress-bar-bg">
+            <view class="medal-progress-bar-fill" style="width: {{item.passRate}}%"></view>
+          </view>
+          <text class="medal-progress-text">{{item.progressText}}</text>
+        </view>
+        <text wx:if="{{item.unlocked && item.issuedAt}}" class="medal-issued">{{item.issuedAt}}</text>
+        <view wx:if="{{item.unlocked}}" class="medal-seal">
+          <text class="medal-seal-text">{{item.sealText}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="qf-safe-bottom"></view>
+  </scroll-view>
+
+  <qf-role-tabbar role="parent" current="/pages/parent/medals/medals" fixed="{{false}}"></qf-role-tabbar>
+</view>

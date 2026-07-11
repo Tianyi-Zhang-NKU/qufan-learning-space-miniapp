@@ -1,0 +1,14 @@
+<view class="tab-shell">
+  <view
+    wx:for="{{list}}"
+    wx:key="pagePath"
+    class="{{item.className}}"
+    data-index="{{index}}"
+    bindtap="switchTab"
+  >
+    <view class="tab-mark">
+      <image class="tab-icon" src="{{item.icon}}" mode="aspectFit"></image>
+    </view>
+    <text class="tab-text">{{item.text}}</text>
+  </view>
+</view>

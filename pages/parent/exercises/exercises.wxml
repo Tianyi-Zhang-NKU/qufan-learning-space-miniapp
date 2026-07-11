@@ -1,0 +1,585 @@
+<view class="qf-page qf-page-fixed">
+  <z-bg mode="dark"></z-bg>
+
+  <!-- ================================================================
+       Mode 1: Course List — 反馈首页
+       ================================================================ -->
+  <block wx:if="{{mode === 'courses'}}">
+    <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
+      <view class="qf-top">
+        <view class="qf-brand">
+          <text class="qf-brand-title">本讲总结</text>
+          <text class="qf-brand-sub">{{studentName || session.displayName}} · 选择课程查看错题</text>
+        </view>
+      </view>
+
+      <view wx:if="{{loading}}" class="qf-empty"><text>加载中…</text></view>
+
+      <view wx:elif="{{!courses.length}}" class="qf-empty">
+        <text>暂无已报课程</text>
+        <text class="qf-muted">请联系教务老师报班</text>
+      </view>
+
+      <view wx:else class="content-area">
+        <view class="qf-section">我的课程</view>
+        <view
+          wx:for="{{courses}}"
+          wx:key="id"
+          class="qf-card course-entry-card"
+          data-id="{{item.id}}"
+          bindtap="goCourseSessions"
+        >
+          <view class="course-entry-header">
+            <view class="course-entry-title-row">
+              <text class="course-entry-name">{{item.name}}</text>
+              <text class="qf-tag ok" wx:if="{{item.subject}}">{{item.subject}}</text>
+            </view>
+            <text class="course-entry-grade" wx:if="{{item.grade}}">{{item.grade}}</text>
+          </view>
+
+          <view class="course-entry-meta">
+            <view class="meta-row">
+              <image class="meta-icon" src="/assets/icons/teacher.svg" mode="aspectFit"></image>
+              <text class="meta-text">{{item.teacherName || '待分配'}}</text>
+            </view>
+            <view class="meta-row" wx:if="{{item.classroomName}}">
+              <image class="meta-icon" src="/assets/icons/location.svg" mode="aspectFit"></image>
+              <text class="meta-text">{{item.classroomName}}</text>
+            </view>
+            <view class="meta-row" wx:if="{{item.nextSessionTime}}">
+              <image class="meta-icon" src="/assets/icons/clock.svg" mode="aspectFit"></image>
+              <text class="meta-text">{{item.nextSessionTime}}</text>
+            </view>
+          </view>
+
+          <view class="course-entry-sessions" wx:if="{{item.sessionInfo.length}}">
+            <view wx:for="{{item.sessionInfo}}" wx:key="sessionId" class="session-preview-item">
+              <text class="session-preview-dot"></text>
+              <text class="session-preview-label">{{item.sessionTitle}}</text>
+              <text class="session-preview-date" wx:if="{{item.date}}">{{item.date}}</text>
+              <text class="session-preview-count {{item.recordCount ? 'has-records' : ''}}">
+                {{item.recordCount ? item.recordCount + ' 条错题' : '暂无'}}
+              </text>
+            </view>
+          </view>
+
+          <view class="course-entry-footer">
+            <text class="course-entry-total" wx:if="{{item.totalRecords}}">共 {{item.totalRecords}} 条错题记录</text>
+            <text class="course-entry-total muted" wx:else>暂无错题记录</text>
+            <text class="course-entry-arrow">›</text>
+          </view>
+        </view>
+      </view>
+      <view class="qf-safe-bottom"></view>
+    </scroll-view>
+  </block>
+
+  <!-- ================================================================
+       Mode 2: Session List — 课次列表
+       ================================================================ -->
+  <block wx:elif="{{mode === 'sessions'}}">
+    <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
+      <view class="qf-top">
+        <view class="qf-brand">
+          <text class="qf-brand-title">{{courseName}}</text>
+          <text class="qf-brand-sub">共 {{sessionList.length}} 次课 · 点击查看错题</text>
+        </view>
+      </view>
+
+      <view wx:if="{{loading}}" class="qf-empty"><text>加载中…</text></view>
+
+      <view wx:elif="{{!sessionList.length}}" class="qf-empty">
+        <text>暂无课次安排</text>
+        <text class="qf-muted">该课程暂无排课信息</text>
+      </view>
+
+      <view wx:else class="content-area">
+        <view class="workbook-export-card">
+          <view class="workbook-export-copy">
+            <text class="workbook-export-title">本课程可打印错题本</text>
+            <text class="workbook-export-sub">{{workbookSummary.totalWrongQuestions || 0}} 道错题 · 正确率 {{workbookSummary.accuracyText || '待录入'}}</text>
+          </view>
+          <view class="workbook-export-actions">
+            <button class="workbook-export-btn" data-format="pdf" data-scope="course" bindtap="exportWorkbook" disabled="{{exportingWorkbook}}">{{exportingWorkbook ? '生成中…' : '导出 PDF'}}</button>
+            <button class="workbook-export-btn secondary" data-format="docx" data-scope="course" bindtap="exportWorkbook" disabled="{{exportingWorkbook}}">导出 Word</button>
+          </view>
+        </view>
+        <view wx:if="{{workbookRecords.length}}" class="workbook-record-list">
+          <view wx:for="{{workbookRecords}}" wx:key="id" class="workbook-record-card">
+            <view class="workbook-record-head">
+              <view class="workbook-record-title-block">
+                <text class="workbook-record-title">{{item.courseSessionTitle || '课次错题'}}</text>
+                <text class="workbook-record-meta">{{item.courseName}} · {{item.wrongCount}} 道错题</text>
+              </view>
+              <view class="workbook-record-badges">
+                <text wx:if="{{item.accuracyText}}" class="workbook-badge">{{item.accuracyText}}</text>
+                <text wx:if="{{item.rankText}}" class="workbook-badge muted">{{item.rankText}}</text>
+              </view>
+            </view>
+            <view class="workbook-question-list">
+              <view wx:for="{{item.questions}}" wx:for-item="question" wx:key="id" class="workbook-question-item">
+                <text class="workbook-question-order">{{question.order}}</text>
+                <view class="workbook-question-main">
+                  <text class="workbook-question-title">{{question.title}}</text>
+                  <text class="workbook-question-file">{{question.file.name || '暂无资料文件'}}</text>
+                </view>
+                <button wx:if="{{question.file.id}}" class="workbook-question-file-btn" data-id="{{question.file.id}}" catchtap="previewRecordMedia">资料</button>
+              </view>
+            </view>
+          </view>
+        </view>
+        <view
+          wx:for="{{sessionList}}"
+          wx:key="sessionId"
+          class="qf-card session-entry-card"
+          data-id="{{item.sessionId}}"
+          bindtap="goSessionRecords"
+        >
+          <view class="session-entry-header">
+            <text class="session-entry-index">第{{item.sessionIndex}}次课</text>
+            <text class="session-entry-badge">本讲总结</text>
+          </view>
+          <text class="session-entry-title">{{item.sessionTitle}}</text>
+
+          <view class="session-entry-meta">
+            <view class="meta-row" wx:if="{{item.date}}">
+              <image class="meta-icon" src="/assets/icons/calendar.svg" mode="aspectFit"></image>
+              <text class="meta-text">{{item.date}} {{item.time}}</text>
+            </view>
+            <view class="meta-row" wx:if="{{item.teacherName}}">
+              <image class="meta-icon" src="/assets/icons/teacher.svg" mode="aspectFit"></image>
+              <text class="meta-text">{{item.teacherName}}</text>
+            </view>
+            <view class="meta-row">
+              <text class="meta-status {{item.status === 'finished' ? 'finished' : 'pending'}}">{{item.status === 'finished' ? '已' : '待'}}</text>
+              <text class="meta-text">{{item.statusText || '未开始'}}</text>
+            </view>
+          </view>
+
+          <view class="session-entry-footer">
+            <text class="session-entry-count {{item.recordCount ? 'has-records' : ''}}">
+              {{item.recordCount ? item.recordCount + ' 条错题记录' : '暂无记录'}}
+            </text>
+            <text class="session-entry-arrow">›</text>
+          </view>
+        </view>
+      </view>
+      <view class="qf-safe-bottom"></view>
+    </scroll-view>
+  </block>
+
+  <!-- ================================================================
+       Mode 3: Single-session Records — 只看本次课的错题
+       ================================================================ -->
+  <block wx:elif="{{mode === 'records'}}">
+    <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
+      <view class="qf-top">
+        <view class="qf-brand">
+          <text class="qf-brand-title">{{sessionLabel}}</text>
+          <text class="qf-brand-sub">{{courseName}} · 仅本次课错题</text>
+        </view>
+      </view>
+
+      <view wx:if="{{loading}}" class="qf-empty"><text>加载中…</text></view>
+
+      <view wx:else class="content-area">
+        <!-- Session info card -->
+        <view class="qf-card session-info-card">
+          <text class="session-info-title">{{sessionDetail.sessionTitle}}</text>
+          <view class="session-info-rows">
+            <view class="meta-row" wx:if="{{sessionDetail.date}}">
+              <image class="meta-icon" src="/assets/icons/calendar.svg" mode="aspectFit"></image>
+              <text class="meta-text">{{sessionDetail.date}} {{sessionDetail.time}}</text>
+            </view>
+            <view class="meta-row" wx:if="{{sessionDetail.teacherName}}">
+              <image class="meta-icon" src="/assets/icons/teacher.svg" mode="aspectFit"></image>
+              <text class="meta-text">{{sessionDetail.teacherName}}</text>
+            </view>
+            <view class="meta-row" wx:if="{{sessionDetail.classroomName}}">
+              <image class="meta-icon" src="/assets/icons/location.svg" mode="aspectFit"></image>
+              <text class="meta-text">{{sessionDetail.classroomName}}</text>
+            </view>
+            <view class="meta-row">
+              <text class="meta-status {{sessionDetail.status === 'finished' ? 'finished' : 'pending'}}">{{sessionDetail.status === 'finished' ? '已' : '待'}}</text>
+              <text class="meta-text">{{sessionDetail.statusText || '未开始'}}</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="workbook-export-card">
+          <view class="workbook-export-copy">
+            <text class="workbook-export-title">本讲可打印错题本</text>
+            <text class="workbook-export-sub">{{workbookSummary.totalWrongQuestions || 0}} 道错题 · 正确率 {{workbookSummary.accuracyText || '待录入'}}</text>
+          </view>
+          <view class="workbook-export-actions">
+            <button class="workbook-export-btn" data-format="pdf" data-scope="session" bindtap="exportWorkbook" disabled="{{exportingWorkbook}}">{{exportingWorkbook ? '生成中…' : '导出 PDF'}}</button>
+            <button class="workbook-export-btn secondary" data-format="docx" data-scope="session" bindtap="exportWorkbook" disabled="{{exportingWorkbook}}">导出 Word</button>
+          </view>
+        </view>
+        <view wx:if="{{workbookRecords.length}}" class="workbook-record-list">
+          <view wx:for="{{workbookRecords}}" wx:key="id" class="workbook-record-card">
+            <view class="workbook-record-head">
+              <view class="workbook-record-title-block">
+                <text class="workbook-record-title">{{item.courseSessionTitle || '课次错题'}}</text>
+                <text class="workbook-record-meta">{{item.courseName}} · {{item.wrongCount}} 道错题</text>
+              </view>
+              <view class="workbook-record-badges">
+                <text wx:if="{{item.accuracyText}}" class="workbook-badge">{{item.accuracyText}}</text>
+                <text wx:if="{{item.rankText}}" class="workbook-badge muted">{{item.rankText}}</text>
+              </view>
+            </view>
+            <view class="workbook-question-list">
+              <view wx:for="{{item.questions}}" wx:for-item="question" wx:key="id" class="workbook-question-item">
+                <text class="workbook-question-order">{{question.order}}</text>
+                <view class="workbook-question-main">
+                  <text class="workbook-question-title">{{question.title}}</text>
+                  <text class="workbook-question-file">{{question.file.name || '暂无资料文件'}}</text>
+                </view>
+                <button wx:if="{{question.file.id}}" class="workbook-question-file-btn" data-id="{{question.file.id}}" catchtap="previewRecordMedia">资料</button>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <!-- Only THIS session's wrong records -->
+        <view class="qf-section">错题记录（共 {{sessionRecords.length}} 条）</view>
+
+        <view wx:if="{{!sessionRecords.length}}" class="qf-empty">
+          <text>暂无错题记录</text>
+          <text class="qf-muted">老师批改后会上传学习反馈</text>
+        </view>
+
+        <view wx:else class="records-single-list">
+          <view
+            wx:for="{{sessionRecords}}"
+            wx:key="id"
+            class="qf-card record-detail-card"
+          >
+            <view class="record-detail-top">
+              <text class="record-detail-date">{{item.createdAt}}</text>
+              <text class="record-detail-teacher">{{item.teacherName}}</text>
+            </view>
+            <text class="record-detail-text">{{item.text || '（图片/视频/语音反馈）'}}</text>
+
+            <!-- Media badges -->
+            <view class="record-detail-tags" wx:if="{{item.imageCount || item.videoCount || item.voiceCount}}">
+              <text class="detail-tag">{{item.feedbackTypeText}}</text>
+              <text wx:if="{{item.imageCount}}" class="detail-tag">图片 {{item.imageCount}} 张</text>
+              <text wx:if="{{item.videoCount}}" class="detail-tag">视频 {{item.videoCount}} 个</text>
+              <text wx:if="{{item.voiceCount}}" class="detail-tag">语音 {{item.voiceCount}} 条</text>
+            </view>
+
+            <view wx:if="{{item.imageFiles.length}}" class="record-inline-images test-inline-images">
+              <image
+                wx:for="{{item.imageFiles}}"
+                wx:for-item="media"
+                wx:key="id"
+                class="test-inline-img"
+                mode="widthFix"
+                src="{{media.previewUrl}}"
+                data-urls="{{item.imageFiles}}"
+                data-current="{{media.previewUrl}}"
+                bindtap="previewInlineImage"
+              ></image>
+            </view>
+
+            <view wx:if="{{item.videoFiles.length}}" class="record-detail-media">
+              <button
+                wx:for="{{item.videoFiles}}"
+                wx:for-item="video"
+                wx:key="id"
+                class="qf-btn ghost small media-btn"
+                data-id="{{video.id}}"
+                catchtap="previewRecordMedia"
+              >播放视频</button>
+            </view>
+
+            <view wx:if="{{item.voiceFiles.length}}" class="record-inline-voices test-inline-voices">
+              <view
+                wx:for="{{item.voiceFiles}}"
+                wx:for-item="voice"
+                wx:key="id"
+                class="record-voice-bar test-voice-bar"
+                data-url="{{voice.previewUrl}}"
+                data-id="{{voice.id}}"
+                bindtap="playInlineVoice"
+              >
+                <image class="test-voice-icon" src="/assets/icons/voice.svg" mode="aspectFit"></image>
+                <text class="test-voice-text">点击播放语音</text>
+              </view>
+            </view>
+
+            <view wx:if="{{item.attachFiles.length}}" class="record-detail-media">
+              <button
+                wx:for="{{item.attachFiles}}"
+                wx:for-item="doc"
+                wx:key="id"
+                class="qf-btn ghost small media-btn"
+                data-id="{{doc.id}}"
+                catchtap="previewRecordMedia"
+              >{{doc.name}}</button>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view class="qf-safe-bottom"></view>
+    </scroll-view>
+  </block>
+
+  <!-- ================================================================
+       Mode 5: All Records — 我的错题本（跨课程审阅）
+       ================================================================ -->
+  <block wx:elif="{{mode === 'allRecords'}}">
+    <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
+      <view class="qf-top">
+        <view class="qf-brand">
+          <text class="qf-brand-title">我的错题本</text>
+          <text class="qf-brand-sub">全部课程 · 共 {{allRecordsTotal}} 条错题记录</text>
+        </view>
+      </view>
+      <view wx:if="{{loading}}" class="qf-empty"><text>加载中…</text></view>
+
+      <view wx:elif="{{!allRecordsGroups.length}}" class="qf-empty">
+        <text>暂无错题记录</text>
+        <text class="qf-muted">老师批改后会上传学习反馈</text>
+      </view>
+
+      <view wx:else class="content-area">
+        <view class="workbook-export-card">
+          <view class="workbook-export-copy">
+            <text class="workbook-export-title">可打印错题本</text>
+            <text class="workbook-export-sub">{{workbookSummary.totalWrongQuestions || 0}} 道错题 · 正确率 {{workbookSummary.accuracyText || '待录入'}}</text>
+          </view>
+          <view class="workbook-export-actions">
+            <button class="workbook-export-btn" data-format="pdf" data-scope="all" bindtap="exportWorkbook" disabled="{{exportingWorkbook}}">{{exportingWorkbook ? '生成中…' : '导出 PDF'}}</button>
+            <button class="workbook-export-btn secondary" data-format="docx" data-scope="all" bindtap="exportWorkbook" disabled="{{exportingWorkbook}}">导出 Word</button>
+          </view>
+        </view>
+        <view wx:if="{{workbookRecords.length}}" class="workbook-record-list">
+          <view wx:for="{{workbookRecords}}" wx:key="id" class="workbook-record-card">
+            <view class="workbook-record-head">
+              <view class="workbook-record-title-block">
+                <text class="workbook-record-title">{{item.courseSessionTitle || '课次错题'}}</text>
+                <text class="workbook-record-meta">{{item.courseName}} · {{item.wrongCount}} 道错题</text>
+              </view>
+              <view class="workbook-record-badges">
+                <text wx:if="{{item.accuracyText}}" class="workbook-badge">{{item.accuracyText}}</text>
+                <text wx:if="{{item.rankText}}" class="workbook-badge muted">{{item.rankText}}</text>
+              </view>
+            </view>
+            <view class="workbook-question-list">
+              <view wx:for="{{item.questions}}" wx:for-item="question" wx:key="id" class="workbook-question-item">
+                <text class="workbook-question-order">{{question.order}}</text>
+                <view class="workbook-question-main">
+                  <text class="workbook-question-title">{{question.title}}</text>
+                  <text class="workbook-question-file">{{question.file.name || '暂无资料文件'}}</text>
+                </view>
+                <button wx:if="{{question.file.id}}" class="workbook-question-file-btn" data-id="{{question.file.id}}" catchtap="previewRecordMedia">资料</button>
+              </view>
+            </view>
+          </view>
+        </view>
+        <block wx:for="{{allRecordsGroups}}" wx:key="{{item.courseName}}{{item.sessionTitle}}">
+          <!-- Course group header -->
+          <view wx:if="{{index === 0 || item.courseName !== allRecordsGroups[index - 1].courseName}}" class="all-course-header">
+            <text class="all-course-name">{{item.courseName}}</text>
+            <text class="all-course-divider"></text>
+          </view>
+
+          <!-- Session group card -->
+          <view class="qf-card all-session-card">
+            <view class="all-session-head">
+              <text class="all-session-title">{{item.sessionTitle || '课次'}}</text>
+              <text class="all-session-count">{{item.records.length}} 条</text>
+            </view>
+
+            <!-- Records in this session -->
+            <view class="all-records-list">
+              <view
+                wx:for="{{item.records}}"
+                wx:key="id"
+                class="all-record-item"
+              >
+                <view class="all-record-top">
+                  <text class="all-record-date">{{item.createdAt}}</text>
+                  <text class="all-record-teacher">{{item.teacherName}}</text>
+                </view>
+                <text class="all-record-text">{{item.text || '（图片/视频/语音反馈）'}}</text>
+                <view class="all-record-tags" wx:if="{{item.imageCount || item.videoCount || item.voiceCount || item.attachFileCount}}">
+                  <text class="detail-tag">{{item.feedbackTypeText}}</text>
+                  <text wx:if="{{item.imageCount}}" class="detail-tag">图片 {{item.imageCount}} 张</text>
+                  <text wx:if="{{item.videoCount}}" class="detail-tag">视频 {{item.videoCount}} 个</text>
+                  <text wx:if="{{item.voiceCount}}" class="detail-tag">语音 {{item.voiceCount}} 条</text>
+                  <text wx:if="{{item.attachFileCount}}" class="detail-tag">文档 {{item.attachFileCount}} 份</text>
+                </view>
+                <view wx:if="{{item.imageFiles.length}}" class="record-inline-images test-inline-images">
+                  <image
+                    wx:for="{{item.imageFiles}}"
+                    wx:for-item="media"
+                    wx:key="id"
+                    class="test-inline-img"
+                    mode="widthFix"
+                    src="{{media.previewUrl}}"
+                    data-urls="{{item.imageFiles}}"
+                    data-current="{{media.previewUrl}}"
+                    bindtap="previewInlineImage"
+                  ></image>
+                </view>
+                <view wx:if="{{item.videoFiles.length}}" class="all-record-media">
+                  <button
+                    wx:for="{{item.videoFiles}}"
+                    wx:for-item="video"
+                    wx:key="id"
+                    class="qf-btn ghost small"
+                    data-id="{{video.id}}"
+                    catchtap="previewRecordMedia"
+                  >播放视频</button>
+                </view>
+                <view wx:if="{{item.voiceFiles.length}}" class="record-inline-voices test-inline-voices">
+                  <view
+                    wx:for="{{item.voiceFiles}}"
+                    wx:for-item="voice"
+                    wx:key="id"
+                    class="record-voice-bar test-voice-bar"
+                    data-url="{{voice.previewUrl}}"
+                    data-id="{{voice.id}}"
+                    bindtap="playInlineVoice"
+                  >
+                    <image class="test-voice-icon" src="/assets/icons/voice.svg" mode="aspectFit"></image>
+                    <text class="test-voice-text">点击播放语音</text>
+                  </view>
+                </view>
+                <view wx:if="{{item.attachFiles.length}}" class="all-record-media">
+                  <button
+                    wx:for="{{item.attachFiles}}"
+                    wx:for-item="doc"
+                    wx:key="id"
+                    class="qf-btn ghost small"
+                    data-id="{{doc.id}}"
+                    catchtap="previewRecordMedia"
+                  >{{doc.name}}</button>
+                </view>
+              </view>
+            </view>
+          </view>
+        </block>
+      </view>
+      <view class="qf-safe-bottom"></view>
+    </scroll-view>
+  </block>
+
+  <!-- ================================================================
+       Mode 4: Test List — 课堂小测/本讲总结 (tab bar)
+       ================================================================ -->
+  <block wx:elif="{{mode === 'testList'}}">
+    <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
+      <view class="qf-top">
+        <view class="qf-brand">
+          <text class="qf-brand-title">{{testTypeLabel}}</text>
+          <text class="qf-brand-sub">{{courseName}} · 按课次查看学习反馈</text>
+        </view>
+      </view>
+
+      <view wx:if="{{loading}}" class="qf-empty"><text>加载中…</text></view>
+
+      <view wx:elif="{{!sessionTests.length}}" class="qf-empty">
+        <text>暂无课次安排</text>
+        <text class="qf-muted">该课程暂无排课信息</text>
+      </view>
+
+      <view wx:else class="content-area">
+        <!-- Session tab bar -->
+        <scroll-view
+          scroll-x
+          enhanced
+          show-scrollbar="{{false}}"
+          class="session-tabs-scroll"
+          scroll-into-view="test-tab-{{testCurrentIndex}}"
+          scroll-with-animation
+        >
+          <view class="session-tabs">
+            <view
+              wx:for="{{sessionTests}}"
+              wx:key="sessionId"
+              id="test-tab-{{index}}"
+              class="session-tab {{index === testCurrentIndex ? 'active' : ''}}"
+              data-index="{{index}}"
+              bindtap="switchTestTab"
+            >
+              <text class="session-tab-text">第{{item.sessionIndex}}次课</text>
+            </view>
+          </view>
+        </scroll-view>
+
+        <!-- Current session test records -->
+        <view class="qf-card test-session-card" wx:if="{{testCurrentSession}}">
+          <view class="test-records">
+            <view wx:if="{{testCurrentSession.records.length}}" class="test-records-list">
+              <view
+                wx:for="{{testCurrentSession.records}}"
+                wx:key="id"
+                class="test-record-item"
+              >
+                <!-- Pass stamp -->
+                <view wx:if="{{item.passed}}" class="pass-stamp">已通关</view>
+
+                <!-- Text content with expand/collapse -->
+                <view wx:if="{{item.text}}" class="test-record-text-wrap">
+                  <text class="test-record-text {{item.expanded ? '' : 'collapsed'}}">{{item.text}}</text>
+                  <text
+                    class="test-record-expand"
+                    data-index="{{index}}"
+                    catchtap="toggleRecordExpand"
+                  >{{item.expanded ? '收起' : '展开'}}</text>
+                </view>
+
+                <!-- Inline images -->
+                <view wx:if="{{item.imageFiles.length}}" class="test-inline-images">
+                  <image
+                    wx:for="{{item.imageFiles}}"
+                    wx:for-item="img"
+                    wx:key="id"
+                    class="test-inline-img"
+                    mode="widthFix"
+                    src="{{img.previewUrl}}"
+                    data-urls="{{item.imageFiles}}"
+                    data-current="{{img.previewUrl}}"
+                    bindtap="previewInlineImage"
+                  ></image>
+                </view>
+
+                <!-- Inline voice -->
+                <view wx:if="{{item.voiceFiles.length}}" class="test-inline-voices">
+                  <view
+                    wx:for="{{item.voiceFiles}}"
+                    wx:for-item="voice"
+                    wx:key="id"
+                    class="test-voice-bar"
+                    data-url="{{voice.previewUrl}}"
+                    data-id="{{voice.id}}"
+                    bindtap="playInlineVoice"
+                  >
+                    <image class="test-voice-icon" src="/assets/icons/voice.svg" mode="aspectFit"></image>
+                    <text class="test-voice-text">点击播放语音</text>
+                  </view>
+                </view>
+              </view>
+            </view>
+            <view wx:else class="records-empty">
+              <text>暂无{{testTypeLabel}}学习反馈</text>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view class="qf-safe-bottom"></view>
+    </scroll-view>
+  </block>
+
+  <!-- Tabbar only in course-list mode -->
+  <qf-role-tabbar
+    wx:if="{{mode === 'courses'}}"
+    role="parent"
+    current="/pages/parent/exercises/exercises"
+    fixed="{{false}}"
+  ></qf-role-tabbar>
+</view>

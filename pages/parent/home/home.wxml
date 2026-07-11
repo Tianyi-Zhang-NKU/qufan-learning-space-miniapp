@@ -1,0 +1,147 @@
+<view class="qf-page qf-page-fixed">
+  <z-bg mode="dark"></z-bg>
+
+  <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
+    <!-- Header -->
+    <view class="qf-top">
+      <view class="qf-brand">
+        <text class="qf-brand-title">我的学习</text>
+        <text class="qf-brand-sub">{{studentName || session.displayName}} · 课程首页</text>
+      </view>
+    </view>
+
+    <view wx:if="{{honors.length}}" class="home-honor-list">
+      <view wx:for="{{honors}}" wx:key="id" class="home-honor-card">
+        <text class="home-honor-kicker">我的荣誉</text>
+        <text class="home-honor-title">{{item.title}}</text>
+        <text class="home-honor-sub">{{item.studentName}} · {{item.progressText}}</text>
+        <view class="home-honor-seal-row">
+          <text class="home-honor-seal">{{item.sealText || '趣帆学习通关认证'}}</text>
+          <text class="home-honor-issued">{{item.issuedAt}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- Section title -->
+    <view class="qf-section">我的课程</view>
+
+    <!-- Loading state -->
+    <view wx:if="{{loading}}" class="qf-empty">
+      <text>加载中…</text>
+    </view>
+
+    <!-- Empty state -->
+    <view wx:elif="{{!courses.length}}" class="qf-empty">
+      <text>暂无已报课程</text>
+      <text class="qf-muted">请联系教务老师报班</text>
+    </view>
+
+    <!-- Course cards -->
+    <view wx:else class="course-list">
+      <view
+        wx:for="{{courses}}"
+        wx:key="id"
+        class="qf-card course-card"
+      >
+        <!-- Course header -->
+        <view class="course-header">
+          <view class="course-title-row">
+            <text class="course-name">{{item.name}}</text>
+            <text class="qf-tag ok" wx:if="{{item.subject}}">{{item.subject}}</text>
+          </view>
+          <view class="course-header-right">
+            <view class="progress-bar-wrap">
+              <text class="progress-label">{{item.passedCount}}/{{item.sessionCount}}</text>
+              <view class="progress-bar-bg">
+                <view class="progress-bar-fill" style="width: {{item.sessionCount ? (item.passedCount / item.sessionCount * 100) : 0}}%"></view>
+              </view>
+              <text class="progress-hint">通关进度</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- Course info: teacher, time, location -->
+        <view class="course-info">
+          <view class="course-info-row">
+            <image class="course-info-icon" src="/assets/icons/teacher.svg" mode="aspectFit"></image>
+            <text class="course-info-label">任课教师</text>
+            <text class="course-info-value">{{item.teacherName || '待分配'}}</text>
+          </view>
+          <view class="course-info-row">
+            <image class="course-info-icon" src="/assets/icons/location.svg" mode="aspectFit"></image>
+            <text class="course-info-label">上课地点</text>
+            <text class="course-info-value">{{item.classroomName}}</text>
+          </view>
+          <view class="course-info-row" wx:if="{{item.nextSessionTime}}">
+            <image class="course-info-icon" src="/assets/icons/clock.svg" mode="aspectFit"></image>
+            <text class="course-info-label">最近上课</text>
+            <text class="course-info-value">{{item.nextSessionTime}}</text>
+          </view>
+        </view>
+
+        <!-- Session schedule lines -->
+        <scroll-view
+          wx:if="{{item.scheduleLines.length}}"
+          scroll-y
+          enhanced
+          show-scrollbar="{{false}}"
+          class="course-schedule-scroll"
+        >
+          <view class="course-schedule">
+            <view wx:for="{{item.scheduleLines}}" wx:key="*this" class="schedule-line">
+              <text class="schedule-dot"></text>
+              <text class="schedule-text">{{item}}</text>
+            </view>
+          </view>
+        </scroll-view>
+
+        <!-- Action buttons: quiz / summary -->
+        <view class="course-actions tests-row">
+          <button
+            class="qf-btn test-btn pre-test-btn"
+            data-id="{{item.id}}"
+            bindtap="goQuiz"
+          >
+            <image class="test-btn-icon" src="/assets/icons/pre-test.svg" mode="aspectFit"></image>
+            <view class="test-btn-text">
+              <text class="test-btn-title">课堂小测</text>
+              <text class="test-btn-sub" wx:if="{{item.totalPreCount + item.totalPostCount}}">{{item.totalPreCount + item.totalPostCount}} 份记录</text>
+              <text class="test-btn-sub" wx:else>暂无记录</text>
+            </view>
+          </button>
+
+          <button
+            class="qf-btn test-btn post-test-btn"
+            data-id="{{item.id}}"
+            bindtap="goSummary"
+          >
+            <image class="test-btn-icon" src="/assets/icons/post-test.svg" mode="aspectFit"></image>
+            <view class="test-btn-text">
+              <text class="test-btn-title">本讲总结</text>
+              <text class="test-btn-sub">查看总结</text>
+            </view>
+          </button>
+        </view>
+
+        <view class="course-actions live-row">
+          <button
+            class="qf-btn test-btn live-test-btn"
+            data-session-id="{{item.nextSessionId}}"
+            data-url="/pages/live-player/live-player?id={{item.nextSessionId}}"
+            bindtap="goLive"
+          >
+            <image class="test-btn-icon" src="/assets/icons/live.svg" mode="aspectFit"></image>
+            <view class="test-btn-text">
+              <text class="test-btn-title">课程直播</text>
+              <text class="test-btn-sub">{{item.nextSessionTime || '暂无直播安排'}}</text>
+            </view>
+          </button>
+        </view>
+      </view>
+    </view>
+
+    <view class="qf-safe-bottom"></view>
+  </scroll-view>
+
+  <qf-role-tabbar role="parent" current="/pages/parent/home/home" fixed="{{false}}"></qf-role-tabbar>
+</view>

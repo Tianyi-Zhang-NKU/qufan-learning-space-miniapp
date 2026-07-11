@@ -1,0 +1,47 @@
+<view class="qf-page login-page">
+  <z-bg mode="auth"></z-bg>
+
+  <view class="login-shell">
+    <view class="login-brand">
+      <view class="login-brand-mark">帆</view>
+      <text class="login-title">趣帆学习空间</text>
+      <text class="login-sub">本讲总结看得见，学习进度不打扰</text>
+    </view>
+
+    <view class="qf-card qf-hero login-panel">
+      <view class="login-card-head">
+        <text class="login-card-title">手机号登录</text>
+        <text class="login-card-sub">请输入报班时预留的手机号</text>
+      </view>
+
+      <view class="qf-field">
+        <text class="qf-label">报班手机号</text>
+        <input
+          class="qf-input login-input"
+          type="number"
+          maxlength="11"
+          value="{{phone}}"
+          placeholder="请输入手机号"
+          bindinput="onPhoneInput"
+        />
+      </view>
+
+      <button class="qf-btn full login-primary" loading="{{logging}}" bindtap="login">登录</button>
+    </view>
+
+    <view class="login-helper">登录即代表已阅读并同意平台服务与隐私规则</view>
+
+    <view class="login-quick">
+      <button class="quick-login-toggle" bindtap="toggleDemo">{{showDemo ? '收起快速体验' : '快速体验'}}</button>
+      <view wx:if="{{showDemo}}" class="quick-login-panel">
+        <button
+          wx:for="{{demoPhones}}"
+          wx:key="phone"
+          class="quick-login-account"
+          data-phone="{{item.phone}}"
+          bindtap="useDemoPhone"
+        >{{item.label}} {{item.phone}}</button>
+      </view>
+    </view>
+  </view>
+</view>

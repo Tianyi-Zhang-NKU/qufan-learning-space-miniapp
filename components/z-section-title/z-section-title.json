@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "z-status": "/components/z-status/z-status"
+  }
+}

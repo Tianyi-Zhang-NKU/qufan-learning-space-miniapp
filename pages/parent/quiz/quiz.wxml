@@ -1,0 +1,52 @@
+<view class="qf-page qf-page-fixed">
+  <z-bg mode="dark"></z-bg>
+
+  <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
+    <view class="qf-top">
+      <view class="qf-brand">
+        <text class="qf-brand-title">课堂小测</text>
+        <text class="qf-brand-sub">{{courseName}} · 选择测试类型</text>
+      </view>
+    </view>
+
+    <view class="content-area">
+      <view class="quiz-options">
+        <view
+          class="qf-card quiz-option-card"
+          data-type="pre"
+          bindtap="goTest"
+        >
+          <view class="quiz-option-icon"><image class="quiz-option-img" src="/assets/icons/pre-test.svg" mode="aspectFit"></image></view>
+          <view class="quiz-option-body">
+            <text class="quiz-option-title">课堂小测</text>
+            <text class="quiz-option-desc">课堂练习照片、评语和语音反馈</text>
+          </view>
+          <view class="quiz-option-right">
+            <text class="quiz-option-count" wx:if="{{preCount}}">{{preCount}} 份记录</text>
+            <text class="quiz-option-count muted" wx:else>暂无记录</text>
+            <text class="quiz-option-arrow">›</text>
+          </view>
+        </view>
+
+        <view
+          class="qf-card quiz-option-card"
+          data-type="post"
+          bindtap="goTest"
+        >
+          <view class="quiz-option-icon"><image class="quiz-option-img" src="/assets/icons/post-test.svg" mode="aspectFit"></image></view>
+          <view class="quiz-option-body">
+            <text class="quiz-option-title">本讲总结</text>
+            <text class="quiz-option-desc">本讲学习结果和错题复盘</text>
+          </view>
+          <view class="quiz-option-right">
+            <text class="quiz-option-count" wx:if="{{postCount}}">{{postCount}} 份记录</text>
+            <text class="quiz-option-count muted" wx:else>暂无记录</text>
+            <text class="quiz-option-arrow">›</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="qf-safe-bottom"></view>
+  </scroll-view>
+</view>

@@ -1,0 +1,10 @@
+<view class="camera-host">
+  <view class="{{frameClass}}">
+    <view wx:if="{{live}}" class="live-dot"></view>
+    <text class="camera-label">{{label}}</text>
+  </view>
+  <view class="camera-meta">
+    <text class="camera-title">{{title}}</text>
+    <text class="camera-sub">{{sub}}</text>
+  </view>
+</view>

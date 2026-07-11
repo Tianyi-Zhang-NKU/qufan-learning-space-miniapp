@@ -1,0 +1,8 @@
+<view class="{{className}}">
+  <view class="time-pill">{{time}}</view>
+  <view class="list-main">
+    <text class="list-title">{{title}}</text>
+    <text class="list-sub">{{sub}}</text>
+  </view>
+  <z-status wx:if="{{status}}" text="{{status}}" tone="{{tone}}"></z-status>
+</view>

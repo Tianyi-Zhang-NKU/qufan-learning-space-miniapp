@@ -1,0 +1,61 @@
+.card {
+  position: relative;
+  z-index: 1;
+  padding: 30rpx;
+  margin-bottom: 24rpx;
+  overflow: hidden;
+  border: 1rpx solid rgba(16, 34, 74, 0.08);
+  border-radius: 28rpx;
+  color: #10224A;
+  background: #FFFDF6;
+  box-shadow: 0 18rpx 46rpx rgba(35, 39, 55, 0.1);
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 6rpx;
+  pointer-events: none;
+  background: rgba(47, 111, 174, 0.12);
+}
+
+.card-content {
+  position: relative;
+  z-index: 1;
+}
+
+.card.hero {
+  padding: 38rpx 34rpx;
+  margin-bottom: 30rpx;
+  background:
+    linear-gradient(180deg, rgba(232, 238, 255, 0.72), rgba(255, 253, 246, 0.92)),
+    #FFFDF6;
+}
+
+.card.auth,
+.card.form {
+  padding: 38rpx 34rpx 34rpx;
+  border-radius: 30rpx;
+  background: #FFFDF6;
+}
+
+.card.camera {
+  padding: 16rpx;
+  border-radius: 28rpx;
+  background: #10224A;
+}
+
+.card.paper,
+.card.light {
+  color: #10224A;
+  background: #FFFCF2;
+  box-shadow: 0 16rpx 38rpx rgba(35, 39, 55, 0.08);
+}
+
+.card.paper::before,
+.card.light::before {
+  background: rgba(245, 154, 35, 0.18);
+}

@@ -1,0 +1,96 @@
+<view class="qf-page qf-page-fixed">
+  <z-bg mode="dark"></z-bg>
+
+  <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
+    <view class="profile-identity-header">
+      <view class="avatar-wrapper">
+        <view class="avatar">
+          <text class="avatar-text">{{identityInitial}}</text>
+        </view>
+        <view class="avatar-badge">{{identityBadge}}</view>
+      </view>
+      <text class="teacher-name">{{identityName}}</text>
+      <text class="teacher-sub">{{identitySub || roleName}}</text>
+      <view class="teacher-phone">
+        <image class="qf-inline-icon" src="/assets/icons/phone.svg" mode="aspectFit"></image>
+        <text>{{session.phone}}</text>
+      </view>
+    </view>
+
+    <block wx:if="{{session.role === 'teacher'}}">
+      <view class="qf-grid three stats-grid">
+        <view class="qf-metric stat-metric">
+          <text class="qf-metric-value">{{teacherCourses.length}}</text>
+          <text class="qf-metric-label">教授课程</text>
+        </view>
+        <view class="qf-metric stat-metric">
+          <text class="qf-metric-value">{{teacherStudents.length}}</text>
+          <text class="qf-metric-label">名下学生</text>
+        </view>
+        <view class="qf-metric stat-metric">
+          <text class="qf-metric-value">{{totalFeedbacks}}</text>
+          <text class="qf-metric-label">累计反馈</text>
+        </view>
+      </view>
+
+      <view class="qf-section">课程概览</view>
+      <view wx:if="{{teacherCourses.length}}" class="collection-list">
+        <view wx:for="{{teacherCourses}}" wx:key="id" class="collection-card qf-card tight" bindtap="goTeacherCourses" data-course-id="{{item.id}}">
+          <view class="collection-row">
+            <view class="collection-icon course-icon">
+              <image class="qf-icon-lg" src="/assets/icons/course.svg" mode="aspectFit"></image>
+            </view>
+            <view class="collection-info">
+              <text class="collection-name">{{item.name}}</text>
+              <text class="collection-meta">{{item.subject}} · {{item.grade}} · {{item.classroomName}} · {{item.studentCount}} 名学生</text>
+            </view>
+            <text class="collection-arrow">›</text>
+          </view>
+        </view>
+      </view>
+      <view wx:else class="qf-empty">暂无课程数据</view>
+    </block>
+
+    <block wx:if="{{session.role === 'parent'}}">
+      <view class="qf-section">学习工具</view>
+      <view class="qf-entry-grid profile-entry-grid">
+        <view class="qf-entry-card" bindtap="goExercises">
+          <image class="profile-entry-icon" src="/assets/icons/wrong.svg" mode="aspectFit"></image>
+          <text class="qf-entry-title">错题本</text>
+          <text class="qf-entry-sub">按课程查看每讲错题</text>
+        </view>
+        <view class="qf-entry-card" bindtap="goMedals">
+          <image class="profile-entry-icon" src="/assets/icons/record.svg" mode="aspectFit"></image>
+          <text class="qf-entry-title">奖章墙</text>
+          <text class="qf-entry-sub">通关课程赢奖章</text>
+        </view>
+      </view>
+
+      <view class="qf-section">账号信息</view>
+      <view class="qf-card tight profile-card">
+        <view class="qf-list">
+          <view class="qf-list-item">
+            <text class="qf-h3">绑定学生</text>
+            <text class="qf-muted">{{profile.name}} · {{profile.grade}}</text>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <block wx:if="{{session.role === 'admin'}}">
+      <view class="qf-section">账号信息</view>
+      <view class="qf-card tight profile-card">
+        <view class="qf-list">
+          <view class="qf-list-item">
+            <text class="qf-h3">管理身份</text>
+            <text class="qf-muted">{{profile.roleTitle}}</text>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <button class="qf-btn ghost full profile-logout" bindtap="logout">退出登录</button>
+  </scroll-view>
+
+  <qf-role-tabbar role="{{session.role}}" current="/pages/profile/profile" fixed="{{false}}"></qf-role-tabbar>
+</view>

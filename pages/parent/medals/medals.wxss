@@ -1,0 +1,118 @@
+.medal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24rpx;
+  max-width: 620rpx;
+  margin: 0 auto;
+  padding: 0 24rpx;
+}
+
+.medal-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 36rpx 20rpx 28rpx;
+  border-radius: 28rpx;
+  border: 1rpx solid rgba(16, 34, 74, 0.08);
+  background: #FFFDF6;
+  box-shadow: 0 16rpx 38rpx rgba(35, 39, 55, 0.09);
+}
+
+.medal-item.locked {
+  opacity: 0.72;
+  background: #F6F3E8;
+}
+
+.medal-item.unlocked {
+  border-color: rgba(31, 122, 77, 0.22);
+  box-shadow: 0 16rpx 38rpx rgba(31, 122, 77, 0.12);
+}
+
+.medal-icon-wrap {
+  margin-bottom: 16rpx;
+}
+
+.medal-icon {
+  width: 96rpx;
+  height: 96rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.medal-gold {
+  background: linear-gradient(145deg, #FFD700, #F5A623);
+  box-shadow: 0 8rpx 24rpx rgba(245, 166, 35, 0.32);
+}
+
+.medal-grey {
+  background: #E8E8E8;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+
+.medal-emoji {
+  font-size: 48rpx;
+}
+
+.medal-course-name {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #10224A;
+  text-align: center;
+  line-height: 1.3;
+  margin-bottom: 6rpx;
+}
+
+.medal-subject {
+  font-size: 22rpx;
+  color: #8A8D88;
+  margin-bottom: 12rpx;
+}
+
+.medal-progress {
+  width: 100%;
+  margin-top: 8rpx;
+}
+
+.medal-progress-bar-bg {
+  width: 100%;
+  height: 10rpx;
+  border-radius: 999rpx;
+  background: rgba(16, 34, 74, 0.08);
+  overflow: hidden;
+}
+
+.medal-progress-bar-fill {
+  height: 100%;
+  border-radius: 999rpx;
+  background: linear-gradient(90deg, #f97316, #22c55e);
+  transition: width 0.3s;
+}
+
+.medal-progress-text {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 20rpx;
+  color: #8A8D88;
+  text-align: center;
+}
+
+.medal-issued {
+  margin-top: 10rpx;
+  font-size: 20rpx;
+  color: #8A8D88;
+}
+
+.medal-seal {
+  margin-top: 10rpx;
+  padding: 4rpx 12rpx;
+  border: 2rpx solid #B91C1C;
+  border-radius: 6rpx;
+}
+
+.medal-seal-text {
+  font-size: 18rpx;
+  font-weight: 800;
+  color: #B91C1C;
+}

@@ -1,0 +1,4 @@
+<view class="metric {{size}}">
+  <text class="metric-value">{{value}}</text>
+  <text class="metric-label">{{label}}</text>
+</view>
