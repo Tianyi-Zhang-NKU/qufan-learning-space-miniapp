@@ -45,7 +45,7 @@ Page({
 
         const summaries = sessions.map((s) => {
           const sessionFeedbacks = feedbacks.filter(
-            (f) => f.courseSessionId === s.id && (f.feedbackType || 'post') === 'general'
+            (f) => f.courseSessionId === s.id && (f.feedbackType || 'post') === 'post'
           );
 
           return {

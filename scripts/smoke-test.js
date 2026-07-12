@@ -317,6 +317,7 @@ async function run() {
   const parentSummaryJs = readText('pages/parent/summary/summary.js');
   assert(parentSummaryWxml.includes('honor-card') && parentSummaryWxml.includes('honor-seal') && parentSummaryWxml.includes('pass-history-panel') && parentSummaryWxml.includes('feedback-docs'), 'lesson summary should show honors, electronic seals, pass history and feedback documents inline');
   assert(parentSummaryJs.includes('lastFeedbackIndex'), 'lesson summary should open the latest session that actually has feedback');
+  assert(parentSummaryJs.includes("(f.feedbackType || 'post') === 'post'"), 'lesson summary should filter post feedback instead of pass confirmations');
   assert(
     parentSummaryWxml.indexOf('class="feedback-images"') < parentSummaryWxml.indexOf('class="feedback-text"')
       && parentSummaryWxml.indexOf('class="feedback-text"') < parentSummaryWxml.indexOf('class="feedback-voices"')
