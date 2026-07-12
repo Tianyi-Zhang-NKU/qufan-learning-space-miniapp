@@ -84,6 +84,54 @@ function findPhoneAccount(phone) {
   return db.phoneAccounts.find((item) => item.phone === String(phone || '').trim());
 }
 
+function getUserRolesByPhone(phone) {
+  const cleanPhone = String(phone || '').trim();
+  const roles = ensureCollection('userRoles').filter((item) => item.phone === cleanPhone && item.enabled !== false);
+  if (roles.length) return roles;
+  return db.phoneAccounts
+    .filter((item) => item.phone === cleanPhone)
+    .map((item) => ({ ...item, userId: `legacy_user_${item.phone}`, enabled: true }));
+}
+
+function findUserRole(roleId) {
+  return ensureCollection('userRoles').find((item) => item.id === roleId);
+}
+
+function findAdminGrant(roleId) {
+  return ensureCollection('adminGrants').find((item) => item.roleId === roleId && item.enabled !== false) || null;
+}
+
+function describeRole(role) {
+  const labels = { parent: '学生/家长', teacher: '教师', admin: '管理员', researcher: '教研' };
+  const grant = role.role === 'admin' ? findAdminGrant(role.id) : null;
+  return {
+    id: role.id,
+    role: role.role,
+    linkedId: role.linkedId || '',
+    label: labels[role.role] || role.role,
+    displayName: role.nickname || '',
+    isScopedAdmin: Boolean(grant && !grant.fullAccess),
+    gradeScopes: grant ? (grant.gradeScopes || []).slice() : [],
+    subjectScopes: grant ? (grant.subjectScopes || []).slice() : []
+  };
+}
+
+function canAdminAccessScope(session, grade, subject) {
+  if (!session || session.role !== 'admin') return false;
+  const grant = findAdminGrant(session.identityId);
+  if (!grant) return false;
+  if (grant.fullAccess) return true;
+  const gradeScopes = grant.gradeScopes || [];
+  const subjectScopes = grant.subjectScopes || [];
+  const gradeAllowed = !gradeScopes.length || gradeScopes.includes(grade);
+  const subjectAllowed = !subjectScopes.length || subjectScopes.includes(subject);
+  return grant.enabled !== false && gradeAllowed && subjectAllowed;
+}
+
+function filterCoursesForAdminScope(session, courses) {
+  return courses.filter((course) => canAdminAccessScope(session, course.grade || '', course.subject || ''));
+}
+
 function findStudent(id) {
   return db.students.find((item) => item.id === id);
 }
@@ -392,7 +440,9 @@ function decorateCourse(item, options = {}) {
 
 function canTeacherAccessCourse(session, courseId) {
   const course = findCourse(courseId);
-  return Boolean(course && (session.role === 'admin' || course.teacherId === session.teacherId));
+  return Boolean(course && (session.role === 'admin'
+    ? canAdminAccessScope(session, course.grade || '', course.subject || '')
+    : course.teacherId === session.teacherId));
 }
 
 function canStudentAccessCourse(session, courseId) {
@@ -401,7 +451,10 @@ function canStudentAccessCourse(session, courseId) {
 }
 
 function canAccessCourse(session, courseId) {
-  if (session.role === 'admin') return Boolean(findCourse(courseId));
+  if (session.role === 'admin') {
+    const course = findCourse(courseId);
+    return Boolean(course && canAdminAccessScope(session, course.grade || '', course.subject || ''));
+  }
   if (session.role === 'teacher') return canTeacherAccessCourse(session, courseId);
   return canStudentAccessCourse(session, courseId);
 }
@@ -413,7 +466,7 @@ function canAccessSession(session, courseSessionId) {
 
 function canAccessFeedback(session, feedback) {
   if (!feedback) return false;
-  if (session.role === 'admin') return true;
+  if (session.role === 'admin') return canAccessCourse(session, feedback.courseId);
   if (session.role === 'teacher') return feedback.teacherId === session.teacherId;
   return feedback.visibleToStudent && feedback.studentId === session.studentId;
 }
@@ -434,6 +487,7 @@ function canAccessMedia(session, fileId) {
 }
 
 function buildSession(account) {
+  const availableRoles = getUserRolesByPhone(account.phone).map(describeRole);
   const base = {
     id: `session_${account.id}_${Date.now()}`,
     accountId: account.id,
@@ -443,6 +497,8 @@ function buildSession(account) {
     linkedId: account.linkedId,
     nickname: account.nickname,
     displayName: account.nickname,
+    userId: account.userId || '',
+    availableRoles,
     loginMode: 'phone',
     authMode: config.authMode,
     createdAt: nowLabel()
@@ -458,11 +514,16 @@ function buildSession(account) {
   }
   if (account.role === 'admin') {
     const admin = findAdmin(account.linkedId);
+    const grant = findAdminGrant(account.id);
     return {
       ...base,
       adminId: account.linkedId,
       displayName: admin ? admin.name : account.nickname,
-      adminName: admin ? admin.name : account.nickname
+      adminName: admin ? admin.name : account.nickname,
+      isSuperAdmin: Boolean(grant && grant.fullAccess),
+      isScopedAdmin: Boolean(grant && !grant.fullAccess),
+      gradeScopes: grant ? (grant.gradeScopes || []).slice() : [],
+      subjectScopes: grant ? (grant.subjectScopes || []).slice() : []
     };
   }
   const student = findStudent(account.linkedId);
@@ -868,9 +929,33 @@ function checkScheduleConflictsRaw(payload = {}) {
 const mockApi = {
   loginByPhone(payload = {}) {
     const phone = String(payload.phone || '').trim();
-    const account = findPhoneAccount(phone);
+    const roles = getUserRolesByPhone(phone);
+    const account = payload.roleId ? roles.find((item) => item.id === payload.roleId) : roles[0];
     if (!account) throw makeError('ACCOUNT_NOT_FOUND', '手机号未匹配到老师、学生或管理员档案。');
     const session = buildSession(account);
+    db.sessions[session.id] = session;
+    setSession(session);
+    writeStoredSession(session);
+    return delay(session);
+  },
+
+  getAvailableRoles(payload = {}) {
+    const phone = String(payload.phone || '').trim();
+    const roles = getUserRolesByPhone(phone);
+    if (!roles.length) throw makeError('ACCOUNT_NOT_FOUND', '手机号未匹配到可用身份。');
+    const user = ensureCollection('users').find((item) => item.id === roles[0].userId) || {};
+    return delay({
+      phone,
+      user: { id: user.id || '', displayName: user.displayName || roles[0].nickname || '', avatarUrl: user.avatarUrl || '' },
+      roles: roles.map(describeRole)
+    });
+  },
+
+  selectActiveRole(payload = {}) {
+    const current = requireSession();
+    const role = getUserRolesByPhone(current.phone).find((item) => item.id === payload.roleId);
+    if (!role) throw makeError('NO_PERMISSION', '当前手机号不能切换到该身份。');
+    const session = buildSession(role);
     db.sessions[session.id] = session;
     setSession(session);
     writeStoredSession(session);
@@ -1241,12 +1326,17 @@ const mockApi = {
   },
 
   getAdminOverview() {
-    requireRole('admin');
-    const relationOverview = db.courses.map((course) => {
+    const session = requireRole('admin');
+    const courses = filterCoursesForAdminScope(session, db.courses);
+    const scopedStudentIds = new Set(courses.flatMap((course) => course.studentIds || []));
+    const scopedTeacherIds = new Set(courses.map((course) => course.teacherId));
+    const relationOverview = courses.map((course) => {
       const decorated = decorateCourse(course);
       return {
         courseId: course.id,
         courseName: course.name,
+        grade: course.grade || '',
+        subject: course.subject || '',
         teacherName: decorated.teacherName,
         classroomName: decorated.classroomName,
         studentCount: course.studentIds.length,
@@ -1259,27 +1349,29 @@ const mockApi = {
         liveTone: 'ok'
       };
     });
-    const todaySessions = db.courseSessions.filter((item) => item.date === TODAY).map(decorateSession);
+    const todaySessions = db.courseSessions
+      .filter((item) => item.date === TODAY)
+      .filter((item) => canAdminAccessScope(session, (findCourse(item.courseId) || {}).grade || '', (findCourse(item.courseId) || {}).subject || ''))
+      .map(decorateSession);
     return delay({
       metrics: [
-        { label: '老师数', value: db.teachers.length },
-        { label: '学生数', value: db.students.length },
-        { label: '课程数', value: db.courses.length },
-        { label: '反馈数', value: db.lessonFeedbacks.length },
-        { label: '手机号映射', value: db.phoneAccounts.length },
-        { label: '直播入口', value: '已准备' }
+        { label: '老师数', value: scopedTeacherIds.size },
+        { label: '学生数', value: scopedStudentIds.size },
+        { label: '课程数', value: courses.length },
+        { label: '反馈数', value: db.lessonFeedbacks.filter((item) => canAccessFeedback(session, item)).length },
+        { label: '手机号映射', value: db.phoneAccounts.filter((item) => scopedStudentIds.has(item.linkedId) || scopedTeacherIds.has(item.linkedId)).length }
       ],
       relationOverview,
       todaySessions,
-      liveRooms: db.liveRooms.map((item) => ({ ...item, classroom: findClassroom(item.classroomId) || {} })),
-      recentFeedbacks: db.lessonFeedbacks.slice(0, 6).map(feedbackWithMedia),
-      recentAuditLogs: db.auditLogs.slice(0, 6)
+      liveRooms: [],
+      recentFeedbacks: db.lessonFeedbacks.filter((item) => canAccessFeedback(session, item)).slice(0, 6).map(feedbackWithMedia),
+      recentAuditLogs: session.isSuperAdmin ? db.auditLogs.slice(0, 6) : []
     });
   },
 
   getPassStatistics(payload = {}) {
-    requireRole('admin');
-    const courses = db.courses
+    const session = requireRole('admin');
+    const courses = filterCoursesForAdminScope(session, db.courses)
       .filter((course) => !payload.courseId || course.id === payload.courseId)
       .filter((course) => !payload.grade || course.grade === payload.grade)
       .filter((course) => !payload.subject || course.subject === payload.subject)
@@ -1308,8 +1400,8 @@ const mockApi = {
   },
 
   getFocusStudents(payload = {}) {
-    requireRole('admin');
-    const courses = db.courses
+    const session = requireRole('admin');
+    const courses = filterCoursesForAdminScope(session, db.courses)
       .filter((course) => !payload.courseId || course.id === payload.courseId)
       .filter((course) => !payload.grade || course.grade === payload.grade)
       .filter((course) => !payload.subject || course.subject === payload.subject)
@@ -1325,7 +1417,9 @@ const mockApi = {
     const student = findStudent(payload.studentId);
     if (!student) throw makeError('NOT_FOUND', '学生不存在。');
     const courseId = payload.courseId || '';
-    if (courseId && !findCourse(courseId)) throw makeError('NOT_FOUND', '课程不存在。');
+    const course = courseId ? findCourse(courseId) : null;
+    if (courseId && !course) throw makeError('NOT_FOUND', '课程不存在。');
+    if (course && !canAdminAccessScope(session, course.grade || '', course.subject || '')) throw makeError('NO_PERMISSION', '当前管理员不能编辑该课程的重点关注备注。');
     const note = String(payload.note || '').trim();
     const status = ['open', 'following', 'resolved'].includes(payload.status) ? payload.status : 'open';
     const store = ensureCollection('studentAttentionNotes');
@@ -1350,9 +1444,52 @@ const mockApi = {
     return delay(record);
   },
 
+  getAdminGrants() {
+    const session = requireRole('admin');
+    if (!session.isSuperAdmin) throw makeError('NO_PERMISSION', '只有超级管理员可以查看管理员授权。');
+    return delay(ensureCollection('adminGrants').map((grant) => {
+      const role = findUserRole(grant.roleId) || {};
+      const user = ensureCollection('users').find((item) => item.id === role.userId) || {};
+      return {
+        ...grant,
+        phone: role.phone || user.phone || '',
+        displayName: user.displayName || role.nickname || '',
+        role: role.role || 'admin'
+      };
+    }));
+  },
+
+  saveAdminGrant(payload = {}) {
+    const session = requireRole('admin');
+    if (!session.isSuperAdmin) throw makeError('NO_PERMISSION', '只有超级管理员可以修改管理员授权。');
+    const role = findUserRole(payload.roleId);
+    if (!role || role.role !== 'admin') throw makeError('VALIDATION_ERROR', '请选择有效的管理员身份。');
+    const store = ensureCollection('adminGrants');
+    let grant = store.find((item) => item.roleId === role.id);
+    if (!grant) {
+      grant = {
+        id: nextId('admin_grant', store),
+        roleId: role.id,
+        createdAt: nowLabel()
+      };
+      store.unshift(grant);
+    }
+    const fullAccess = payload.fullAccess === true;
+    Object.assign(grant, {
+      gradeScopes: Array.from(new Set((payload.gradeScopes || []).filter(Boolean))),
+      subjectScopes: Array.from(new Set((payload.subjectScopes || []).filter(Boolean))),
+      fullAccess,
+      enabled: payload.enabled !== false,
+      updatedAt: nowLabel(),
+      updatedBy: session.identityId
+    });
+    pushAudit(session.identityId, 'save_admin_grant', 'adminGrant', grant.id, `更新 ${role.phone} 的管理员授权`);
+    return delay(grant);
+  },
+
   getAdminCourseTree() {
-    requireRole('admin');
-    return delay(db.courses.map((course) => ({
+    const session = requireRole('admin');
+    return delay(filterCoursesForAdminScope(session, db.courses).map((course) => ({
       ...decorateCourse(course),
       sessions: getCourseSessions(course.id).map((session) => ({
         ...decorateSession(session),
@@ -1368,9 +1505,11 @@ const mockApi = {
   },
 
   getAdminTeacherRelations() {
-    requireRole('admin');
+    const session = requireRole('admin');
+    const scopedCourses = filterCoursesForAdminScope(session, db.courses);
     return delay(db.teachers.map((teacher) => {
-      const courses = db.courses.filter((course) => course.teacherId === teacher.id);
+      const courses = scopedCourses.filter((course) => course.teacherId === teacher.id);
+      if (!courses.length) return null;
       return {
         ...teacher,
         displayName: teacher.name,
@@ -1378,18 +1517,22 @@ const mockApi = {
         courses: courses.map((course) => ({
           id: course.id,
           name: course.name,
+          grade: course.grade || '',
+          subject: course.subject || '',
           studentCount: course.studentIds.length,
           students: getCourseStudents(course.id),
           studentsText: getCourseStudents(course.id).map((student) => student.name).join('、') || '暂无学生'
         }))
       };
-    }));
+    }).filter(Boolean));
   },
 
   getAdminStudentRelations() {
-    requireRole('admin');
+    const session = requireRole('admin');
+    const scopedCourses = filterCoursesForAdminScope(session, db.courses);
     return delay(db.students.map((student) => {
-      const courses = db.courses.filter((course) => course.studentIds.includes(student.id));
+      const courses = scopedCourses.filter((course) => course.studentIds.includes(student.id));
+      if (!courses.length) return null;
       const account = db.phoneAccounts.find((item) => item.linkedId === student.id);
       return {
         ...student,
@@ -1398,15 +1541,17 @@ const mockApi = {
         courses: courses.map((course) => ({
           id: course.id,
           name: course.name,
+          grade: course.grade || '',
+          subject: course.subject || '',
           teacherName: (findTeacher(course.teacherId) || {}).name || '',
           classroomName: (findClassroom(course.classroomId) || {}).name || '',
           feedbackCount: getFeedbacks({ studentId: student.id, courseId: course.id }).length,
           feedbacks: getFeedbacks({ studentId: student.id, courseId: course.id }).map(feedbackWithMedia)
         })),
-        feedbackCount: getFeedbacks({ studentId: student.id }).length,
-        feedbacks: getFeedbacks({ studentId: student.id }).map(feedbackWithMedia)
+        feedbackCount: getFeedbacks({ studentId: student.id }).filter((item) => courses.some((course) => course.id === item.courseId)).length,
+        feedbacks: getFeedbacks({ studentId: student.id }).filter((item) => courses.some((course) => course.id === item.courseId)).map(feedbackWithMedia)
       };
-    }));
+    }).filter(Boolean));
   },
 
   requestClassInLiveEntry(payload = {}) {
@@ -1422,20 +1567,16 @@ const mockApi = {
   listIdentities() {
     const session = getSession();
     if (!session) return delay([]);
-    return delay([{
-      id: session.identityId,
-      role: session.role,
-      roleName: session.role === 'teacher' ? '教师端' : session.role === 'admin' ? '管理端' : '学生/家长端',
-      displayName: session.displayName,
-      phone: session.phone,
-      active: true
-    }]);
+    return delay(getUserRolesByPhone(session.phone).map((role) => ({
+      ...describeRole(role),
+      roleName: role.role === 'teacher' ? '教师端' : role.role === 'admin' ? '管理端' : role.role === 'researcher' ? '教研端' : '学生/家长端',
+      phone: role.phone,
+      active: role.id === session.identityId
+    })));
   },
 
   switchIdentity(identityId) {
-    const account = db.phoneAccounts.find((item) => item.id === identityId);
-    if (!account) throw makeError('NOT_FOUND', '身份不存在。');
-    return this.loginByPhone({ phone: account.phone });
+    return this.selectActiveRole({ roleId: identityId });
   },
 
   getDashboard() {
@@ -1855,20 +1996,30 @@ const mockApi = {
   },
 
   getBootstrap() {
-    requireRole('admin');
+    const session = requireRole('admin');
+    const courses = filterCoursesForAdminScope(session, db.courses);
+    const courseIds = new Set(courses.map((item) => item.id));
+    const studentIds = new Set(courses.flatMap((item) => item.studentIds || []));
+    const teacherIds = new Set(courses.map((item) => item.teacherId));
+    const classIds = new Set(courses.map((item) => item.classId));
+    const classroomIds = new Set(courses.map((item) => item.classroomId));
+    const courseSessions = db.courseSessions.filter((item) => courseIds.has(item.courseId));
+    const sessionIds = new Set(courseSessions.map((item) => item.id));
+    const lessonFeedbacks = db.lessonFeedbacks.filter((item) => courseIds.has(item.courseId));
+    const mediaIds = new Set(lessonFeedbacks.flatMap((item) => ([]).concat(item.imageFileIds || [], item.videoFileIds || [], item.voiceFileIds || [], item.attachFileIds || [])));
     return delay({
-      phoneAccounts: db.phoneAccounts,
-      students: db.students,
-      teachers: db.teachers,
-      admins: db.admins,
-      classes: db.classes,
-      classrooms: db.classrooms,
-      courses: db.courses,
-      courseSessions: db.courseSessions,
-      assignments: db.assignments,
-      lessonFeedbacks: db.lessonFeedbacks,
-      mediaFiles: db.mediaFiles,
-      liveRooms: db.liveRooms,
+      phoneAccounts: db.phoneAccounts.filter((item) => studentIds.has(item.linkedId) || teacherIds.has(item.linkedId) || item.id === session.identityId),
+      students: db.students.filter((item) => studentIds.has(item.id)),
+      teachers: db.teachers.filter((item) => teacherIds.has(item.id)),
+      admins: session.isSuperAdmin ? db.admins : db.admins.filter((item) => item.id === session.adminId),
+      classes: db.classes.filter((item) => classIds.has(item.id)),
+      classrooms: db.classrooms.filter((item) => classroomIds.has(item.id)),
+      courses,
+      courseSessions,
+      assignments: db.assignments.filter((item) => courseIds.has(item.courseId) && sessionIds.has(item.courseSessionId)),
+      lessonFeedbacks,
+      mediaFiles: db.mediaFiles.filter((item) => mediaIds.has(item.id)),
+      liveRooms: [],
       demoPhones: config.demoPhones
     });
   },

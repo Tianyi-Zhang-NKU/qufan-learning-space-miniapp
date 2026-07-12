@@ -415,6 +415,10 @@ async function run() {
   assert(typeof Api.getPassStatistics === 'function', 'pass statistics API missing');
   assert(typeof Api.getFocusStudents === 'function', 'focus students API missing');
   assert(typeof Api.saveStudentAttentionNote === 'function', 'student attention note API missing');
+  assert(typeof Api.getAvailableRoles === 'function', 'available roles API missing');
+  assert(typeof Api.selectActiveRole === 'function', 'active role selection API missing');
+  assert(typeof Api.getAdminGrants === 'function', 'admin grants API missing');
+  assert(typeof Api.saveAdminGrant === 'function', 'admin grant save API missing');
   assert(typeof Api.createLessonQuestions === 'function', 'lesson question upload API missing');
   assert(typeof Api.markStudentWrongQuestions === 'function', 'wrong-question selection API missing');
   assert(typeof Api.deleteLessonQuestion === 'function', 'lesson question deletion API missing');
@@ -690,6 +694,34 @@ async function run() {
   assert(savedAttentionNote.note === '连续未通关，需联系任课老师跟进。' && savedAttentionNote.status === 'following', 'admin should save a focus-student note');
   const focusStudentsWithNote = await Api.getFocusStudents({ courseId: 'course_bio_001' });
   assert(focusStudentsWithNote.needsAttention.find((item) => item.studentId === 'stu_003').note === '连续未通关，需联系任课老师跟进。', 'focus-student note should persist in the focus list');
+  const availableTeacherRoles = await Api.getAvailableRoles({ phone: '13800000002' });
+  assert(availableTeacherRoles.roles.some((item) => item.role === 'teacher') && availableTeacherRoles.roles.some((item) => item.role === 'admin'), 'one phone should expose teacher and administrator roles');
+  await Api.loginByPhone({ phone: '13800000002' });
+  const scopedAdminSession = await Api.selectActiveRole({ roleId: 'role_admin_scoped_math_001' });
+  assert(scopedAdminSession.role === 'admin' && scopedAdminSession.isScopedAdmin, 'role selection should activate scoped administrator access');
+  const scopedStatistics = await Api.getPassStatistics({});
+  assert(scopedStatistics.courses.length > 0 && scopedStatistics.courses.every((item) => item.grade === '初二' && item.subject === '数学'), 'scoped admin statistics should exclude unauthorized grade and subject data');
+  const scopedOverview = await Api.getAdminOverview();
+  assert(scopedOverview.relationOverview.length > 0 && scopedOverview.relationOverview.every((item) => item.grade === '初二' && item.subject === '数学'), 'scoped admin overview should exclude unauthorized grade and subject data');
+  const scopedCourseTree = await Api.getAdminCourseTree();
+  assert(scopedCourseTree.length > 0 && scopedCourseTree.every((item) => item.grade === '初二' && item.subject === '数学'), 'scoped admin course tree should exclude unauthorized grade and subject data');
+  const scopedTeacherRelations = await Api.getAdminTeacherRelations();
+  assert(scopedTeacherRelations.length === 1 && scopedTeacherRelations[0].id === 'teacher_003', 'scoped admin teacher relations should only expose teachers in scope');
+  const scopedStudentRelations = await Api.getAdminStudentRelations();
+  assert(scopedStudentRelations.length > 0 && scopedStudentRelations.every((item) => item.courses.every((course) => course.grade === '初二' && course.subject === '数学')), 'scoped admin student relations should only expose in-scope course data');
+  const scopedBootstrap = await Api.getBootstrap();
+  assert(scopedBootstrap.courses.length > 0 && scopedBootstrap.courses.every((item) => item.grade === '初二' && item.subject === '数学'), 'scoped admin bootstrap should exclude unauthorized course data');
+  const fullAdminSession = await Api.loginByPhone({ phone: '13800000003' });
+  Api.setSession(fullAdminSession);
+  const adminGrants = await Api.getAdminGrants();
+  assert(adminGrants.some((item) => item.roleId === 'role_admin_scoped_math_001'), 'super admin should view scoped administrator grants');
+  const updatedGrant = await Api.saveAdminGrant({
+    roleId: 'role_admin_scoped_math_001',
+    gradeScopes: ['初二'],
+    subjectScopes: ['数学'],
+    enabled: true
+  });
+  assert(updatedGrant.gradeScopes[0] === '初二' && updatedGrant.subjectScopes[0] === '数学', 'super admin should save scoped administrator grants');
   const overview = await Api.getAdminOverview();
   assert(overview.metrics.find((item) => item.label === '学生数').value >= 4, 'admin should see student count');
   const courseTree = await Api.getAdminCourseTree();

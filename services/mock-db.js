@@ -202,6 +202,14 @@ const db = {
       campus: '主校区',
       roleTitle: '机构教务管理员',
       status: 'active'
+    },
+    {
+      id: 'admin_scoped_math_001',
+      name: '周明远',
+      phone: '13800000002',
+      campus: '主校区',
+      roleTitle: '初二数学负责人',
+      status: 'active'
     }
   ],
 
@@ -692,6 +700,71 @@ const db = {
     }
   ]
 };
+
+const userIdByPhone = {};
+db.users = db.phoneAccounts.reduce((users, account) => {
+  if (!userIdByPhone[account.phone]) {
+    const user = {
+      id: `user_${account.phone}`,
+      phone: account.phone,
+      displayName: account.nickname,
+      avatarUrl: '',
+      status: 'active'
+    };
+    userIdByPhone[account.phone] = user.id;
+    users.push(user);
+  }
+  return users;
+}, []);
+
+const roleIdByAccountId = {
+  account_student_001: 'role_parent_001',
+  account_teacher_001: 'role_teacher_001',
+  account_admin_001: 'role_admin_001',
+  account_student_002: 'role_parent_002',
+  account_teacher_002: 'role_teacher_002',
+  account_teacher_003: 'role_teacher_003'
+};
+db.userRoles = db.phoneAccounts.map((account) => ({
+  id: roleIdByAccountId[account.id] || `role_${account.id}`,
+  userId: userIdByPhone[account.phone],
+  phone: account.phone,
+  role: account.role,
+  linkedId: account.linkedId,
+  nickname: account.nickname,
+  enabled: true
+}));
+db.userRoles.push({
+  id: 'role_admin_scoped_math_001',
+  userId: userIdByPhone['13800000002'],
+  phone: '13800000002',
+  role: 'admin',
+  linkedId: 'admin_scoped_math_001',
+  nickname: '初二数学负责人',
+  enabled: true
+});
+db.adminGrants = [
+  {
+    id: 'grant_admin_super_001',
+    roleId: 'role_admin_001',
+    gradeScopes: [],
+    subjectScopes: [],
+    fullAccess: true,
+    enabled: true,
+    createdAt: '2026-06-01 09:00',
+    updatedAt: '2026-06-01 09:00'
+  },
+  {
+    id: 'grant_admin_scoped_math_001',
+    roleId: 'role_admin_scoped_math_001',
+    gradeScopes: ['初二'],
+    subjectScopes: ['数学'],
+    fullAccess: false,
+    enabled: true,
+    createdAt: '2026-06-01 09:00',
+    updatedAt: '2026-06-01 09:00'
+  }
+];
 
 db.liveRooms.forEach((room) => {
   const session = db.courseSessions.find((item) => item.classroomId === room.classroomId);
