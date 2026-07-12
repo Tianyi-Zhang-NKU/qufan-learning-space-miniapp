@@ -324,6 +324,7 @@ async function run() {
     'lesson summary feedback card should render image, comment and voice state inline in the client-requested order'
   );
   const parentExercisesWxml = readText('pages/parent/exercises/exercises.wxml');
+  const parentExercisesWxss = readText('pages/parent/exercises/exercises.wxss');
   assert(parentExercisesWxml.includes('workbook-export-card') && readText('pages/parent/exercises/exercises.js').includes('exportStudentWrongWorkbook'), 'wrong workbook should expose printable PDF export');
   assert(parentExercisesWxml.includes('data-format="docx"') && parentExercisesWxml.includes('导出 Word'), 'wrong workbook should also expose printable Word export');
   assert(parentExercisesWxml.includes('data-scope="course"') && parentExercisesWxml.includes('data-scope="session"'), 'wrong workbook export should expose course and session scoped export actions');
@@ -334,6 +335,7 @@ async function run() {
   const workbookExportStart = parentExercisesWxml.indexOf('workbook-export-card', allRecordsStart);
   const allRecordsContentStart = parentExercisesWxml.indexOf('wx:else class="content-area"', allRecordsStart);
   assert(allRecordsStart >= 0 && workbookExportStart > allRecordsContentStart, 'wrong workbook export card should render inside the all-records content area, not in the page header');
+  assert(/\.workbook-export-card\s*\{[^}]*flex-wrap:\s*wrap/.test(parentExercisesWxss) && /\.workbook-export-copy\s*\{[^}]*width:\s*100%/.test(parentExercisesWxss), 'wrong workbook export summary should keep its full width when export actions are displayed');
 
   const loginWxss = readText('pages/login/login.wxss');
   const loginWxml = readText('pages/login/login.wxml');

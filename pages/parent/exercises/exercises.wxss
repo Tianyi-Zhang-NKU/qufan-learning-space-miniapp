@@ -799,11 +799,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 18rpx;
 }
 
 .workbook-export-copy {
-  flex: 1;
+  flex: 1 0 100%;
+  width: 100%;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -823,7 +825,8 @@
 
 .workbook-export-btn {
   margin: 0;
-  min-width: 152rpx;
+  flex: 1;
+  min-width: 0;
   height: 64rpx;
   line-height: 64rpx;
   border-radius: 8rpx;
@@ -835,8 +838,8 @@
 
 .workbook-export-actions {
   display: flex;
+  width: 100%;
   gap: 12rpx;
-  flex-shrink: 0;
 }
 
 .workbook-export-btn.secondary {
