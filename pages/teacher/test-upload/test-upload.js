@@ -60,7 +60,6 @@ Page({
           activeSessionId,
           currentSession
         });
-        this.loadAssignments(assignments);
         this.loadQuestions();
       })
       .catch((error) => Notice.alert(error.message || '课程数据加载失败'));
@@ -71,12 +70,12 @@ Page({
     const sessionId = event.currentTarget.dataset.sessionId;
     const currentSession = this.data.sessions.find((s) => s.id === sessionId);
     this.setData({ activeSessionId: sessionId, currentSession });
-    this.loadAssignments(this.data.assignments);
     this.loadQuestions();
   },
 
   /** 加载已上传的 assignment 文件 */
-  loadAssignments(allAssignments) {
+  loadAssignments(allAssignments, questions) {
+    const questionSlots = questions || this.data.questionSlots || [];
     const assignments = (allAssignments || []).filter(
       (a) => a.type === this.data.type && a.courseSessionId === this.data.activeSessionId
     );
@@ -88,7 +87,8 @@ Page({
         ext: a.file.ext || '',
         sizeText: this.formatSize(a.file.size || 0),
         uploadedAt: a.file.uploadedAt || '',
-        fileId: a.fileId
+        fileId: a.fileId,
+        questionId: (questionSlots.find((question) => question.fileId === a.fileId) || {}).id || ''
       }));
     this.setData({ uploadedFiles: files });
   },
@@ -97,7 +97,9 @@ Page({
     if (!this.data.activeSessionId || !Api.getTeacherLessonDetail) return;
     Api.getTeacherLessonDetail(this.data.activeSessionId)
       .then((detail) => {
-        this.setData({ questionSlots: detail.questions || [] });
+        const questionSlots = detail.questions || [];
+        this.setData({ questionSlots });
+        this.loadAssignments(this.data.assignments, questionSlots);
       })
       .catch(() => this.setData({ questionSlots: [] }));
   },
@@ -128,15 +130,14 @@ Page({
     const fileName = file.name || '未命名文件';
     this.setData({ uploading: true, uploadingFileName: fileName });
 
-    Api.publishAssignment({
-      courseId: this.data.courseId,
-      courseSessionId: this.data.activeSessionId,
-      type: this.data.type,
-      title: `${this.data.typeLabel} - ${fileName}`,
-      fileName: fileName,
-      size: file.size || 0
-    })
-      .then(() => Api.uploadFeedbackFile({ fileName, tempPath: file.path || file.tempFilePath || '', size: file.size || 0 }))
+    Api.uploadFeedbackFile({ fileName, tempPath: file.path || file.tempFilePath || '', size: file.size || 0 })
+      .then((uploadedFile) => Api.publishAssignment({
+        courseId: this.data.courseId,
+        courseSessionId: this.data.activeSessionId,
+        type: this.data.type,
+        title: `${this.data.typeLabel} - ${fileName}`,
+        fileId: uploadedFile.id
+      }).then(() => uploadedFile))
       .then((uploadedFile) => Api.createLessonQuestions({
         courseId: this.data.courseId,
         courseSessionId: this.data.activeSessionId,
@@ -159,17 +160,28 @@ Page({
 
   /** 删除已上传文件 */
   removeFile(event) {
-    const fileId = event.currentTarget.dataset.id;
+    const questionId = event.currentTarget.dataset.questionId;
+    if (!questionId) {
+      Notice.alert('该资料没有关联题目，暂不能删除。');
+      return;
+    }
     wx.showModal({
       title: '确认删除',
-      content: '确定要删除该文件吗？删除后不可恢复。',
+      content: '删除后会同步移除题目框和相关学生错题记录，且不可恢复。',
       confirmText: '删除',
       confirmColor: '#ef4444',
       success: (res) => {
         if (!res.confirm) return;
-        const files = this.data.uploadedFiles.filter((f) => f.id !== fileId);
-        this.setData({ uploadedFiles: files });
-        Notice.toast('已删除');
+        Api.deleteLessonQuestion({
+          courseId: this.data.courseId,
+          courseSessionId: this.data.activeSessionId,
+          questionId
+        })
+          .then(() => {
+            Notice.toast('题目资料已删除');
+            this.loadCourseData();
+          })
+          .catch((error) => Notice.alert(error.message || '删除失败'));
       }
     });
   },

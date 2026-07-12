@@ -413,6 +413,7 @@ async function run() {
   assert(typeof Api.confirmStudentPass === 'function', 'pass confirmation API missing');
   assert(typeof Api.createLessonQuestions === 'function', 'lesson question upload API missing');
   assert(typeof Api.markStudentWrongQuestions === 'function', 'wrong-question selection API missing');
+  assert(typeof Api.deleteLessonQuestion === 'function', 'lesson question deletion API missing');
   assert(typeof Api.getStudentWrongWorkbook === 'function', 'student wrong workbook API missing');
   assert(typeof Api.exportStudentWrongWorkbook === 'function', 'wrong workbook export API missing');
   assert(typeof Api.getStudentHonors === 'function', 'student honors API missing');
@@ -557,6 +558,29 @@ async function run() {
 
   const lessonDetailAfterWrongSelection = await Api.getTeacherLessonDetail('lesson_bio_001_01');
   assert(lessonDetailAfterWrongSelection.wrongSelections.some((item) => item.studentId === 'stu_001' && item.questionIds.length === 2), 'teacher lesson detail should expose saved wrong-question selections');
+
+  const disposableQuestion = await Api.createLessonQuestions({
+    courseId: 'course_bio_001',
+    courseSessionId: 'lesson_bio_001_01',
+    questions: [{ title: '待删除题目', order: 3 }]
+  });
+  const disposableQuestionId = disposableQuestion.questions[0].id;
+  await Api.markStudentWrongQuestions({
+    studentId: 'stu_001',
+    courseId: 'course_bio_001',
+    courseSessionId: 'lesson_bio_001_01',
+    questionIds: lessonQuestions.questions.map((item) => item.id).concat(disposableQuestionId),
+    accuracy: 40
+  });
+  await Api.deleteLessonQuestion({
+    courseId: 'course_bio_001',
+    courseSessionId: 'lesson_bio_001_01',
+    questionId: disposableQuestionId
+  });
+  const lessonDetailAfterQuestionDeletion = await Api.getTeacherLessonDetail('lesson_bio_001_01');
+  const selectionAfterQuestionDeletion = lessonDetailAfterQuestionDeletion.wrongSelections.find((item) => item.studentId === 'stu_001');
+  assert(!lessonDetailAfterQuestionDeletion.questions.some((item) => item.id === disposableQuestionId), 'deleted lesson question should not remain in the lesson');
+  assert(selectionAfterQuestionDeletion && !selectionAfterQuestionDeletion.questionIds.includes(disposableQuestionId), 'deleted lesson question should be removed from student wrong selections');
 
   const todosBeforePass = await Api.getTeacherTodos();
   assert(todosBeforePass.pendingPassCount >= 1, 'teacher todos should include pending pass confirmations');

@@ -1421,6 +1421,39 @@ const mockApi = {
     return delay({ course: decorateCourse(course), courseSession: decorateSession(courseSession), questions: created });
   },
 
+  deleteLessonQuestion(payload = {}) {
+    const session = requireRole(['teacher', 'admin']);
+    const course = findCourse(payload.courseId);
+    const courseSession = findCourseSession(payload.courseSessionId);
+    if (!course || !courseSession || courseSession.courseId !== course.id) {
+      throw makeError('VALIDATION_ERROR', '课程或课次不存在。');
+    }
+    if (!canTeacherAccessCourse(session, course.id)) throw makeError('NO_PERMISSION', '当前账号不能删除这门课的题目。');
+
+    const questions = ensureCollection('lessonQuestions');
+    const index = questions.findIndex((item) => item.id === payload.questionId && item.courseId === course.id && item.courseSessionId === courseSession.id);
+    if (index < 0) throw makeError('NOT_FOUND', '题目不存在。');
+
+    const [deletedQuestion] = questions.splice(index, 1);
+    const fileId = deletedQuestion.fileId;
+    const selections = ensureCollection('wrongQuestionSelections');
+    for (let selectionIndex = selections.length - 1; selectionIndex >= 0; selectionIndex -= 1) {
+      const selection = selections[selectionIndex];
+      if (selection.courseId !== course.id || selection.courseSessionId !== courseSession.id) continue;
+      selection.questionIds = (selection.questionIds || []).filter((id) => id !== deletedQuestion.id);
+      selection.updatedAt = nowLabel();
+      if (!selection.questionIds.length) selections.splice(selectionIndex, 1);
+    }
+
+    if (fileId) {
+      db.assignments = db.assignments.filter((item) => !(item.courseId === course.id && item.courseSessionId === courseSession.id && item.fileId === fileId));
+      const fileStillUsed = questions.some((item) => item.fileId === fileId) || db.assignments.some((item) => item.fileId === fileId);
+      if (!fileStillUsed) db.files = db.files.filter((item) => item.id !== fileId);
+    }
+    pushAudit(session.identityId, 'delete_lesson_question', 'lessonQuestion', deletedQuestion.id, `删除 ${courseSession.displayTitle || courseSession.sessionTitle} 的题目：${deletedQuestion.title}`);
+    return delay({ deletedQuestionId: deletedQuestion.id, deletedFileId: fileId || '' });
+  },
+
   markStudentWrongQuestions(payload = {}) {
     const session = requireRole(['teacher', 'admin']);
     const course = findCourse(payload.courseId);
@@ -1578,7 +1611,9 @@ const mockApi = {
     const course = findCourse(payload.courseId || (courseSession && courseSession.courseId));
     if (!course || !courseSession) throw makeError('VALIDATION_ERROR', '课程或课次不存在。');
     if (session.role === 'teacher' && course.teacherId !== session.teacherId) throw makeError('NO_PERMISSION', '当前老师不能保存这门课程的资料。');
-    const file = payload.fileName ? {
+    const existingFile = payload.fileId ? findOptionalFile(payload.fileId) : null;
+    if (payload.fileId && !existingFile) throw makeError('VALIDATION_ERROR', '资料文件不存在。');
+    const file = existingFile || (payload.fileName ? {
       id: nextId('file_optional', db.files),
       name: payload.fileName,
       ext: getExt(payload.fileName),
@@ -1592,8 +1627,8 @@ const mockApi = {
       downloadUrl: '',
       placeholder: true,
       optional: true
-    } : null;
-    if (file) db.files.unshift(file);
+    } : null);
+    if (file && !existingFile) db.files.unshift(file);
     const assignment = {
       id: nextId('assignment_optional', db.assignments),
       courseId: course.id,
@@ -1606,7 +1641,7 @@ const mockApi = {
       fileId: file ? file.id : '',
       dueAt: payload.dueAt || ''
     };
-    if (file) file.ownerId = assignment.id;
+    if (file && !file.ownerId) file.ownerId = assignment.id;
     db.assignments.unshift(assignment);
     return delay({ assignment: assignmentWithFile(assignment), file });
   },
