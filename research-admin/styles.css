@@ -1,0 +1,83 @@
+:root {
+  color: #10224A;
+  background: #F4F6F0;
+  font-family: "Microsoft YaHei", "Noto Sans SC", sans-serif;
+}
+
+* { box-sizing: border-box; }
+body { min-width: 320px; margin: 0; }
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+.hidden { display: none !important; }
+.shell { width: min(1180px, calc(100% - 48px)); margin: 0 auto; }
+.login-view { display: grid; min-height: 100vh; grid-template-columns: 1.2fr 0.8fr; align-items: center; gap: 72px; }
+.login-brand { max-width: 560px; }
+.brand-lockup, .account-actions, .workspace-head, .section-row, .package-card-head, .package-actions { display: flex; align-items: center; }
+.brand-lockup { gap: 14px; }
+.brand-icon { width: 68px; height: 68px; padding: 16px; background: #E8EEFF; }
+.brand-icon.small { width: 46px; height: 46px; padding: 10px; }
+.eyebrow { margin: 0; color: #61708D; font-size: 13px; font-weight: 700; }
+h1, h2, h3, p { margin-top: 0; }
+h1 { margin-bottom: 6px; font-size: 30px; }
+h2 { margin-bottom: 8px; font-size: 26px; }
+h3 { margin-bottom: 6px; font-size: 18px; }
+.muted, .login-brand > p:last-child { color: #69758B; line-height: 1.6; }
+.login-form, .editor-shell { background: #FFFDF6; border: 1px solid rgba(16, 34, 74, 0.12); box-shadow: 0 18px 40px rgba(29, 42, 67, 0.1); }
+.login-form { display: grid; gap: 12px; padding: 32px; }
+label { display: grid; gap: 7px; color: #53627B; font-size: 14px; font-weight: 700; }
+input, select { width: 100%; min-height: 42px; padding: 0 12px; border: 1px solid rgba(16, 34, 74, 0.16); border-radius: 4px; color: #10224A; background: #FFFCF2; }
+input:focus, select:focus { outline: 2px solid rgba(47, 111, 174, 0.28); border-color: #2F6FAE; }
+.app-view { padding: 28px 0 64px; }
+.topbar { display: flex; align-items: center; justify-content: space-between; padding-bottom: 22px; border-bottom: 1px solid rgba(16, 34, 74, 0.12); }
+.account-actions { gap: 12px; }
+.account-name { color: #53627B; font-size: 14px; }
+.icon-button { display: inline-flex; width: 38px; height: 38px; align-items: center; justify-content: center; padding: 0; border: 1px solid rgba(16, 34, 74, 0.14); border-radius: 4px; color: #10224A; background: #FFFDF6; }
+.icon-button img { width: 20px; height: 20px; }
+.workspace-head { justify-content: space-between; gap: 24px; padding: 36px 0 22px; }
+.primary-button, .secondary-button { min-height: 42px; padding: 0 16px; border-radius: 4px; font-size: 14px; font-weight: 750; }
+.primary-button { border: 1px solid #2F6FAE; color: #FFFFFF; background: #2F6FAE; }
+.primary-button:hover { background: #235B92; }
+.secondary-button { border: 1px solid rgba(16, 34, 74, 0.17); color: #10224A; background: #FFFDF6; }
+.with-icon { display: inline-flex; align-items: center; gap: 8px; }
+.with-icon img { width: 18px; height: 18px; filter: brightness(0) invert(1); }
+.filter-bar { display: grid; grid-template-columns: repeat(3, minmax(0, 220px)); gap: 16px; padding: 18px 0 26px; }
+.package-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.package-card { display: flex; min-height: 252px; flex-direction: column; padding: 22px; border: 1px solid rgba(16, 34, 74, 0.12); border-radius: 6px; background: #FFFDF6; }
+.package-card-head { justify-content: space-between; }
+.status-pill, .version-label { padding: 5px 8px; font-size: 12px; font-weight: 750; }
+.status-pill { color: #6C5730; background: #F6E9C6; }
+.status-pill.published { color: #476E3C; background: #E4F1DA; }
+.version-label { color: #61708D; background: #EEF1F8; }
+.package-card h3 { margin: 22px 0 8px; line-height: 1.4; }
+.package-meta, .package-stats { color: #69758B; font-size: 13px; line-height: 1.5; }
+.package-stats { display: flex; gap: 12px; margin: 16px 0; }
+.package-units { display: grid; gap: 6px; min-height: 56px; color: #4D5B73; font-size: 13px; }
+.package-units span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.package-actions { gap: 10px; margin-top: auto; }
+.empty-state { display: grid; justify-items: center; padding: 90px 24px; border: 1px dashed rgba(16, 34, 74, 0.2); color: #69758B; text-align: center; }
+.empty-state img { width: 52px; height: 52px; margin-bottom: 12px; }
+.editor-dialog { width: min(800px, calc(100% - 32px)); max-height: calc(100% - 32px); padding: 0; border: 0; background: transparent; overflow-y: auto; }
+.editor-dialog::backdrop { background: rgba(16, 25, 42, 0.42); }
+.editor-shell { display: grid; gap: 24px; padding: 28px; }
+.editor-head { display: flex; align-items: flex-start; justify-content: space-between; }
+.field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.compact-grid { margin-top: 14px; }
+.unit-section, .binding-section { padding-top: 22px; border-top: 1px solid rgba(16, 34, 74, 0.1); }
+.section-row { align-items: flex-start; justify-content: space-between; gap: 18px; }
+.section-row .muted, .binding-section .muted { margin-bottom: 0; font-size: 13px; }
+.unit-list { display: grid; gap: 10px; margin-top: 16px; }
+.unit-row { display: grid; grid-template-columns: 32px minmax(0, 1fr) 120px 38px; align-items: end; gap: 10px; padding: 12px; background: #F6F3E8; }
+.unit-index { display: grid; min-height: 42px; place-items: center; color: #61708D; font-weight: 800; }
+.editor-actions { display: flex; justify-content: flex-end; gap: 12px; }
+.toast { position: fixed; right: 24px; bottom: 24px; z-index: 5; padding: 12px 16px; border-left: 4px solid #2F6FAE; color: #10224A; background: #FFFDF6; box-shadow: 0 12px 28px rgba(16, 34, 74, 0.18); }
+.toast.success { border-left-color: #5A8A4F; }
+.toast.error { border-left-color: #C75442; }
+@media (max-width: 760px) {
+  .shell { width: min(100% - 28px, 620px); }
+  .login-view { grid-template-columns: 1fr; gap: 28px; padding: 40px 0; }
+  .workspace-head, .topbar { align-items: flex-start; flex-direction: column; }
+  .package-grid { grid-template-columns: 1fr; }
+  .filter-bar, .field-grid { grid-template-columns: 1fr; }
+  .unit-row { grid-template-columns: 28px minmax(0, 1fr) 38px; }
+  .unit-row > label:not(.unit-title-field) { grid-column: 2 / 3; }
+}

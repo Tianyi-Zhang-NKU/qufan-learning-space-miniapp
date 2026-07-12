@@ -1,4 +1,6 @@
 const http = require('http');
+const fs = require('fs');
+const nodePath = require('path');
 const { URL } = require('url');
 const Api = require('../services/api');
 
@@ -12,6 +14,33 @@ function send(res, status, data) {
     'Access-Control-Allow-Methods': 'GET,POST,OPTIONS'
   });
   res.end(JSON.stringify(data));
+}
+
+function sendFile(res, filePath) {
+  const extension = nodePath.extname(filePath).toLowerCase();
+  const contentTypes = {
+    '.html': 'text/html; charset=utf-8',
+    '.js': 'application/javascript; charset=utf-8',
+    '.css': 'text/css; charset=utf-8',
+    '.svg': 'image/svg+xml'
+  };
+  try {
+    const body = fs.readFileSync(filePath);
+    res.writeHead(200, { 'Content-Type': contentTypes[extension] || 'application/octet-stream' });
+    res.end(body);
+  } catch (error) {
+    send(res, 404, { message: '资源不存在。' });
+  }
+}
+
+function serveStaticFile(res, root, requestPath, defaultFile) {
+  const relativePath = requestPath === defaultFile ? 'index.html' : requestPath.replace(new RegExp(`^${defaultFile}/?`), '') || 'index.html';
+  const target = nodePath.resolve(root, relativePath);
+  if (!target.startsWith(nodePath.resolve(root))) {
+    send(res, 403, { message: '无权访问该资源。' });
+    return;
+  }
+  sendFile(res, target);
 }
 
 function readBody(req) {
@@ -44,6 +73,16 @@ async function route(req, res) {
   const path = url.pathname;
   const body = req.method === 'POST' ? await readBody(req) : {};
 
+  if (req.method === 'GET' && (path === '/research-admin' || path.startsWith('/research-admin/'))) {
+    serveStaticFile(res, nodePath.join(__dirname, '..', 'research-admin'), path, '/research-admin');
+    return;
+  }
+
+  if (req.method === 'GET' && path.startsWith('/assets/')) {
+    serveStaticFile(res, nodePath.join(__dirname, '..', 'assets'), path, '/assets');
+    return;
+  }
+
   if (req.method === 'GET' && path === '/api/health') {
     send(res, 200, { ok: true, app: '趣帆学习空间', core: 'phone-login-lesson-feedback' });
     return;
@@ -56,6 +95,30 @@ async function route(req, res) {
 
   if (req.method === 'POST' && path === '/api/auth/logout') {
     send(res, 200, await Api.logout());
+    return;
+  }
+
+  if (req.method === 'GET' && path === '/api/research/material-packages') {
+    send(res, 200, await Api.getResearchMaterialPackages({
+      grade: url.searchParams.get('grade') || '',
+      subject: url.searchParams.get('subject') || '',
+      status: url.searchParams.get('status') || ''
+    }));
+    return;
+  }
+
+  if (req.method === 'POST' && path === '/api/research/material-packages') {
+    send(res, 200, await Api.saveMaterialPackage(body));
+    return;
+  }
+
+  if (req.method === 'POST' && path === '/api/research/material-packages/publish') {
+    send(res, 200, await Api.publishMaterialPackage(body));
+    return;
+  }
+
+  if (req.method === 'POST' && path === '/api/research/material-bindings') {
+    send(res, 200, await Api.bindMaterialPackage(body));
     return;
   }
 

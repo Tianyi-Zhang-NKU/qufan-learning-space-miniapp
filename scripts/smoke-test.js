@@ -289,6 +289,14 @@ async function run() {
   assert(readText('pages/teacher/home/home.js').includes('getTeacherTodos') && readText('pages/teacher/home/home.wxss').includes('todo-card'), 'teacher home should load and style teacher todos');
   assert(readText('pages/teacher/feedback-detail/feedback-detail.wxml').includes('pass-quick-card') && readText('pages/teacher/feedback-detail/feedback-detail.js').includes('confirmPassNow'), 'feedback detail should expose fixed pass confirmation action');
   assert(!readText('pages/teacher/feedback-detail/feedback-detail.js').includes("{ value: 'general'") && !readText('pages/teacher/feedback-detail/feedback-detail.wxml').includes('pass-toggle-area'), 'teacher feedback editor should not expose a pass-confirmation feedback type');
+  const researchAdminHtml = readText('research-admin/index.html');
+  const researchAdminJs = readText('research-admin/app.js');
+  const researchAdminCss = readText('research-admin/styles.css');
+  const serverSource = readText('server/index.js');
+  assert(researchAdminHtml.includes('教研资料库') && researchAdminHtml.includes('资料包') && researchAdminHtml.includes('题目单元'), 'research web admin should expose package and material-unit workflows');
+  assert(researchAdminJs.includes('/api/research/material-packages') && researchAdminJs.includes('publishMaterialPackage'), 'research web admin should call package list and publish APIs');
+  assert(researchAdminCss.includes('.package-grid') && researchAdminCss.includes('.editor-shell'), 'research web admin should include its dedicated responsive layout');
+  assert(serverSource.includes("/research-admin") && serverSource.includes("/api/research/material-packages"), 'local server should host the research web admin and research APIs');
   assert(readText('pages/teacher/feedback-detail/feedback-detail.wxml').includes('wrong-question-card') && readText('pages/teacher/feedback-detail/feedback-detail.js').includes('markStudentWrongQuestions'), 'feedback detail should let teachers mark student wrong questions');
   assert(readText('pages/teacher/test-upload/test-upload.wxml').includes('本课题目框') && readText('pages/teacher/test-upload/test-upload.js').includes('createLessonQuestions'), 'teacher upload page should create question slots for wrong workbook');
   const teacherFeedbackStudentsWxml = readText('pages/teacher/feedback-students/feedback-students.wxml');

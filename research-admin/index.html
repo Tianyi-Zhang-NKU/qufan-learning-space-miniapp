@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>趣帆教研资料库</title>
+  <link rel="icon" href="/assets/icons/note.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/research-admin/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section id="loginView" class="login-view">
+      <div class="login-brand">
+        <img src="/assets/icons/note.svg" alt="" class="brand-icon">
+        <p class="eyebrow">趣帆学习空间</p>
+        <h1>教研资料库</h1>
+        <p>维护可复用的课堂资料，发布后由教师直接勾选错题。</p>
+      </div>
+      <form id="loginForm" class="login-form">
+        <label for="phoneInput">管理员手机号</label>
+        <input id="phoneInput" inputmode="numeric" maxlength="11" value="13800000003" placeholder="请输入管理员手机号">
+        <button type="submit" class="primary-button">进入资料库</button>
+      </form>
+    </section>
+
+    <section id="appView" class="app-view hidden">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <img src="/assets/icons/note.svg" alt="" class="brand-icon small">
+          <div>
+            <p class="eyebrow">趣帆学习空间</p>
+            <h1>教研资料库</h1>
+          </div>
+        </div>
+        <div class="account-actions">
+          <span id="accountName" class="account-name"></span>
+          <button id="logoutButton" class="icon-button" title="退出登录" aria-label="退出登录">
+            <img src="/assets/icons/profile.svg" alt="">
+          </button>
+        </div>
+      </header>
+
+      <section class="workspace-head">
+        <div>
+          <p class="eyebrow">资料管理</p>
+          <h2>资料包</h2>
+          <p class="muted">按年级、学科维护版本，已发布版本可绑定多个平行班。</p>
+        </div>
+        <button id="newPackageButton" class="primary-button with-icon">
+          <img src="/assets/icons/note.svg" alt="">
+          新建资料包
+        </button>
+      </section>
+
+      <section class="filter-bar" aria-label="资料包筛选">
+        <label>年级<select id="gradeFilter"><option value="">全部年级</option><option>初一</option><option>初二</option><option>初三</option></select></label>
+        <label>学科<select id="subjectFilter"><option value="">全部学科</option><option>数学</option><option>英语</option><option>生物</option></select></label>
+        <label>状态<select id="statusFilter"><option value="">全部状态</option><option value="draft">草稿</option><option value="published">已发布</option></select></label>
+      </section>
+
+      <section id="packageEmpty" class="empty-state hidden">
+        <img src="/assets/icons/note.svg" alt="">
+        <h3>暂无资料包</h3>
+        <p>从一个年级和学科开始建立第一份可复用资料。</p>
+      </section>
+      <section id="packageGrid" class="package-grid" aria-live="polite"></section>
+    </section>
+  </main>
+
+  <dialog id="editorDialog" class="editor-dialog">
+    <form id="packageForm" class="editor-shell">
+      <header class="editor-head">
+        <div>
+          <p class="eyebrow">资料编辑</p>
+          <h2 id="editorTitle">新建资料包</h2>
+        </div>
+        <button type="button" id="closeEditorButton" class="icon-button" title="关闭" aria-label="关闭">×</button>
+      </header>
+
+      <div class="field-grid">
+        <label>资料包名称<input id="packageTitle" required placeholder="例如：一次函数课堂小测"></label>
+        <label>学期<input id="packageTerm" placeholder="例如：2026 秋季"></label>
+        <label>年级<select id="packageGrade" required><option value="">请选择</option><option>初一</option><option>初二</option><option>初三</option></select></label>
+        <label>学科<select id="packageSubject" required><option value="">请选择</option><option>数学</option><option>英语</option><option>生物</option></select></label>
+      </div>
+
+      <section class="unit-section">
+        <div class="section-row">
+          <div><h3>题目单元</h3><p class="muted">长阅读、综合题可作为整道题组保留完整上下文。</p></div>
+          <button type="button" id="addUnitButton" class="secondary-button">添加题目单元</button>
+        </div>
+        <div id="unitList" class="unit-list"></div>
+      </section>
+
+      <section class="binding-section">
+        <div><h3>发布绑定</h3><p class="muted">发布后可按课次绑定到多个平行班。</p></div>
+        <div class="field-grid compact-grid">
+          <label>课程 ID<input id="bindCourseId" placeholder="例如：course_math_001"></label>
+          <label>课节 ID<input id="bindSessionId" placeholder="例如：lesson_math_001_01"></label>
+        </div>
+      </section>
+
+      <footer class="editor-actions">
+        <button type="button" id="saveDraftButton" class="secondary-button">保存草稿</button>
+        <button type="submit" class="primary-button">发布资料包</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <template id="unitTemplate">
+    <article class="unit-row">
+      <span class="unit-index"></span>
+      <label class="unit-title-field">题目名称<input class="unit-title" required placeholder="例如：函数图像综合题"></label>
+      <label>类型<select class="unit-type"><option value="standalone">独立题目</option><option value="group">整道题组</option></select></label>
+      <button type="button" class="icon-button remove-unit" title="移除题目单元" aria-label="移除题目单元">×</button>
+    </article>
+  </template>
+
+  <script src="/research-admin/app.js"></script>
+</body>
+</html>
