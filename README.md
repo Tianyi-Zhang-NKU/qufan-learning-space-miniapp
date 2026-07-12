@@ -1,102 +1,69 @@
-# 趣帆学习空间微信小程序 Demo
+# 趣帆学习空间
 
-第一版核心路线已经收敛为：手机号登录 + 老师上传本讲总结 + 学生/家长查看反馈。直播入口保留，但当前只预留 ClassIn/真实服务接口，不实现伪直播。
+面向教培机构的微信小程序核心版本，覆盖学生/家长、教师和管理员三个移动端角色，并提供教研人员在电脑浏览器使用的资料包管理页。
 
-## 第一版主流程
+当前仓库以可运行的 Mock 领域模型作为本地验收基线；小程序页面通过 `services/api.js` 调用同一套服务接口，后续可切换至微信云开发。
 
-1. 用户用报班手机号登录。
-2. 小程序按手机号识别老师、学生/家长或管理员身份。
-3. 老师进入“我的课程”，选择课程、课次和学生。
-4. 老师上传本讲总结：文字、图片、语音。
-5. 学生/家长用绑定学生的手机号登录后，查看课程、课次和老师反馈。
-6. 图片可查看和下载；语音只能收听，不提供下载入口。
-7. 直播入口始终保留，当前按 ClassIn 入口结构预留真实接口字段。
+## 已实现流程
 
-## 演示手机号
+- 学生/家长：首页优先显示下一次上课，课堂小测与本讲总结分开查看，课次支持横向切换、前后按钮和分页状态；支持通关进度、荣誉、错题勾选与 PDF/Word 导出接口模型。
+- 教师：待办置顶并显示待确认数量；仅保留课堂小测、本讲总结两类反馈，通关是独立确认动作；可查看班级通关率、按课次和学生进入反馈。
+- 管理员：按年级、学科、教师查看累计通关率；自动识别需重点跟进和表现优秀的学生，并可保存备注；超级管理员可按手机号授予年级和学科范围。
+- 教研：浏览器端管理可复用资料包、题目单元、版本发布和课次绑定；一个已发布资料包可供平行班复用，修订后保留旧绑定版本。
+- 数据边界：学生、教师、课程、课次、班级与成员关系只读同步。所有本地教务写接口均返回 `READ_ONLY_ENROLLMENT`，不允许小程序插班、调班、退班或修改课程排课。
+- ClassIn：Mock 课节保存 `classInCourseId`、`classInTeacherId`、`classInSessionId` 三元映射；换物理教室不会改变课堂入口，签发入口的有效期为 10 分钟。
 
-| 角色 | 手机号 | 登录后 |
-|---|---:|---|
-| 学生/家长 | `13800000001` | 我的学习、我的课程、本讲总结 |
-| 老师 | `13800000002` | 教师首页、我的课程、上传本讲总结 |
-| 管理员 | `13800000003` | 管理首页、数据关系、手机号映射、反馈记录 |
+## 本地运行
 
-开发阶段 `services/config.js` 使用：
-
-```js
-authMode: 'mock' // mock | wechatPhone | sms | http
+```powershell
+npm run check:js
+npm run smoke
+npm run start:backend
 ```
 
-后续可接微信手机号授权或短信验证码，但真实 API 密钥、短信密钥、ClassIn secret 不能放在小程序前端。
-
-## 数据与接口
-
-核心 mock 数据在 `services/mock-db.js`：
-
-- `phoneAccounts`：手机号到老师、学生/家长、管理员档案的映射。
-- `students` / `teachers` / `courses` / `courseSessions`：课程与课次基础数据；老师按“一名老师对应一个学科”建模。
-- 教务同步：mock 层支持学生插班、调班、退班，并同步课程、班级和课次名单。
-- 通关荣誉：课程默认按 80% 通关讲次生成证书，逐讲通关记录独立展示。
-- `lessonFeedbacks`：老师上传给学生的本讲总结。
-- `mediaFiles`：图片、语音元信息，包含 `storageKey`、`retentionUntil` 和下载权限。
-- `classrooms` / `liveRooms`：15 间教室和 ClassIn 直播入口占位。
-
-核心 API 在 `services/api.js`：
-
-- 登录：`loginByPhone`、`logout`、`getCurrentSession`、`getCurrentUserProfile`
-- 老师端：`getTeacherDashboard`、`getTeacherCourses`、`getTeacherCourseDetail`、`getTeacherLessonDetail`、`getTeacherStudentsByCourse`
-- 反馈：`uploadFeedbackImage`、`uploadFeedbackVoice`、`createLessonFeedback`
-- 学生/家长端：`getStudentDashboard`、`getStudentCourses`、`getStudentCourseDetail`、`getStudentLessonFeedbacks`、`getFeedbackDetail`
-- 媒体：`getMediaPreview`、`downloadFeedbackImage`、`playFeedbackVoice`
-- 管理端：`getAdminOverview`、`getAdminCourseTree`、`getAdminTeacherRelations`、`getAdminStudentRelations`、`syncEnrollmentChange`
-- 直播：`requestClassInLiveEntry`
-
-## 页面说明
-
-- `pages/login`：手机号登录页，保留趣帆学习空间品牌。
-- `pages/teacher/home`：教师首页，展示今日课程、教师待办、课次合集和学生路径。
-- `pages/teacher/courses`：老师课程表，查看课次日历，编辑课次名称和主题。
-- `pages/teacher/test-upload`：老师预上传本课题目框，供错题本勾选使用。
-- `pages/teacher/feedback-students`：老师按课次进入学生头像网格，适配大班检索。
-- `pages/teacher/feedback-detail`：老师编辑学生反馈、勾选错题并确认通关。
-- `pages/parent/home`：学生/家长“我的学习”首页，展示课堂小测、本讲总结、通关进度和直播入口。
-- `pages/parent/courses`：当前学生课程、传统周课程表和课次反馈数量。
-- `pages/parent/quiz` / `pages/parent/summary` / `pages/parent/exercises`：分别承载课堂小测、本讲总结和错题本导出。
-- `pages/file-preview`：媒体预览。图片可查看/下载，语音只能播放。
-- `pages/live-player`：ClassIn 直播入口占位。
-- `pages/admin/home` / `pages/admin/manage`：传统课程表、课程关系、学生详情、课程反馈记录、手机号映射和直播配置占位；数据多时用下拉选择和姓名/手机号搜索缩小范围。
-
-## 真实上线前需要甲方提供
-
-- 真实手机号登录方式：微信手机号授权或短信验证码服务。
-- 学员、老师、课程、课次数据 API，以及插班、调班、退班同步事件。
-- 媒体存储方案：微信云存储、腾讯云 COS 或其他对象存储。
-- 图片下载签名接口。
-- 语音播放签名接口。
-- ClassIn 对接参数与服务端签名 URL 生成方案。
-
-## 开发与验证
-
-```bash
-node scripts/check-js.js
-node scripts/smoke-test.js
-```
-
-`check-js` 检查 JavaScript 语法；`smoke-test` 覆盖手机号登录、老师课程课次学生路径、反馈创建、图片/语音媒体权限、学生/家长查看反馈、ClassIn 占位、15 间教室/直播占位和旧品牌/旧主流程文案清理。
-
-## 教研电脑后台
-
-本地开发可启动当前 Node 服务后，在浏览器访问：
-
-```bash
-node server/index.js
-```
+启动本地服务后，教研后台地址为：
 
 `http://127.0.0.1:8787/research-admin`
 
-教研后台与小程序复用资料包、题目单元、课程绑定和权限 API。资料包发布后可以绑定多个平行班；对已发布资料的修改会新建版本，已绑定课次继续引用原版本。
+小程序项目根目录可直接用微信开发者工具导入。当前机器未安装微信开发者工具 CLI，因此真机/模拟器编译和预览码验证需在装有该工具的环境执行。
 
-生产环境推荐使用微信云开发：小程序将 `services/config.js` 的 `apiMode` 切换为 `cloud`，并部署名为 `learning-platform` 的云函数。环境 ID、密钥和真实接口地址不得写入前端或提交仓库。部署协议见：
+## 演示身份
 
-- `docs/integrations/cloudbase-function-contract.md`
-- `docs/integrations/enrollment-readonly-sync-contract.md`
-- `docs/integrations/classin-entry-contract.md`
+| 身份 | 手机号 | 说明 |
+| --- | --- | --- |
+| 学生/家长 | `13800000001` | 查看课程、课堂小测、本讲总结、错题与通关记录 |
+| 教师 | `13800000002` | 处理待办、录入两类学习反馈、确认通关；同时有一个受限管理员身份 |
+| 超级管理员 | `13800000003` | 查看全机构通关看板，按手机号分配分级管理员权限 |
+| 数学教师 | `13800000013` | 用于资料包绑定后的教师端验证 |
+
+开发期使用 `services/config.js` 中的 `apiMode: 'mock'` 与 `authMode: 'mock'`。演示手机号只用于本地验收，不得作为生产登录方案。
+
+## 代码结构
+
+| 路径 | 责任 |
+| --- | --- |
+| `pages/parent` | 学生/家长首页、课表、小测、总结和错题本 |
+| `pages/teacher` | 教师待办、课程、学生反馈和通关确认 |
+| `pages/admin` | 通关数据看板和手机号范围授权 |
+| `research-admin` | 教研电脑端资料包管理页面 |
+| `services/api.js` | 领域 API、权限校验、Mock/CloudBase 适配器 |
+| `services/mock-db.js` | 本地可验证的数据与权限样本 |
+| `docs/integrations` | CloudBase、教务同步和 ClassIn 的对接契约 |
+| `scripts/smoke-test.js` | 领域、权限、主流程和旧入口回归门禁 |
+
+## 生产接入边界
+
+生产环境推荐使用微信云开发，不需要自建应用服务器，但必须由甲方或项目方提供以下配置和测试条件：
+
+1. CloudBase 环境 ID、云函数部署权限和数据库/存储集合权限。
+2. 微信授权后的 openid 到手机号映射规则。
+3. 报名/教务系统的全量快照或增量事件接口、签名方式和测试数据。
+4. ClassIn 课程 ID、老师 ID、课节 ID、服务端签名规范与测试账号。
+5. 正式品牌 Logo、首期试点年级/学科和教研资料样例。
+6. 对象存储与真实 PDF/Word 文件生成方案。
+
+密钥、ClassIn secret、教务同步签名密钥和生产环境 ID 都不能写入小程序前端或提交到仓库。详细契约见：
+
+- [CloudBase 云函数契约](docs/integrations/cloudbase-function-contract.md)
+- [教务只读同步契约](docs/integrations/enrollment-readonly-sync-contract.md)
+- [ClassIn 课堂入口契约](docs/integrations/classin-entry-contract.md)
