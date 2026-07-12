@@ -3,7 +3,9 @@
 
   <view class="login-shell">
     <view class="login-brand">
-      <view class="login-brand-mark">帆</view>
+      <view class="login-brand-mark">
+        <image class="login-brand-icon" src="/assets/images/qufan-applet-icon.png" mode="aspectFit"></image>
+      </view>
       <text class="login-title">趣帆学习空间</text>
       <text class="login-sub">本讲总结看得见，学习进度不打扰</text>
     </view>

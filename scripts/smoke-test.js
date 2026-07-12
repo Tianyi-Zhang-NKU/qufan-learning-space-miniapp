@@ -362,7 +362,7 @@ async function run() {
   const loginWxss = readText('pages/login/login.wxss');
   const loginWxml = readText('pages/login/login.wxml');
   assert(loginWxml.includes('<z-bg mode="auth"'), 'login page should keep its own full-screen auth background');
-  assert(loginWxml.includes('login-brand-mark') && loginWxml.includes('帆') && !loginWxml.includes('LOGO') && !loginWxml.includes('QF'), 'login page should use a polished Qufan brand mark instead of a placeholder logo');
+  assert(loginWxml.includes('login-brand-mark') && loginWxml.includes('/assets/images/qufan-applet-icon.png') && !loginWxml.includes('LOGO') && !loginWxml.includes('QF'), 'login page should use the Qufan applet icon instead of a placeholder logo');
   assert(loginWxml.includes('login-card-title') && loginWxml.includes('login-helper'), 'login page should use a formal form card and weak helper copy');
   assert(!loginWxml.includes('login-signal-row') && !loginWxml.includes('演示账号'), 'login page should remove large debug/explainer blocks');
   assert(loginWxml.includes('quick-login-toggle') && loginWxml.includes('快速体验') && loginWxss.includes('quick-login-toggle'), 'login page should keep only a small low-emphasis quick-experience entry');
