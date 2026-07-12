@@ -368,6 +368,7 @@ async function run() {
   assert(config.authMode === 'mock', 'authMode should default to mock');
   assert(!Object.prototype.hasOwnProperty.call(config, oldDemoAuthKey), 'demo phone login should not use old demo auth config');
   assert(Array.isArray(db.phoneAccounts), 'phoneAccounts collection missing');
+  assert(Array.isArray(db.materialPackages) && db.materialPackages.some((item) => item.status === 'published'), 'mock data should include a published research material package');
   assert(db.phoneAccounts.some((item) => item.phone === '13800000002' && item.role === 'teacher'), 'teacher demo phone missing');
   assert(db.phoneAccounts.some((item) => item.phone === '13800000001' && item.role === 'parent'), 'student demo phone missing');
   assert(db.phoneAccounts.some((item) => item.phone === '13800000003' && item.role === 'admin'), 'admin demo phone missing');
@@ -404,6 +405,11 @@ async function run() {
   assert(typeof Api.getFocusStudents === 'function', 'focus students API missing');
   assert(typeof Api.saveStudentAttentionNote === 'function', 'student attention note API missing');
   assert(typeof Api.getAdminDashboard === 'function', 'admin dashboard API missing');
+  assert(typeof Api.getResearchMaterialPackages === 'function', 'research material package API missing');
+  assert(typeof Api.saveMaterialPackage === 'function', 'research material save API missing');
+  assert(typeof Api.publishMaterialPackage === 'function', 'research material publish API missing');
+  assert(typeof Api.bindMaterialPackage === 'function', 'course material binding API missing');
+  assert(typeof Api.getTeacherPublishedMaterial === 'function', 'teacher published material API missing');
   assert(typeof Api.getAvailableRoles === 'function', 'available roles API missing');
   assert(typeof Api.selectActiveRole === 'function', 'active role selection API missing');
   assert(typeof Api.getAdminGrants === 'function', 'admin grants API missing');
@@ -715,6 +721,44 @@ async function run() {
     enabled: true
   });
   assert(updatedGrant.gradeScopes[0] === '初二' && updatedGrant.subjectScopes[0] === '数学', 'super admin should save scoped administrator grants');
+  const materialPackageCountBeforeInvalidSave = Api.__mockDb.materialPackages.length;
+  await expectReject(Api.saveMaterialPackage({
+    title: '空资料包',
+    grade: '初二',
+    subject: '数学',
+    units: []
+  }), 'VALIDATION_ERROR');
+  assert(Api.__mockDb.materialPackages.length === materialPackageCountBeforeInvalidSave, 'invalid material package save should not leave a partial draft');
+  const materialDraft = await Api.saveMaterialPackage({
+    title: '初二数学一次函数资料',
+    grade: '初二',
+    subject: '数学',
+    term: '2026 秋季',
+    units: [
+      { title: '一次函数图像综合题', unitType: 'group', selectable: true, order: 1 },
+      { title: '函数解析式计算', unitType: 'standalone', selectable: true, order: 2 }
+    ]
+  });
+  assert(materialDraft.status === 'draft' && materialDraft.version === 1 && materialDraft.units.length === 2, 'researcher should save a versioned draft material package');
+  const publishedMaterial = await Api.publishMaterialPackage({ packageId: materialDraft.id });
+  assert(publishedMaterial.status === 'published' && publishedMaterial.version === 1, 'researcher should publish a material package version');
+  await Api.bindMaterialPackage({ courseId: 'course_math_001', courseSessionId: 'lesson_math_001_01', packageId: materialDraft.id });
+  await Api.bindMaterialPackage({ courseId: 'course_math_002', courseSessionId: 'lesson_math_002_01', packageId: materialDraft.id });
+  const revisedMaterial = await Api.saveMaterialPackage({
+    id: materialDraft.id,
+    title: '初二数学一次函数资料（修订）',
+    grade: '初二',
+    subject: '数学',
+    term: '2026 秋季',
+    units: [{ title: '一次函数图像综合题（修订）', unitType: 'group', selectable: true, order: 1 }]
+  });
+  assert(revisedMaterial.status === 'draft' && revisedMaterial.version === 2, 'editing a published package should create a new draft version');
+  await Api.publishMaterialPackage({ packageId: revisedMaterial.id });
+  const mathTeacherSession = await Api.loginByPhone({ phone: '13800000013' });
+  Api.setSession(mathTeacherSession);
+  const publishedTeacherMaterial = await Api.getTeacherPublishedMaterial({ courseSessionId: 'lesson_math_001_01' });
+  assert(publishedTeacherMaterial.package.version === 1 && publishedTeacherMaterial.units.some((item) => item.unitType === 'group' && item.selectable), 'existing course bindings should retain their published material version and whole-question groups');
+  Api.setSession(fullAdminSession);
   const overview = await Api.getAdminOverview();
   assert(overview.metrics.find((item) => item.label === '学生数').value >= 4, 'admin should see student count');
   const courseTree = await Api.getAdminCourseTree();

@@ -172,6 +172,10 @@ function findFeedback(id) {
   return db.lessonFeedbacks.find((item) => item.id === id);
 }
 
+function findMaterialPackage(id) {
+  return ensureCollection('materialPackages').find((item) => item.id === id);
+}
+
 function ensureCollection(name) {
   if (!Array.isArray(db[name])) db[name] = [];
   return db[name];
@@ -330,7 +334,8 @@ function questionWithFile(item) {
   const file = item.fileId ? findOptionalFile(item.fileId) : null;
   return {
     ...item,
-    file: decorateOptionalFile(file)
+    file: decorateOptionalFile(file),
+    fileName: file ? file.name : '未关联资料'
   };
 }
 
@@ -671,7 +676,7 @@ function getWrongSelections(filter = {}) {
 function decorateWrongSelection(item) {
   const course = findCourse(item.courseId) || {};
   const courseSession = findCourseSession(item.courseSessionId) || {};
-  const questions = getLessonQuestions({ courseId: item.courseId, courseSessionId: item.courseSessionId })
+  const questions = getLessonQuestionUnits(item.courseId, item.courseSessionId)
     .filter((question) => item.questionIds.includes(question.id));
   return {
     ...item,
@@ -754,6 +759,61 @@ function buildStudentHonors(studentId, filter = {}) {
     }
   });
   return { currentStudent: student, certificates, passHistory };
+}
+
+function getMaterialUnits(packageId) {
+  return ensureCollection('materialUnits')
+    .filter((item) => item.packageId === packageId)
+    .sort((left, right) => Number(left.order || 0) - Number(right.order || 0));
+}
+
+function decorateMaterialUnit(item) {
+  const file = item.fileId ? findOptionalFile(item.fileId) : null;
+  return {
+    ...item,
+    file: decorateOptionalFile(file),
+    fileName: file ? file.name : '未关联资料',
+    selectable: item.selectable !== false
+  };
+}
+
+function decorateMaterialPackage(item) {
+  if (!item) return null;
+  return {
+    ...item,
+    units: getMaterialUnits(item.id).map(decorateMaterialUnit),
+    publishedScopeCount: ensureCollection('materialPublishScopes').filter((scope) => scope.packageId === item.id).length
+  };
+}
+
+function findCourseMaterialBinding(courseId, courseSessionId) {
+  return ensureCollection('courseMaterialBindings').find((item) => item.courseId === courseId && item.courseSessionId === courseSessionId)
+    || ensureCollection('courseMaterialBindings').find((item) => item.courseId === courseId && !item.courseSessionId)
+    || null;
+}
+
+function getPublishedCourseMaterial(courseId, courseSessionId) {
+  const binding = findCourseMaterialBinding(courseId, courseSessionId);
+  if (!binding) return null;
+  const materialPackage = findMaterialPackage(binding.packageId);
+  if (!materialPackage || materialPackage.status !== 'published' || materialPackage.version !== binding.packageVersion) return null;
+  return {
+    binding,
+    package: decorateMaterialPackage(materialPackage),
+    units: getMaterialUnits(materialPackage.id).filter((item) => item.selectable !== false).map(decorateMaterialUnit)
+  };
+}
+
+function getLessonQuestionUnits(courseId, courseSessionId) {
+  const material = getPublishedCourseMaterial(courseId, courseSessionId);
+  const materialUnits = material ? material.units.map((item) => ({ ...item, source: 'research' })) : [];
+  const legacyQuestions = getLessonQuestions({ courseId, courseSessionId }).map((item) => ({ ...item, source: 'legacy' }));
+  return materialUnits.concat(legacyQuestions);
+}
+
+function canManageMaterial(session, grade, subject) {
+  if (session.role === 'researcher') return true;
+  return session.role === 'admin' && canAdminAccessScope(session, grade || '', subject || '');
 }
 
 function hasConfirmedPass(studentId, courseId, courseSessionId) {
@@ -1062,7 +1122,7 @@ const mockApi = {
       courseSession: decorateSession(courseSession),
       students,
       assignments: getCourseAssignments(courseSession.courseId, courseSession.id),
-      questions: getLessonQuestions({ courseId: courseSession.courseId, courseSessionId: courseSession.id }),
+      questions: getLessonQuestionUnits(courseSession.courseId, courseSession.id),
       wrongSelections: getWrongSelections({ courseId: courseSession.courseId, courseSessionId: courseSession.id }).map(decorateWrongSelection),
       lessonFeedbacks: feedbacks,
       feedbacks,
@@ -1527,6 +1587,133 @@ const mockApi = {
     return delay(grant);
   },
 
+  getResearchMaterialPackages(payload = {}) {
+    const session = requireRole(['admin', 'researcher']);
+    const packages = ensureCollection('materialPackages')
+      .filter((item) => !payload.grade || item.grade === payload.grade)
+      .filter((item) => !payload.subject || item.subject === payload.subject)
+      .filter((item) => !payload.status || item.status === payload.status)
+      .filter((item) => canManageMaterial(session, item.grade, item.subject))
+      .sort((left, right) => String(right.updatedAt || right.createdAt || '').localeCompare(String(left.updatedAt || left.createdAt || '')))
+      .map(decorateMaterialPackage);
+    return delay({ packages });
+  },
+
+  saveMaterialPackage(payload = {}) {
+    const session = requireRole(['admin', 'researcher']);
+    const title = String(payload.title || '').trim();
+    const grade = String(payload.grade || '').trim();
+    const subject = String(payload.subject || '').trim();
+    if (!title || !grade || !subject) throw makeError('VALIDATION_ERROR', '资料包名称、年级和学科不能为空。');
+    const source = payload.id ? findMaterialPackage(payload.id) : null;
+    if (payload.id && !source) throw makeError('NOT_FOUND', '待修订的资料包不存在。');
+    if (source && !canManageMaterial(session, source.grade, source.subject)) throw makeError('NO_PERMISSION', '当前身份不能维护该资料包。');
+    if (!source && !canManageMaterial(session, grade, subject)) throw makeError('NO_PERMISSION', '当前身份不能在该年级和学科创建资料包。');
+    const units = Array.isArray(payload.units) ? payload.units : [];
+    if (!units.length) throw makeError('VALIDATION_ERROR', '资料包至少需要一个题目单元。');
+    units.forEach((unit) => {
+      if (unit.fileId && !findOptionalFile(unit.fileId)) throw makeError('VALIDATION_ERROR', '题目单元关联的文件不存在。');
+    });
+    const packages = ensureCollection('materialPackages');
+    const record = {
+      id: nextId('material_package', packages),
+      familyId: source ? source.familyId || source.id : '',
+      title,
+      grade,
+      subject,
+      term: String(payload.term || '').trim(),
+      lessonTopic: String(payload.lessonTopic || '').trim(),
+      sourceFileId: payload.sourceFileId || '',
+      status: 'draft',
+      version: source ? Number(source.version || 1) + 1 : 1,
+      createdAt: nowLabel(),
+      createdBy: session.identityId,
+      updatedAt: nowLabel(),
+      updatedBy: session.identityId,
+      basedOnPackageId: source ? source.id : ''
+    };
+    if (!record.familyId) record.familyId = record.id;
+    packages.unshift(record);
+    const unitStore = ensureCollection('materialUnits');
+    units.forEach((unit, index) => {
+      unitStore.push({
+        id: nextId('material_unit', unitStore),
+        packageId: record.id,
+        title: String(unit.title || `题目 ${index + 1}`).trim(),
+        unitType: unit.unitType === 'group' ? 'group' : 'standalone',
+        selectable: unit.selectable !== false,
+        order: Number(unit.order || index + 1),
+        fileId: unit.fileId || '',
+        sourcePageStart: Number(unit.sourcePageStart || 0),
+        sourcePageEnd: Number(unit.sourcePageEnd || 0),
+        createdAt: nowLabel(),
+        updatedAt: nowLabel()
+      });
+    });
+    pushAudit(session.identityId, 'save_material_package', 'materialPackage', record.id, `创建 ${record.grade}${record.subject}资料包第 ${record.version} 版`);
+    return delay(decorateMaterialPackage(record));
+  },
+
+  publishMaterialPackage(payload = {}) {
+    const session = requireRole(['admin', 'researcher']);
+    const record = findMaterialPackage(payload.packageId || payload.id);
+    if (!record) throw makeError('NOT_FOUND', '资料包不存在。');
+    if (!canManageMaterial(session, record.grade, record.subject)) throw makeError('NO_PERMISSION', '当前身份不能发布该资料包。');
+    if (!getMaterialUnits(record.id).length) throw makeError('VALIDATION_ERROR', '资料包至少需要一个题目单元。');
+    record.status = 'published';
+    record.publishedAt = nowLabel();
+    record.publishedBy = session.identityId;
+    record.updatedAt = nowLabel();
+    record.updatedBy = session.identityId;
+    pushAudit(session.identityId, 'publish_material_package', 'materialPackage', record.id, `发布 ${record.title} 第 ${record.version} 版`);
+    return delay(decorateMaterialPackage(record));
+  },
+
+  bindMaterialPackage(payload = {}) {
+    const session = requireRole(['admin', 'researcher']);
+    const course = findCourse(payload.courseId);
+    const courseSession = findCourseSession(payload.courseSessionId);
+    const materialPackage = findMaterialPackage(payload.packageId);
+    if (!course || !courseSession || !materialPackage) throw makeError('VALIDATION_ERROR', '课程、课次或资料包不存在。');
+    if (courseSession.courseId !== course.id) throw makeError('VALIDATION_ERROR', '课次不属于当前课程。');
+    if (materialPackage.status !== 'published') throw makeError('VALIDATION_ERROR', '只能绑定已发布资料包。');
+    if (course.grade !== materialPackage.grade || course.subject !== materialPackage.subject) throw makeError('VALIDATION_ERROR', '资料包的年级和学科必须与课程一致。');
+    if (!canManageMaterial(session, course.grade, course.subject)) throw makeError('NO_PERMISSION', '当前身份不能发布到该课程。');
+    const bindings = ensureCollection('courseMaterialBindings');
+    let binding = bindings.find((item) => item.courseId === course.id && item.courseSessionId === courseSession.id);
+    if (!binding) {
+      binding = {
+        id: nextId('material_binding', bindings),
+        courseId: course.id,
+        courseSessionId: courseSession.id,
+        createdAt: nowLabel(),
+        createdBy: session.identityId
+      };
+      bindings.unshift(binding);
+    }
+    Object.assign(binding, {
+      packageId: materialPackage.id,
+      packageVersion: materialPackage.version,
+      updatedAt: nowLabel(),
+      updatedBy: session.identityId
+    });
+    pushAudit(session.identityId, 'bind_material_package', 'courseSession', courseSession.id, `绑定 ${materialPackage.title} 第 ${materialPackage.version} 版`);
+    return delay({ ...binding, package: decorateMaterialPackage(materialPackage) });
+  },
+
+  getTeacherPublishedMaterial(payload = {}) {
+    const session = requireRole(['teacher', 'admin']);
+    const courseSession = findCourseSession(payload.courseSessionId || payload.id);
+    if (!courseSession) throw makeError('NOT_FOUND', '课次不存在。');
+    if (!canAccessCourse(session, courseSession.courseId)) throw makeError('NO_PERMISSION', '当前身份不能查看该课次资料。');
+    const material = getPublishedCourseMaterial(courseSession.courseId, courseSession.id);
+    return delay(material || {
+      binding: null,
+      package: null,
+      units: []
+    });
+  },
+
   getAdminCourseTree() {
     const session = requireRole('admin');
     return delay(filterCoursesForAdminScope(session, db.courses).map((course) => ({
@@ -1843,7 +2030,7 @@ const mockApi = {
     if (!course || !courseSession || !student) throw makeError('VALIDATION_ERROR', '课程、课次或学生不存在。');
     if (courseSession.courseId !== course.id || !course.studentIds.includes(student.id)) throw makeError('VALIDATION_ERROR', '学生或课次不属于当前课程。');
     if (!canTeacherAccessCourse(session, course.id)) throw makeError('NO_PERMISSION', '当前账号不能标记这门课的错题。');
-    const validQuestionIds = getLessonQuestions({ courseId: course.id, courseSessionId: courseSession.id }).map((item) => item.id);
+    const validQuestionIds = getLessonQuestionUnits(course.id, courseSession.id).map((item) => item.id);
     const questionIds = (payload.questionIds || []).filter((id) => validQuestionIds.includes(id));
     const store = ensureCollection('wrongQuestionSelections');
     let record = store.find((item) => item.studentId === student.id && item.courseId === course.id && item.courseSessionId === courseSession.id);

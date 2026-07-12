@@ -70,6 +70,10 @@ const db = {
     excellentCompletedSessionThreshold: 3
   },
   studentAttentionNotes: [],
+  materialPackages: [],
+  materialUnits: [],
+  materialPublishScopes: [],
+  courseMaterialBindings: [],
 
   phoneAccounts: [
     {
@@ -765,6 +769,83 @@ db.adminGrants = [
     updatedAt: '2026-06-01 09:00'
   }
 ];
+db.materialPackages.push({
+  id: 'material_package_bio_cell_v1',
+  familyId: 'material_package_bio_cell_v1',
+  title: '初三生物细胞结构课堂小测',
+  grade: '初三',
+  subject: '生物',
+  term: '2026 春季',
+  lessonTopic: '细胞结构复习',
+  sourceFileId: 'file_optional_pdf_001',
+  status: 'published',
+  version: 1,
+  createdAt: '2026-06-02 19:00',
+  createdBy: 'role_admin_001',
+  updatedAt: '2026-06-02 19:00',
+  updatedBy: 'role_admin_001',
+  publishedAt: '2026-06-02 19:00',
+  publishedBy: 'role_admin_001'
+});
+db.materialUnits.push(
+  {
+    id: 'material_unit_bio_cell_001',
+    packageId: 'material_package_bio_cell_v1',
+    title: '细胞器功能辨析',
+    unitType: 'standalone',
+    selectable: true,
+    order: 1,
+    fileId: 'file_optional_pdf_001',
+    sourcePageStart: 1,
+    sourcePageEnd: 1,
+    createdAt: '2026-06-02 19:00',
+    updatedAt: '2026-06-02 19:00'
+  },
+  {
+    id: 'material_unit_bio_cell_002',
+    packageId: 'material_package_bio_cell_v1',
+    title: '显微镜使用综合题',
+    unitType: 'group',
+    selectable: true,
+    order: 2,
+    fileId: 'file_optional_pdf_001',
+    sourcePageStart: 2,
+    sourcePageEnd: 3,
+    createdAt: '2026-06-02 19:00',
+    updatedAt: '2026-06-02 19:00'
+  }
+);
+db.materialPublishScopes.push({
+  id: 'material_scope_bio_cell_001',
+  packageId: 'material_package_bio_cell_v1',
+  grade: '初三',
+  subject: '生物',
+  createdAt: '2026-06-02 19:00'
+});
+db.courseMaterialBindings.push(
+  {
+    id: 'material_binding_bio_001_01',
+    courseId: 'course_bio_001',
+    courseSessionId: 'lesson_bio_001_01',
+    packageId: 'material_package_bio_cell_v1',
+    packageVersion: 1,
+    createdAt: '2026-06-02 19:00',
+    createdBy: 'role_admin_001',
+    updatedAt: '2026-06-02 19:00',
+    updatedBy: 'role_admin_001'
+  },
+  {
+    id: 'material_binding_bio_002_01',
+    courseId: 'course_bio_002',
+    courseSessionId: 'lesson_bio_002_01',
+    packageId: 'material_package_bio_cell_v1',
+    packageVersion: 1,
+    createdAt: '2026-06-02 19:00',
+    createdBy: 'role_admin_001',
+    updatedAt: '2026-06-02 19:00',
+    updatedBy: 'role_admin_001'
+  }
+);
 
 db.liveRooms.forEach((room) => {
   const session = db.courseSessions.find((item) => item.classroomId === room.classroomId);

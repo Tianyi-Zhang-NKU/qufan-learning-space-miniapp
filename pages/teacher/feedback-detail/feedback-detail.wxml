@@ -153,11 +153,11 @@
           <view class="wrong-check">{{item.checked ? '✓' : ''}}</view>
           <view class="wrong-question-main">
             <text class="wrong-question-title">{{item.order}}. {{item.title}}</text>
-            <text class="wrong-question-file">{{item.file.name || '未上传资料'}}</text>
+            <text class="wrong-question-file">{{item.fileName || '未关联资料'}}</text>
           </view>
         </view>
       </view>
-      <view wx:else class="empty-inline">本课次还没有题目框，请先到题目资料页上传。</view>
+      <view wx:else class="empty-inline">本课次暂未发布教研资料。</view>
       <view class="wrong-metrics-row">
         <input class="wrong-metric-input" type="number" value="{{accuracyInput}}" placeholder="正确率%" bindinput="onAccuracyInput" />
         <input class="wrong-metric-input wide" value="{{rankTextInput}}" placeholder="班级位置，例如 超过班级40%同学" bindinput="onRankTextInput" />
