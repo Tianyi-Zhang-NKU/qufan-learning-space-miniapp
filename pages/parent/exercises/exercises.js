@@ -2,6 +2,7 @@ const Api = require('../../../services/api');
 const Guard = require('../../../utils/page-guard');
 const Notice = require('../../../utils/notice');
 const FeedbackTypes = require('../../../utils/feedback-types');
+const SessionNavigation = require('../../../utils/session-navigation');
 
 function buildFeedbackRecord(feedback) {
   return {
@@ -56,6 +57,7 @@ Page({
     sessionTests: [],
     testCurrentIndex: 0,
     testCurrentSession: null,
+    testSessionNav: SessionNavigation.build(0, 0),
 
     // ---- All-records mode ----
     allRecordsGroups: [],
@@ -365,6 +367,7 @@ Page({
           sessionTests,
           testCurrentIndex: defaultIndex,
           testCurrentSession: sessionTests[defaultIndex] || null,
+          testSessionNav: SessionNavigation.build(sessionTests.length, defaultIndex),
           loading: false
         });
       })
@@ -386,10 +389,25 @@ Page({
   },
 
   switchTestTab(event) {
-    const index = event.currentTarget.dataset.index;
+    this.selectTestSession(event.currentTarget.dataset.index);
+  },
+
+  previousSession() {
+    if (!this.data.testSessionNav.hasPrevious) return;
+    this.selectTestSession(this.data.testCurrentIndex - 1);
+  },
+
+  nextSession() {
+    if (!this.data.testSessionNav.hasNext) return;
+    this.selectTestSession(this.data.testCurrentIndex + 1);
+  },
+
+  selectTestSession(index) {
+    const testSessionNav = SessionNavigation.build(this.data.sessionTests.length, index);
     this.setData({
-      testCurrentIndex: index,
-      testCurrentSession: this.data.sessionTests[index]
+      testCurrentIndex: testSessionNav.activeIndex,
+      testCurrentSession: this.data.sessionTests[testSessionNav.activeIndex] || null,
+      testSessionNav
     });
   },
 

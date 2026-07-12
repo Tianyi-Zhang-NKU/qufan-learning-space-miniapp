@@ -1,6 +1,7 @@
 const Api = require('../../../services/api');
 const Guard = require('../../../utils/page-guard');
 const Notice = require('../../../utils/notice');
+const SessionNavigation = require('../../../utils/session-navigation');
 
 Page({
   data: {
@@ -9,6 +10,7 @@ Page({
     summaries: [],
     currentIndex: 0,
     currentSummary: null,
+    sessionNav: SessionNavigation.build(0, 0),
     honors: [],
     passHistory: [],
     loading: true
@@ -80,6 +82,7 @@ Page({
           summaries,
           currentIndex: defaultIndex,
           currentSummary: summaries[defaultIndex] || null,
+          sessionNav: SessionNavigation.build(summaries.length, defaultIndex),
           honors: honors.certificates || [],
           passHistory: honors.passHistory || [],
           loading: false
@@ -92,10 +95,25 @@ Page({
   },
 
   switchTab(event) {
-    const index = event.currentTarget.dataset.index;
+    this.selectSession(event.currentTarget.dataset.index);
+  },
+
+  previousSession() {
+    if (!this.data.sessionNav.hasPrevious) return;
+    this.selectSession(this.data.currentIndex - 1);
+  },
+
+  nextSession() {
+    if (!this.data.sessionNav.hasNext) return;
+    this.selectSession(this.data.currentIndex + 1);
+  },
+
+  selectSession(index) {
+    const sessionNav = SessionNavigation.build(this.data.summaries.length, index);
     this.setData({
-      currentIndex: index,
-      currentSummary: this.data.summaries[index]
+      currentIndex: sessionNav.activeIndex,
+      currentSummary: this.data.summaries[sessionNav.activeIndex] || null,
+      sessionNav
     });
   },
 

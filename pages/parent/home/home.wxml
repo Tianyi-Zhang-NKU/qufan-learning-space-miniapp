@@ -60,40 +60,27 @@
           </view>
         </view>
 
-        <!-- Course info: teacher, time, location -->
-        <view class="course-info">
-          <view class="course-info-row">
-            <image class="course-info-icon" src="/assets/icons/teacher.svg" mode="aspectFit"></image>
-            <text class="course-info-label">任课教师</text>
-            <text class="course-info-value">{{item.teacherName || '待分配'}}</text>
+        <view class="next-session-panel">
+          <view class="next-session-heading">
+            <view class="next-session-label">
+              <image class="next-session-icon" src="/assets/icons/clock.svg" mode="aspectFit"></image>
+              <text>下一次上课</text>
+            </view>
+            <text class="next-session-index">{{item.nextSessionTitle}}</text>
           </view>
-          <view class="course-info-row">
-            <image class="course-info-icon" src="/assets/icons/location.svg" mode="aspectFit"></image>
-            <text class="course-info-label">上课地点</text>
-            <text class="course-info-value">{{item.classroomName}}</text>
-          </view>
-          <view class="course-info-row" wx:if="{{item.nextSessionTime}}">
-            <image class="course-info-icon" src="/assets/icons/clock.svg" mode="aspectFit"></image>
-            <text class="course-info-label">最近上课</text>
-            <text class="course-info-value">{{item.nextSessionTime}}</text>
-          </view>
-        </view>
-
-        <!-- Session schedule lines -->
-        <scroll-view
-          wx:if="{{item.scheduleLines.length}}"
-          scroll-y
-          enhanced
-          show-scrollbar="{{false}}"
-          class="course-schedule-scroll"
-        >
-          <view class="course-schedule">
-            <view wx:for="{{item.scheduleLines}}" wx:key="*this" class="schedule-line">
-              <text class="schedule-dot"></text>
-              <text class="schedule-text">{{item}}</text>
+          <text wx:if="{{item.nextSessionTime}}" class="next-session-time">{{item.nextSessionTime}}</text>
+          <text wx:else class="next-session-empty">暂未排课</text>
+          <view class="next-session-meta">
+            <view class="next-session-meta-item">
+              <image class="next-session-meta-icon" src="/assets/icons/teacher.svg" mode="aspectFit"></image>
+              <text>{{item.teacherName || '待分配'}}</text>
+            </view>
+            <view class="next-session-meta-item">
+              <image class="next-session-meta-icon" src="/assets/icons/location.svg" mode="aspectFit"></image>
+              <text>{{item.nextSessionClassroom}}</text>
             </view>
           </view>
-        </scroll-view>
+        </view>
 
         <!-- Action buttons: quiz / summary -->
         <view class="course-actions tests-row">

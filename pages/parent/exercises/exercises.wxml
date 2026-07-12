@@ -489,6 +489,20 @@
 
       <view wx:else class="content-area">
         <!-- Session tab bar -->
+        <view wx:if="{{testSessionNav.total > 1}}" class="session-nav-pager">
+          <button class="session-nav-arrow" bindtap="previousSession" disabled="{{!testSessionNav.hasPrevious}}">
+            <image src="/assets/icons/chevron-left.svg" mode="aspectFit"></image>
+          </button>
+          <view class="session-nav-status">
+            <text class="session-nav-count">{{testSessionNav.currentNumber}}/{{testSessionNav.total}}</text>
+            <view class="session-nav-dots">
+              <view wx:for="{{testSessionNav.indicators}}" wx:key="index" class="session-nav-dot {{item.active ? 'active' : ''}}"></view>
+            </view>
+          </view>
+          <button class="session-nav-arrow" bindtap="nextSession" disabled="{{!testSessionNav.hasNext}}">
+            <image src="/assets/icons/chevron-right.svg" mode="aspectFit"></image>
+          </button>
+        </view>
         <scroll-view
           scroll-x
           enhanced

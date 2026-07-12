@@ -246,6 +246,13 @@ async function run() {
   const sessionsForDate = scheduleCalendar.getSessionsForDate(scheduleCourses, '2026-06-06');
   assert(courseDates.has('2026-06-06'), 'shared schedule helper should collect dates from nested sessions');
   assert(sessionsForDate[0].id === 'lesson_early' && sessionsForDate[0].courseName === 'Smoke 课程', 'shared schedule helper should sort and decorate sessions for a date');
+  const sessionNavigation = require('../utils/session-navigation');
+  const firstSessionNav = sessionNavigation.build(3, -1);
+  const lastSessionNav = sessionNavigation.build(3, 99);
+  const longSessionNav = sessionNavigation.build(12, 9);
+  assert(firstSessionNav.activeIndex === 0 && !firstSessionNav.hasPrevious && firstSessionNav.hasNext && firstSessionNav.indicators.length === 3, 'session navigation should expose first-session pagination state');
+  assert(lastSessionNav.activeIndex === 2 && lastSessionNav.hasPrevious && !lastSessionNav.hasNext && lastSessionNav.currentNumber === 3, 'session navigation should clamp and expose last-session pagination state');
+  assert(longSessionNav.currentNumber === 10 && longSessionNav.indicators.length === 5 && longSessionNav.indicators.some((item) => item.active), 'session navigation should keep long-course pagination within a stable mobile width');
 
   const profileWxml = readText('pages/profile/profile.wxml');
   const profileJs = readText('pages/profile/profile.js');
@@ -271,8 +278,19 @@ async function run() {
 
   assert(readText('pages/parent/home/home.wxml').includes('/pages/live-player/live-player'), 'student pages should expose course live entry');
   assert(readText('pages/parent/home/home.wxml').includes('course-actions tests-row') && readText('pages/parent/home/home.wxml').includes('course-actions live-row'), 'student home should split test buttons and live entry into separate rows');
-  assert(readText('pages/parent/home/home.wxml').includes('scroll-view') && readText('pages/parent/home/home.wxml').includes('course-schedule-scroll'), 'student home schedule lines should be scrollable');
-  assert(readText('pages/parent/home/home.wxss').includes('course-schedule-scroll') && readText('pages/parent/home/home.wxss').includes('max-height'), 'student home schedule scroll should limit visible rows');
+  assert(readText('pages/parent/home/home.wxml').includes('next-session-panel') && readText('pages/parent/home/home.wxml').includes('下一次上课'), 'student home should prioritize the next scheduled session');
+  assert(!readText('pages/parent/home/home.wxml').includes('course-schedule-scroll') && !readText('pages/parent/home/home.js').includes('scheduleLines'), 'student home should keep the complete schedule out of course cards');
+  assert(readText('pages/parent/home/home.wxss').includes('.next-session-panel') && readText('pages/parent/home/home.wxss').includes('.next-session-time'), 'student home should style the next-session hierarchy');
+  let parentHomePage;
+  const originalPage = global.Page;
+  global.Page = (definition) => { parentHomePage = definition; };
+  require('../pages/parent/home/home');
+  global.Page = originalPage;
+  const completedCourseCard = parentHomePage.buildCourseCard({
+    id: 'course_completed',
+    sessions: [{ id: 'session_completed', sessionIndex: 1, status: 'finished', classroomName: 'A 教室' }]
+  });
+  assert(!completedCourseCard.nextSessionId && completedCourseCard.nextSessionClassroom === 'A 教室' && completedCourseCard.nextSessionTitle === '暂未安排下一次课程', 'student home should safely render a completed course without a future session');
   assert(!readText('pages/parent/home/home.wxss').includes('justify-content: flex-start') && !readText('pages/parent/home/home.wxss').includes('padding-left: 34rpx'), 'student live button should keep centered text');
   assert(readText('pages/parent/courses/courses.js').includes('/pages/parent/exercises/exercises?courseId=') && !readText('pages/parent/courses/courses.js').includes('/pages/course-detail/course-detail?id=${sessionId}'), 'student schedule test buttons should navigate to the parent wrong-feedback page with course and session context');
   const parentCoursesWxml = readText('pages/parent/courses/courses.wxml');
@@ -312,6 +330,9 @@ async function run() {
   assert(readText('pages/parent/home/home.wxml').includes('我的荣誉') && readText('pages/parent/home/home.wxml').includes('home-honor-seal') && readText('pages/parent/home/home.js').includes('getStudentHonors'), 'student home should expose honor certificates with electronic seal');
   const parentSummaryWxml = readText('pages/parent/summary/summary.wxml');
   const parentSummaryJs = readText('pages/parent/summary/summary.js');
+  const parentExercisesNavWxml = readText('pages/parent/exercises/exercises.wxml');
+  assert(parentSummaryWxml.includes('session-nav-pager') && parentSummaryJs.includes('previousSession') && parentSummaryJs.includes('nextSession'), 'student lesson summary should offer visible previous/next session controls and pagination');
+  assert(parentExercisesNavWxml.includes('session-nav-pager') && parentExercisesJs.includes('previousSession') && parentExercisesJs.includes('nextSession'), 'student classroom quiz should offer visible previous/next session controls and pagination');
   assert(parentSummaryWxml.includes('honor-card') && parentSummaryWxml.includes('honor-seal') && parentSummaryWxml.includes('pass-history-panel') && parentSummaryWxml.includes('feedback-docs'), 'lesson summary should show honors, electronic seals, pass history and feedback documents inline');
   assert(parentSummaryJs.includes('lastFeedbackIndex'), 'lesson summary should open the latest session that actually has feedback');
   assert(parentSummaryJs.includes("(f.feedbackType || 'post') === 'post'"), 'lesson summary should filter post feedback instead of pass confirmations');

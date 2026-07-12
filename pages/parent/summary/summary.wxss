@@ -4,6 +4,76 @@
 }
 
 /* Session tabs scrollable bar */
+.session-nav-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20rpx;
+  margin-bottom: 12rpx;
+}
+
+.session-nav-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52rpx;
+  min-width: 52rpx;
+  height: 52rpx;
+  margin: 0;
+  padding: 0;
+  border: 1rpx solid rgba(16, 34, 74, 0.12);
+  border-radius: 8rpx;
+  background: #FFFDF6;
+}
+
+.session-nav-arrow::after {
+  border: 0;
+}
+
+.session-nav-arrow[disabled] {
+  opacity: 0.35;
+}
+
+.session-nav-arrow image {
+  width: 28rpx;
+  height: 28rpx;
+}
+
+.session-nav-status,
+.session-nav-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.session-nav-status {
+  flex-direction: column;
+  gap: 6rpx;
+  min-width: 120rpx;
+}
+
+.session-nav-count {
+  color: #617064;
+  font-size: 20rpx;
+  line-height: 1;
+}
+
+.session-nav-dots {
+  gap: 8rpx;
+}
+
+.session-nav-dot {
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 999rpx;
+  background: rgba(16, 34, 74, 0.18);
+}
+
+.session-nav-dot.active {
+  width: 28rpx;
+  background: #F59A23;
+}
+
 .session-tabs-scroll {
   width: 100%;
   margin-bottom: 32rpx;

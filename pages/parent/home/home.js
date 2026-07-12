@@ -45,16 +45,9 @@ Page({
     const sessions = (course.sessions || []).sort(
       (a, b) => a.sessionIndex - b.sessionIndex
     );
-
-    // Gather unique session time slots as a readable string
-    const scheduleLines = sessions.map((s) => {
-      const date = s.date || '';
-      const time = s.startTime && s.endTime ? `${s.startTime}-${s.endTime}` : '';
-      return date && time ? `${date} ${time}` : date || time || '';
-    }).filter(Boolean);
-
-    const nextSession = sessions.find((s) => s.status === 'scheduled') || sessions[sessions.length - 1] || {};
-    const classroomName = nextSession.classroomName || course.classroomName || '待定教室';
+    const nextSession = sessions.find((session) => session.status === 'scheduled') || null;
+    const latestSession = sessions[sessions.length - 1] || {};
+    const sessionForClassroom = nextSession || latestSession;
     const teacherName = course.teacherName || '';
 
     const sessionTests = sessions.map((s) => {
@@ -78,14 +71,15 @@ Page({
       subject: course.subject || '',
       grade: course.grade || '',
       teacherName,
-      classroomName,
-      scheduleLines,
-      nextSessionId: nextSession.id || '',
-      nextSessionTime: nextSession.startTime
+      nextSessionId: nextSession ? nextSession.id : '',
+      nextSessionTitle: nextSession
+        ? (nextSession.sessionTitle || nextSession.displayTitle || `第${nextSession.sessionIndex}次课`)
+        : '暂未安排下一次课程',
+      nextSessionTime: nextSession && nextSession.startTime
         ? `${nextSession.date || ''} ${nextSession.startTime}-${nextSession.endTime || ''}`
         : '',
+      nextSessionClassroom: sessionForClassroom.classroomName || course.classroomName || '待定教室',
       sessionCount: sessions.length,
-      sessionTests,
       totalPreCount,
       totalPostCount,
       passedCount: course.passedCount || 0
