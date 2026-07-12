@@ -412,6 +412,9 @@ async function run() {
   assert(typeof Api.requestClassInLiveEntry === 'function', 'requestClassInLiveEntry missing');
   assert(typeof Api.getTeacherTodos === 'function', 'teacher todo API missing');
   assert(typeof Api.confirmStudentPass === 'function', 'pass confirmation API missing');
+  assert(typeof Api.getPassStatistics === 'function', 'pass statistics API missing');
+  assert(typeof Api.getFocusStudents === 'function', 'focus students API missing');
+  assert(typeof Api.saveStudentAttentionNote === 'function', 'student attention note API missing');
   assert(typeof Api.createLessonQuestions === 'function', 'lesson question upload API missing');
   assert(typeof Api.markStudentWrongQuestions === 'function', 'wrong-question selection API missing');
   assert(typeof Api.deleteLessonQuestion === 'function', 'lesson question deletion API missing');
@@ -668,6 +671,25 @@ async function run() {
   const adminSession = await Api.loginByPhone({ phone: '13800000003' });
   assert(adminSession.role === 'admin', 'admin phone should login as admin');
   Api.setSession(adminSession);
+  ['lesson_bio_001_02', 'lesson_bio_001_03'].forEach((id) => {
+    const session = Api.__mockDb.courseSessions.find((item) => item.id === id);
+    session.status = 'finished';
+    session.statusText = '已结束';
+  });
+  const passStatistics = await Api.getPassStatistics({ courseId: 'course_bio_001' });
+  assert(passStatistics.course.passRate === 50, 'pass statistics should count only completed student-session confirmations');
+  assert(passStatistics.course.eligibleStudentSessions === 6 && passStatistics.course.confirmedPasses === 3, 'pass statistics should expose completed-session denominator and confirmed-pass numerator');
+  const focusStudents = await Api.getFocusStudents({ courseId: 'course_bio_001' });
+  assert(focusStudents.needsAttention.some((item) => item.studentId === 'stu_003' && item.consecutiveUnpassedCount === 3), 'focus students should identify consecutive unfinished passes');
+  assert(focusStudents.excellent.some((item) => item.studentId === 'stu_001' && item.passRate === 100), 'focus students should identify sustained high pass rate');
+  const savedAttentionNote = await Api.saveStudentAttentionNote({
+    studentId: 'stu_003',
+    note: '连续未通关，需联系任课老师跟进。',
+    status: 'following'
+  });
+  assert(savedAttentionNote.note === '连续未通关，需联系任课老师跟进。' && savedAttentionNote.status === 'following', 'admin should save a focus-student note');
+  const focusStudentsWithNote = await Api.getFocusStudents({ courseId: 'course_bio_001' });
+  assert(focusStudentsWithNote.needsAttention.find((item) => item.studentId === 'stu_003').note === '连续未通关，需联系任课老师跟进。', 'focus-student note should persist in the focus list');
   const overview = await Api.getAdminOverview();
   assert(overview.metrics.find((item) => item.label === '学生数').value >= 4, 'admin should see student count');
   const courseTree = await Api.getAdminCourseTree();

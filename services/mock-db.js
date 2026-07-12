@@ -63,6 +63,13 @@ function weeklySessions(config) {
 const db = {
   currentSessionId: '',
   sessions: {},
+  attentionRules: {
+    consecutiveUnpassedThreshold: 2,
+    lowPassRateThreshold: 60,
+    excellentPassRateThreshold: 90,
+    excellentCompletedSessionThreshold: 3
+  },
+  studentAttentionNotes: [],
 
   phoneAccounts: [
     {

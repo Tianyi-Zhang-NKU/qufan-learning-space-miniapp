@@ -689,6 +689,133 @@ function buildStudentHonors(studentId, filter = {}) {
   });
   return { currentStudent: student, certificates, passHistory };
 }
+
+function hasConfirmedPass(studentId, courseId, courseSessionId) {
+  return getFeedbacks({
+    studentId,
+    courseId,
+    courseSessionId,
+    feedbackType: 'general'
+  }).some((feedback) => feedback.passed);
+}
+
+function buildCoursePassStatistic(course) {
+  const completedSessions = getCourseSessions(course.id).filter((item) => item.status === 'finished');
+  let eligibleStudentSessions = 0;
+  let confirmedPasses = 0;
+
+  completedSessions.forEach((courseSession) => {
+    (courseSession.studentIds || []).forEach((studentId) => {
+      eligibleStudentSessions += 1;
+      if (hasConfirmedPass(studentId, course.id, courseSession.id)) confirmedPasses += 1;
+    });
+  });
+
+  return {
+    courseId: course.id,
+    courseName: course.name,
+    grade: course.grade || '',
+    subject: course.subject || '',
+    teacherId: course.teacherId || '',
+    teacherName: (findTeacher(course.teacherId) || {}).name || '',
+    completedSessions: completedSessions.length,
+    eligibleStudentSessions,
+    confirmedPasses,
+    passRate: eligibleStudentSessions ? Math.round((confirmedPasses / eligibleStudentSessions) * 100) : 0
+  };
+}
+
+function buildPassStatisticSummary(courses) {
+  const courseStatistics = courses.map(buildCoursePassStatistic);
+  const completedSessions = courseStatistics.reduce((sum, item) => sum + item.completedSessions, 0);
+  const eligibleStudentSessions = courseStatistics.reduce((sum, item) => sum + item.eligibleStudentSessions, 0);
+  const confirmedPasses = courseStatistics.reduce((sum, item) => sum + item.confirmedPasses, 0);
+  return {
+    completedSessions,
+    eligibleStudentSessions,
+    confirmedPasses,
+    passRate: eligibleStudentSessions ? Math.round((confirmedPasses / eligibleStudentSessions) * 100) : 0,
+    courseStatistics
+  };
+}
+
+function groupPassStatistics(courses, key, label) {
+  const grouped = {};
+  courses.forEach((course) => {
+    const groupKey = String(course[key] || '未分类');
+    if (!grouped[groupKey]) grouped[groupKey] = [];
+    grouped[groupKey].push(course);
+  });
+  return Object.keys(grouped).sort().map((groupKey) => {
+    const summary = buildPassStatisticSummary(grouped[groupKey]);
+    return {
+      [key]: groupKey,
+      [label]: groupKey,
+      ...summary
+    };
+  });
+}
+
+function findAttentionNote(studentId, courseId) {
+  return ensureCollection('studentAttentionNotes').find((item) => item.studentId === studentId && item.courseId === courseId)
+    || ensureCollection('studentAttentionNotes').find((item) => item.studentId === studentId && !item.courseId)
+    || null;
+}
+
+function buildFocusStudentRecords(courses) {
+  const rules = db.attentionRules || {};
+  const needsAttention = [];
+  const excellent = [];
+
+  courses.forEach((course) => {
+    const completedSessions = getCourseSessions(course.id).filter((item) => item.status === 'finished');
+    if (!completedSessions.length) return;
+    const studentIds = Array.from(new Set(completedSessions.flatMap((item) => item.studentIds || [])));
+    studentIds.forEach((studentId) => {
+      const student = findStudent(studentId);
+      if (!student) return;
+      const studentSessions = completedSessions.filter((item) => (item.studentIds || []).includes(studentId));
+      const confirmedPasses = studentSessions.filter((item) => hasConfirmedPass(studentId, course.id, item.id)).length;
+      const passRate = studentSessions.length ? Math.round((confirmedPasses / studentSessions.length) * 100) : 0;
+      let consecutiveUnpassedCount = 0;
+      for (let index = studentSessions.length - 1; index >= 0; index -= 1) {
+        if (hasConfirmedPass(studentId, course.id, studentSessions[index].id)) break;
+        consecutiveUnpassedCount += 1;
+      }
+      const note = findAttentionNote(studentId, course.id);
+      const record = {
+        id: `focus_${course.id}_${studentId}`,
+        studentId,
+        studentName: student.name,
+        grade: student.grade || course.grade || '',
+        courseId: course.id,
+        courseName: course.name,
+        subject: course.subject || '',
+        teacherId: course.teacherId || '',
+        teacherName: (findTeacher(course.teacherId) || {}).name || '',
+        completedSessions: studentSessions.length,
+        confirmedPasses,
+        passRate,
+        consecutiveUnpassedCount,
+        note: note ? note.note : '',
+        noteStatus: note ? note.status : 'open',
+        noteUpdatedAt: note ? note.updatedAt : ''
+      };
+      if (consecutiveUnpassedCount >= Number(rules.consecutiveUnpassedThreshold || 2) || passRate < Number(rules.lowPassRateThreshold || 60)) {
+        needsAttention.push(record);
+      }
+      if (studentSessions.length >= Number(rules.excellentCompletedSessionThreshold || 3) && passRate >= Number(rules.excellentPassRateThreshold || 90)) {
+        excellent.push(record);
+      }
+    });
+  });
+
+  const compareFocus = (left, right) => right.consecutiveUnpassedCount - left.consecutiveUnpassedCount || left.passRate - right.passRate || left.studentName.localeCompare(right.studentName);
+  return {
+    needsAttention: needsAttention.sort(compareFocus),
+    excellent: excellent.sort((left, right) => right.passRate - left.passRate || right.completedSessions - left.completedSessions || left.studentName.localeCompare(right.studentName))
+  };
+}
 function classInEntryForSession(courseId, courseSessionId) {
   const course = findCourse(courseId) || {};
   const courseSession = findCourseSession(courseSessionId) || {};
@@ -1148,6 +1275,79 @@ const mockApi = {
       recentFeedbacks: db.lessonFeedbacks.slice(0, 6).map(feedbackWithMedia),
       recentAuditLogs: db.auditLogs.slice(0, 6)
     });
+  },
+
+  getPassStatistics(payload = {}) {
+    requireRole('admin');
+    const courses = db.courses
+      .filter((course) => !payload.courseId || course.id === payload.courseId)
+      .filter((course) => !payload.grade || course.grade === payload.grade)
+      .filter((course) => !payload.subject || course.subject === payload.subject)
+      .filter((course) => !payload.teacherId || course.teacherId === payload.teacherId);
+    const summary = buildPassStatisticSummary(courses);
+    return delay({
+      scope: {
+        courseId: payload.courseId || '',
+        grade: payload.grade || '',
+        subject: payload.subject || '',
+        teacherId: payload.teacherId || ''
+      },
+      course: payload.courseId ? summary.courseStatistics[0] || null : null,
+      courses: summary.courseStatistics,
+      completedSessions: summary.completedSessions,
+      eligibleStudentSessions: summary.eligibleStudentSessions,
+      confirmedPasses: summary.confirmedPasses,
+      passRate: summary.passRate,
+      gradeStatistics: groupPassStatistics(courses, 'grade', 'gradeName'),
+      subjectStatistics: groupPassStatistics(courses, 'subject', 'subjectName'),
+      teacherStatistics: groupPassStatistics(courses, 'teacherId', 'teacherName').map((item) => ({
+        ...item,
+        teacherName: (findTeacher(item.teacherId) || {}).name || item.teacherId
+      }))
+    });
+  },
+
+  getFocusStudents(payload = {}) {
+    requireRole('admin');
+    const courses = db.courses
+      .filter((course) => !payload.courseId || course.id === payload.courseId)
+      .filter((course) => !payload.grade || course.grade === payload.grade)
+      .filter((course) => !payload.subject || course.subject === payload.subject)
+      .filter((course) => !payload.teacherId || course.teacherId === payload.teacherId);
+    return delay({
+      rules: clone(db.attentionRules || {}),
+      ...buildFocusStudentRecords(courses)
+    });
+  },
+
+  saveStudentAttentionNote(payload = {}) {
+    const session = requireRole('admin');
+    const student = findStudent(payload.studentId);
+    if (!student) throw makeError('NOT_FOUND', '学生不存在。');
+    const courseId = payload.courseId || '';
+    if (courseId && !findCourse(courseId)) throw makeError('NOT_FOUND', '课程不存在。');
+    const note = String(payload.note || '').trim();
+    const status = ['open', 'following', 'resolved'].includes(payload.status) ? payload.status : 'open';
+    const store = ensureCollection('studentAttentionNotes');
+    let record = store.find((item) => item.studentId === student.id && item.courseId === courseId);
+    if (!record) {
+      record = {
+        id: nextId('attention_note', store),
+        studentId: student.id,
+        courseId,
+        createdAt: nowLabel(),
+        createdBy: session.identityId
+      };
+      store.unshift(record);
+    }
+    Object.assign(record, {
+      note,
+      status,
+      updatedAt: nowLabel(),
+      updatedBy: session.identityId
+    });
+    pushAudit(session.identityId, 'save_student_attention_note', 'studentAttentionNote', record.id, `更新 ${student.name} 的重点关注备注`);
+    return delay(record);
   },
 
   getAdminCourseTree() {
