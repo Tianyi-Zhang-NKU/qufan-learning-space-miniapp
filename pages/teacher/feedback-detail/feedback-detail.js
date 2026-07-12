@@ -4,8 +4,7 @@ const Notice = require('../../../utils/notice');
 
 const FEEDBACK_TYPES = [
   { value: 'pre', label: '课堂小测错题' },
-  { value: 'post', label: '本讲总结错题' },
-  { value: 'general', label: '通关确认' }
+  { value: 'post', label: '本讲总结错题' }
 ];
 
 const EMOJI_LIST = [
@@ -46,7 +45,6 @@ Page({
     submitting: false,
     showEmojiPanel: false,
     emojiList: EMOJI_LIST,
-    passed: false,
     questionSlots: [],
     selectedWrongQuestionIds: [],
     accuracyInput: '',
@@ -61,7 +59,7 @@ Page({
       courseName: decodeURIComponent(courseName || ''),
       studentId: studentId || '',
       studentName: decodeURIComponent(studentName || ''),
-      feedbackType: ['pre', 'post', 'general'].includes(feedbackType) ? feedbackType : 'post',
+      feedbackType: ['pre', 'post'].includes(feedbackType) ? feedbackType : 'post',
       activeSessionId: courseSessionId || ''
     });
     this.initRecorder();
@@ -142,8 +140,7 @@ Page({
       docFiles: [],
       selectedWrongQuestionIds: [],
       accuracyInput: '',
-      rankTextInput: '',
-      passed: false
+      rankTextInput: ''
     });
     if (this.data.activeSessionId) this.loadSessionFeedback(this.data.activeSessionId);
   },
@@ -178,11 +175,9 @@ Page({
               ...feedback,
               imageFiles: feedback.imageFiles || [],
               videoFiles: feedback.videoFiles || [],
-              voiceFiles: feedback.voiceFiles || [],
-              passed: !!feedback.passed
+              voiceFiles: feedback.voiceFiles || []
             },
-            feedbackText: feedback.text || '',
-            passed: !!feedback.passed
+            feedbackText: feedback.text || ''
           });
         } else {
           this.setData({ existingFeedback: null, feedbackText: '' });
@@ -208,10 +203,6 @@ Page({
 
   clearFeedbackText() {
     this.setData({ feedbackText: '', showEmojiPanel: false });
-  },
-
-  togglePass() {
-    this.setData({ passed: !this.data.passed });
   },
 
   chooseImage() {
@@ -395,8 +386,7 @@ Page({
           courseId: this.data.courseId,
           courseSessionId: this.data.activeSessionId,
           feedbackType: this.data.feedbackType,
-          text: this.data.feedbackText.trim(),
-          passed: this.data.passed
+          text: this.data.feedbackText.trim()
         };
         if (imageResults.length || !this.data.existingFeedback) payload.imageFileIds = imageResults.map((file) => file.id);
         if (voiceResults.length || !this.data.existingFeedback) payload.voiceFileIds = voiceResults.map((file) => file.id);
@@ -433,7 +423,7 @@ Page({
     })
       .then(() => {
         Notice.toast('已确认通关');
-        this.setData({ submitting: false, passed: true, feedbackType: 'general' });
+        this.setData({ submitting: false });
         this.loadSessionFeedback(this.data.activeSessionId);
       })
       .catch((error) => {

@@ -437,60 +437,6 @@
   margin-bottom: 20rpx;
 }
 
-.pass-toggle-area {
-  margin-top: 28rpx;
-}
-
-.pass-toggle-card {
-  border: 2rpx solid rgba(249, 115, 22, 0.3);
-  background:
-    linear-gradient(145deg, rgba(255, 237, 213, 0.12), rgba(249, 115, 22, 0.06)),
-    rgba(18, 42, 35, 0.52);
-}
-
-.pass-toggle-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.pass-toggle-label {
-  color: #fff9ec;
-  font-size: 30rpx;
-  font-weight: 700;
-}
-
-.pass-toggle-switch {
-  position: relative;
-  width: 96rpx;
-  height: 52rpx;
-  border-radius: 999rpx;
-  background: rgba(255, 255, 255, 0.18);
-  border: 2rpx solid rgba(255, 255, 255, 0.2);
-  transition: background 0.2s, border-color 0.2s;
-}
-
-.pass-toggle-switch.on {
-  background: #22c55e;
-  border-color: #16a34a;
-}
-
-.pass-toggle-knob {
-  position: absolute;
-  top: 6rpx;
-  left: 6rpx;
-  width: 38rpx;
-  height: 38rpx;
-  border-radius: 50%;
-  background: #fff;
-  transition: left 0.2s;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
-}
-
-.pass-toggle-switch.on .pass-toggle-knob {
-  left: 50rpx;
-}
-
 .submit-btn {
   min-height: 92rpx;
   font-size: 28rpx;

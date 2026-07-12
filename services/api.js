@@ -412,6 +412,7 @@ function decorateCourse(item, options = {}) {
   const teacher = findTeacher(item.teacherId) || {};
   const classroom = findClassroom(item.classroomId) || {};
   const sessions = getCourseSessions(item.id).map((session) => decorateSession(session, options));
+  const classPassStatistic = buildCoursePassStatistic(item);
   const studentId = options.studentId || '';
   const feedbacks = getFeedbacks({ courseId: item.id, studentId, visibleToStudent: options.visibleToStudent });
   const generalFeedbacks = feedbacks.filter((f) => (f.feedbackType || 'post') === 'general');
@@ -431,6 +432,10 @@ function decorateCourse(item, options = {}) {
     passedCount: passedSessionIds.size,
     passThresholdPercent: Number(item.passThresholdPercent || 80),
     passRate: sessions.length ? Math.round((passedSessionIds.size / sessions.length) * 100) : 0,
+    classCompletedSessions: classPassStatistic.completedSessions,
+    classEligibleStudentSessions: classPassStatistic.eligibleStudentSessions,
+    classConfirmedPasses: classPassStatistic.confirmedPasses,
+    classPassRate: classPassStatistic.passRate,
     assignments: getCourseAssignments(item.id),
     wrongRecords: [],
     liveStatusText: '直播入口已准备',

@@ -47,8 +47,6 @@
     </view>
 
     <view wx:if="{{existingFeedback}}" class="qf-card existing-feedback">
-      <view class="existing-stamp passed" wx:if="{{feedbackType === 'general' && existingFeedback.passed}}">已通关</view>
-      <view class="existing-stamp not-passed" wx:elif="{{feedbackType === 'general' && !existingFeedback.passed}}">暂未通关</view>
       <view class="existing-header">
         <text class="qf-h3">已有{{existingFeedback.feedbackTypeText}}</text>
         <text class="qf-muted">{{existingFeedback.createdAt}}</text>
@@ -165,16 +163,6 @@
         <input class="wrong-metric-input wide" value="{{rankTextInput}}" placeholder="班级位置，例如 超过班级40%同学" bindinput="onRankTextInput" />
       </view>
       <button class="wrong-save-btn" bindtap="saveWrongQuestions" disabled="{{savingWrongQuestions}}">{{savingWrongQuestions ? '保存中…' : '保存错题勾选'}}</button>
-    </view>
-    <view class="pass-toggle-area" wx:if="{{feedbackType === 'general'}}">
-      <view class="qf-card tight pass-toggle-card">
-        <view class="pass-toggle-row" bindtap="togglePass">
-          <text class="pass-toggle-label">是否通关</text>
-          <view class="pass-toggle-switch {{passed ? 'on' : ''}}">
-            <view class="pass-toggle-knob"></view>
-          </view>
-        </view>
-      </view>
     </view>
 
     <view class="submit-area">

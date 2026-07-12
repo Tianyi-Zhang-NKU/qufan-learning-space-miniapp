@@ -473,6 +473,26 @@
   gap: 16rpx;
 }
 
+.todo-section-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.todo-badge {
+  min-width: 34rpx;
+  height: 34rpx;
+  padding: 0 8rpx;
+  box-sizing: border-box;
+  border-radius: 17rpx;
+  color: #FFFFFF;
+  font-size: 20rpx;
+  font-weight: 800;
+  line-height: 34rpx;
+  text-align: center;
+  background: #C75442;
+}
+
 .todo-card {
   display: flex;
   align-items: center;

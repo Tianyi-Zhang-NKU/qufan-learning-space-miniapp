@@ -260,9 +260,10 @@ async function run() {
   const teacherHomeJs = readText('pages/teacher/home/home.js');
   const teacherHomeWxml = readText('pages/teacher/home/home.wxml');
   assert(teacherHomeJs.includes('courseSearchQuery') && teacherHomeJs.includes('studentSearchQuery'), 'teacher home should support course and student search');
-  assert(teacherHomeWxml.includes('今日课程提醒'), 'teacher home should show today course reminders');
+  assert(teacherHomeWxml.indexOf('教师待办') < teacherHomeWxml.indexOf('今日课程提醒') && teacherHomeWxml.includes('todo-badge'), 'teacher home should prioritize pending todos with a stable unread badge');
   assert(teacherHomeWxml.includes('课次合集') && teacherHomeWxml.includes('学生路径'), 'teacher course collection should expose session and student feedback paths');
   assert(!teacherHomeWxml.includes('学生合集</text>'), 'teacher home overview should not keep standalone student collection');
+  assert(!teacherHomeWxml.includes('题目资料') && !teacherHomeWxml.includes('课程直播') && !teacherHomeWxml.includes('>通关</button>'), 'teacher home should hide legacy upload, live, and pass-navigation actions');
 
   const adminHomeJs = readText('pages/admin/home/home.js');
   const adminHomeWxml = readText('pages/admin/home/home.wxml');
@@ -280,15 +281,14 @@ async function run() {
   const parentExercisesJs = readText('pages/parent/exercises/exercises.js');
   assert(parentExercisesJs.includes('courseId && sessionId && type'), 'student wrong-feedback page should support session-scoped pre/post test entries');
   assert(parentExercisesJs.includes('requestedIndex') && parentExercisesJs.includes('item.sessionId === this.data.sessionId'), 'student session-scoped test entry should open the requested lesson instead of defaulting to the latest lesson');
-  assert(teacherHomeWxml.includes('/pages/live-player/live-player'), 'teacher home should expose course live entry');
-  assert(teacherHomeWxml.includes('/pages/teacher/test-upload/test-upload?courseId=') && teacherHomeWxml.includes('题目资料'), 'teacher course collection should expose lesson question upload entry');
   assert(readText('pages/live-player/live-player.js').includes('query.sessionId'), 'live player should accept teacher-home sessionId links as well as id/courseSessionId links');
   assert(readText('pages/teacher/courses/courses.wxml').includes('current="/pages/teacher/courses/courses"'), 'teacher schedule page tabbar current should point to itself');
-  assert(readText('pages/teacher/courses/courses.wxml').includes('bindtap="editSession"') && readText('pages/teacher/courses/courses.wxml').includes('session-editor'), 'teacher schedule should expose lesson rename/topic editor');
+  assert(!readText('pages/teacher/courses/courses.wxml').includes('题目资料') && !readText('pages/teacher/courses/courses.wxml').includes('课程直播') && !readText('pages/teacher/courses/courses.wxml').includes('>改名</button>'), 'teacher schedule should hide legacy upload, live, and course-rename actions');
   assert(!readText('pages/teacher/courses/courses.wxml').includes('课前错题') && !readText('pages/teacher/courses/courses.wxml').includes('课后错题'), 'teacher schedule should use classroom quiz/summary wording instead of pre/post wrong-question copy');
   assert(teacherHomeWxml.includes('教师待办') && teacherHomeWxml.includes('confirmPass') === false && teacherHomeWxml.includes('确认通关'), 'teacher home should expose pass-confirmation todo cards');
   assert(readText('pages/teacher/home/home.js').includes('getTeacherTodos') && readText('pages/teacher/home/home.wxss').includes('todo-card'), 'teacher home should load and style teacher todos');
   assert(readText('pages/teacher/feedback-detail/feedback-detail.wxml').includes('pass-quick-card') && readText('pages/teacher/feedback-detail/feedback-detail.js').includes('confirmPassNow'), 'feedback detail should expose fixed pass confirmation action');
+  assert(!readText('pages/teacher/feedback-detail/feedback-detail.js').includes("{ value: 'general'") && !readText('pages/teacher/feedback-detail/feedback-detail.wxml').includes('pass-toggle-area'), 'teacher feedback editor should not expose a pass-confirmation feedback type');
   assert(readText('pages/teacher/feedback-detail/feedback-detail.wxml').includes('wrong-question-card') && readText('pages/teacher/feedback-detail/feedback-detail.js').includes('markStudentWrongQuestions'), 'feedback detail should let teachers mark student wrong questions');
   assert(readText('pages/teacher/test-upload/test-upload.wxml').includes('本课题目框') && readText('pages/teacher/test-upload/test-upload.js').includes('createLessonQuestions'), 'teacher upload page should create question slots for wrong workbook');
   const teacherFeedbackStudentsWxml = readText('pages/teacher/feedback-students/feedback-students.wxml');
@@ -429,6 +429,7 @@ async function run() {
   const teacherCourses = await Api.getTeacherCourses();
   assert(teacherCourses.courseGroups.length >= 1, 'teacher should see own courses');
   assert(teacherCourses.courseGroups.every((item) => item.teacherId === 'teacher_001'), 'teacher courses should be scoped');
+  assert(teacherCourses.courseGroups.every((item) => typeof item.classPassRate === 'number' && typeof item.classConfirmedPasses === 'number'), 'teacher courses should expose class pass statistics from the shared domain');
   assert(teacherCourses.courseGroups.every((item) => item.subject === '生物'), 'teacher courses should stay in one subject');
   const bioCourse = teacherCourses.courseGroups.find((item) => item.id === 'course_bio_001');
   assert(bioCourse && bioCourse.sessions.length >= 2, 'teacher course should expand lessons');

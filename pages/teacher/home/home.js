@@ -43,6 +43,7 @@ function decorateCourse(course) {
     sessionTotal: sessions.length,
     nextSessionId: nextSession.id || '',
     nextSessionTime: nextSession.sessionMeta || '暂无排课',
+    classPassRateText: `${Number(course.classPassRate || 0)}%`,
     searchText: [
       course.name,
       course.subject,

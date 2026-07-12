@@ -10,24 +10,9 @@
         </view>
       </view>
 
-      <view class="qf-section">今日课程提醒</view>
-      <view wx:if="{{todayCourses.length}}" class="today-reminder-list">
-        <view wx:for="{{todayCourses}}" wx:key="id" class="qf-card today-reminder-card">
-          <view class="today-reminder-main">
-            <image class="today-reminder-icon" src="/assets/icons/calendar.svg" mode="aspectFit"></image>
-            <view class="today-reminder-copy">
-              <text class="today-reminder-title">{{item.startTime}} {{item.courseName}}</text>
-              <text class="today-reminder-meta">{{item.displayTitle || item.title}} · {{item.courseMeta}}</text>
-            </view>
-          </view>
-          <navigator class="mini-live" url="/pages/live-player/live-player?sessionId={{item.id}}">
-            <image class="qf-inline-icon" src="/assets/icons/live.svg" mode="aspectFit"></image>直播
-          </navigator>
-        </view>
+      <view class="qf-section">
+        <view class="todo-section-title">教师待办<view wx:if="{{pendingPassCount}}" class="todo-badge">{{pendingPassCount}}</view></view>
       </view>
-      <view wx:else class="qf-empty">今天暂无课程安排</view>
-
-      <view class="qf-section">教师待办</view>
       <view wx:if="{{teacherTodos.length}}" class="todo-list">
         <view wx:for="{{teacherTodos}}" wx:key="id" class="qf-card todo-card">
           <view class="todo-main">
@@ -41,12 +26,26 @@
             data-session-id="{{item.courseSessionId}}"
             data-student-id="{{item.studentId}}"
             data-student-name="{{item.studentName}}"
-            data-feedback-type="general"
+            data-feedback-type="post"
             bindtap="goFeedbackDetail"
           >确认通关</button>
         </view>
       </view>
       <view wx:else class="qf-empty compact">暂无待确认通关事项</view>
+
+      <view class="qf-section">今日课程提醒</view>
+      <view wx:if="{{todayCourses.length}}" class="today-reminder-list">
+        <view wx:for="{{todayCourses}}" wx:key="id" class="qf-card today-reminder-card">
+          <view class="today-reminder-main">
+            <image class="today-reminder-icon" src="/assets/icons/calendar.svg" mode="aspectFit"></image>
+            <view class="today-reminder-copy">
+              <text class="today-reminder-title">{{item.startTime}} {{item.courseName}}</text>
+              <text class="today-reminder-meta">{{item.displayTitle || item.title}} · {{item.courseMeta}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view wx:else class="qf-empty">今天暂无课程安排</view>
 
       <view class="qf-section">课程合集</view>
       <view class="collection-launch" bindtap="openCourseCollection">
@@ -94,6 +93,7 @@
             <view class="item-main">
               <text class="item-title">{{item.name}}</text>
               <text class="item-sub">{{item.subject}} · {{item.grade}} · {{item.classroomName}} · {{item.nextSessionTime}}</text>
+              <text class="item-sub">班级通关率 {{item.classPassRateText}}</text>
             </view>
             <view class="item-side">
               <text class="side-number">{{item.sessionTotal}}</text>
@@ -140,20 +140,6 @@
                     data-feedback-type="post"
                     bindtap="goFeedbackStudents"
                   >总结</button>
-                  <button
-                    class="mini-action"
-                    data-course-id="{{item.id}}"
-                    data-course-name="{{item.name}}"
-                    data-session-id="{{session.id}}"
-                    data-feedback-type="general"
-                    bindtap="goFeedbackStudents"
-                  >通关</button>
-                  <navigator class="mini-action" url="/pages/teacher/test-upload/test-upload?courseId={{item.id}}&courseName={{item.name}}&type=pre&courseSessionId={{session.id}}">
-                    题目资料
-                  </navigator>
-                  <navigator class="mini-live" url="/pages/live-player/live-player?sessionId={{session.id}}">
-                    <image class="qf-inline-icon" src="/assets/icons/live.svg" mode="aspectFit"></image>
-                  </navigator>
                 </view>
               </view>
             </view>
