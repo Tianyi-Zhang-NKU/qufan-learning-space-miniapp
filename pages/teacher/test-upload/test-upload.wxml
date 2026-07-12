@@ -23,7 +23,7 @@
           >
             <text class="session-tab-title">{{item.sessionTitle || item.displayTitle}}</text>
             <text class="session-tab-meta">{{item.date}} {{item.startTime}}-{{item.endTime}}</text>
-            <text class="session-tab-status {{item.status}}">{{item.statusText || '未开始'}}</text>
+            <view class="session-tab-status {{item.status}}">{{item.statusText || '未开始'}}</view>
           </view>
         </view>
       </scroll-view>

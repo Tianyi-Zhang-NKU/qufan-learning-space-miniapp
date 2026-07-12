@@ -50,9 +50,14 @@
   position: absolute;
   bottom: -4rpx;
   right: -8rpx;
-  padding: 4rpx 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34rpx;
+  padding: 0 16rpx;
   border-radius: 999rpx;
   font-size: 18rpx;
+  line-height: 1;
   font-weight: 600;
   color: #fff9ec;
   background: #22c55e;

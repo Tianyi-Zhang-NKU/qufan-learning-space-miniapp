@@ -1,1 +1,1 @@
-<text class="{{className}}" bindtap="onTap">{{text}}</text>
+<view class="{{className}}" bindtap="onTap">{{text}}</view>

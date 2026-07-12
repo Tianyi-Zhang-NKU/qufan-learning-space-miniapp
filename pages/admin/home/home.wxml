@@ -140,7 +140,7 @@
             </view>
             <view class="mini-section">学生</view>
             <view wx:if="{{item.mergedStudents.length}}" class="chip-list">
-              <text wx:for="{{item.mergedStudents}}" wx:for-item="student" wx:key="id" class="info-chip">{{student.name}} · {{student.feedbackCount || 0}}条反馈</text>
+              <view wx:for="{{item.mergedStudents}}" wx:for-item="student" wx:key="id" class="info-chip">{{student.name}} · {{student.feedbackCount || 0}}条反馈</view>
             </view>
             <view wx:else class="empty-inline">暂无学生</view>
             <view class="mini-section">课次</view>
@@ -267,7 +267,7 @@
               <text class="detail-value">{{item.courseTotal}} 门</text>
             </view>
             <view wx:if="{{item.courseNames.length}}" class="chip-list">
-              <text wx:for="{{item.courseNames}}" wx:key="*this" class="info-chip">{{item}}</text>
+              <view wx:for="{{item.courseNames}}" wx:key="*this" class="info-chip">{{item}}</view>
             </view>
             <view class="mini-section">排课</view>
             <view wx:if="{{item.sessions.length}}" class="mini-list">

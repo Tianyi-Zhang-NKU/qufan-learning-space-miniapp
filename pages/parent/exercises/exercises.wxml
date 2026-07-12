@@ -32,7 +32,7 @@
           <view class="course-entry-header">
             <view class="course-entry-title-row">
               <text class="course-entry-name">{{item.name}}</text>
-              <text class="qf-tag ok" wx:if="{{item.subject}}">{{item.subject}}</text>
+              <view class="qf-tag ok" wx:if="{{item.subject}}">{{item.subject}}</view>
             </view>
             <text class="course-entry-grade" wx:if="{{item.grade}}">{{item.grade}}</text>
           </view>
@@ -151,7 +151,7 @@
               <text class="meta-text">{{item.teacherName}}</text>
             </view>
             <view class="meta-row">
-              <text class="meta-status {{item.status === 'finished' ? 'finished' : 'pending'}}">{{item.status === 'finished' ? '已' : '待'}}</text>
+              <view class="meta-status {{item.status === 'finished' ? 'finished' : 'pending'}}">{{item.status === 'finished' ? '已' : '待'}}</view>
               <text class="meta-text">{{item.statusText || '未开始'}}</text>
             </view>
           </view>
@@ -200,7 +200,7 @@
               <text class="meta-text">{{sessionDetail.classroomName}}</text>
             </view>
             <view class="meta-row">
-              <text class="meta-status {{sessionDetail.status === 'finished' ? 'finished' : 'pending'}}">{{sessionDetail.status === 'finished' ? '已' : '待'}}</text>
+              <view class="meta-status {{sessionDetail.status === 'finished' ? 'finished' : 'pending'}}">{{sessionDetail.status === 'finished' ? '已' : '待'}}</view>
               <text class="meta-text">{{sessionDetail.statusText || '未开始'}}</text>
             </view>
           </view>

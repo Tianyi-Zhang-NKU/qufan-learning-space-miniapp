@@ -341,6 +341,23 @@ async function run() {
     assert(selector.test(parentExercisesWxss), `${className} should vertically center its label text`);
   });
   assert(!/<text[^>]*class="(?:session-preview-count|session-entry-badge|session-entry-count|all-session-count|workbook-badge)/.test(parentExercisesWxml), 'wrong workbook labels should use view elements so vertical flex alignment applies');
+  assert(!/<text[^>]*class="meta-status/.test(parentExercisesWxml), 'wrong workbook status dots should use view elements so vertical flex alignment applies');
+
+  const centeredLabelStyles = [
+    ['app.wxss', 'qf-tag'],
+    ['components/z-status/z-status.wxss', 'status'],
+    ['components/z-chip/z-chip.wxss', 'chip'],
+    ['pages/teacher/test-upload/test-upload.wxss', 'session-tab-status'],
+    ['pages/teacher/feedback-detail/feedback-detail.wxss', 'session-tab-status-dot'],
+    ['pages/teacher/feedback-detail/feedback-detail.wxss', 'media-tag'],
+    ['pages/profile/profile.wxss', 'avatar-badge'],
+    ['pages/admin/home/home.wxss', 'info-chip']
+  ];
+  centeredLabelStyles.forEach(([file, className]) => {
+    const stylesheet = readText(file);
+    const selector = new RegExp(`\\.${className.replace(/-/g, '\\-')}\\s*\\{[^}]*display:\\s*(?:inline-)?flex[^}]*align-items:\\s*center[^}]*justify-content:\\s*center[^}]*min-height:[^}]*line-height:\\s*1`, 's');
+    assert(selector.test(stylesheet), `${file} .${className} should explicitly center label text on both axes`);
+  });
 
   const loginWxss = readText('pages/login/login.wxss');
   const loginWxml = readText('pages/login/login.wxml');

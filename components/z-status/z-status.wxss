@@ -1,7 +1,10 @@
 .status {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  padding: 10rpx 16rpx;
+  min-height: 40rpx;
+  padding: 0 16rpx;
   border-radius: 999rpx;
   color: #3E8B68;
   font-size: 20rpx;

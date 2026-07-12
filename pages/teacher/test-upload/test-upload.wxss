@@ -61,11 +61,15 @@
 }
 
 .session-tab-status {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32rpx;
   margin-top: 8rpx;
-  padding: 2rpx 12rpx;
+  padding: 0 12rpx;
   border-radius: 999rpx;
   font-size: 18rpx;
+  line-height: 1;
   color: #fff9ec;
   background: rgba(255, 250, 235, 0.14);
 }

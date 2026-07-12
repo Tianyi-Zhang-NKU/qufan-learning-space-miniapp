@@ -93,7 +93,7 @@
             <view class="session-card">
               <view class="session-card-top">
                 <text class="session-course-name">{{session.courseName}}</text>
-                <text class="qf-tag {{session.statusTone}}">{{session.statusText || '未开始'}}</text>
+                <view class="qf-tag {{session.statusTone}}">{{session.statusText || '未开始'}}</view>
               </view>
               <text class="session-title">{{session.displayTitle || session.title}}</text>
               <view class="session-meta-row">

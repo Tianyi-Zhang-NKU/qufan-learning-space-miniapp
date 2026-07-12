@@ -47,7 +47,7 @@
         <view class="course-header">
           <view class="course-title-row">
             <text class="course-name">{{item.name}}</text>
-            <text class="qf-tag ok" wx:if="{{item.subject}}">{{item.subject}}</text>
+            <view class="qf-tag ok" wx:if="{{item.subject}}">{{item.subject}}</view>
           </view>
           <view class="course-header-right">
             <view class="progress-bar-wrap">

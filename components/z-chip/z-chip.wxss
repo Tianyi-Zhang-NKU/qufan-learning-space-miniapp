@@ -1,6 +1,9 @@
 .chip {
-  display: inline-block;
-  padding: 12rpx 20rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46rpx;
+  padding: 0 20rpx;
   border: 1rpx solid rgba(16, 34, 74, 0.08);
   border-radius: 999rpx;
   color: #31405F;

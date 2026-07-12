@@ -489,10 +489,15 @@
 }
 
 .info-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42rpx;
   max-width: 100%;
-  padding: 9rpx 16rpx;
+  padding: 0 16rpx;
   border-radius: 999rpx;
   font-size: 20rpx;
+  line-height: 1;
   color: rgba(15, 23, 42, 0.66);
   background: rgba(240, 243, 221, 0.78);
 }

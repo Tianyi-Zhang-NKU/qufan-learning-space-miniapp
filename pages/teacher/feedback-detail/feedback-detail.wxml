@@ -29,7 +29,7 @@
           >
             <text class="session-tab-title">{{item.sessionTitle || item.displayTitle}}</text>
             <text class="session-tab-date">{{item.date}}</text>
-            <text class="session-tab-status-dot {{item.status}}">{{item.statusText || '未开始'}}</text>
+            <view class="session-tab-status-dot {{item.status}}">{{item.statusText || '未开始'}}</view>
           </view>
         </view>
       </scroll-view>
@@ -55,10 +55,10 @@
       </view>
       <text class="existing-text">{{existingFeedback.text}}</text>
       <view wx:if="{{existingFeedback.imageCount || existingFeedback.videoCount || existingFeedback.voiceCount || existingFeedback.attachFileCount}}" class="existing-media-tags">
-        <text wx:if="{{existingFeedback.imageCount}}" class="media-tag">图片 {{existingFeedback.imageCount}}</text>
-        <text wx:if="{{existingFeedback.videoCount}}" class="media-tag">视频 {{existingFeedback.videoCount}}</text>
-        <text wx:if="{{existingFeedback.voiceCount}}" class="media-tag">语音 {{existingFeedback.voiceCount}}</text>
-        <text wx:if="{{existingFeedback.attachFileCount}}" class="media-tag">文档 {{existingFeedback.attachFileCount}}</text>
+        <view wx:if="{{existingFeedback.imageCount}}" class="media-tag">图片 {{existingFeedback.imageCount}}</view>
+        <view wx:if="{{existingFeedback.videoCount}}" class="media-tag">视频 {{existingFeedback.videoCount}}</view>
+        <view wx:if="{{existingFeedback.voiceCount}}" class="media-tag">语音 {{existingFeedback.voiceCount}}</view>
+        <view wx:if="{{existingFeedback.attachFileCount}}" class="media-tag">文档 {{existingFeedback.attachFileCount}}</view>
       </view>
     </view>
 
