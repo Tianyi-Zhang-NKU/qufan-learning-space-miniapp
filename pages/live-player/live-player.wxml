@@ -9,7 +9,7 @@
 
   <view class="qf-card qf-hero live-hero">
     <text class="qf-h2">课堂直播</text>
-    <text class="qf-muted">{{entry.courseName || detail.course.name}} · {{entry.roomName || detail.courseSession.classroomName}}</text>
+    <text class="qf-muted">{{entry.courseName || detail.course.name}} · {{entry.classroomName || detail.courseSession.classroomName}}</text>
     <text class="qf-muted">{{detail.courseSession.date}} {{entry.startTime || detail.courseSession.startTime}}-{{entry.endTime || detail.courseSession.endTime}}</text>
   </view>
 

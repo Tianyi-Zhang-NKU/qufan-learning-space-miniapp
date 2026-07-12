@@ -51,10 +51,12 @@ function weeklySessions(config) {
       endTime: config.endTime,
       teacherId: config.teacherId,
       classroomId: config.classroomId,
+      classInCourseId: `classin_${config.courseId}`,
+      classInTeacherId: `classin_${config.teacherId}`,
+      classInSessionId: `classin_${config.courseId}_${code}`,
       studentIds: config.studentIds.slice(),
       status: finished ? 'finished' : 'scheduled',
       statusText: finished ? '已结束' : '未开始',
-      liveRoomId: `live_${config.classroomId}`,
       note: finished ? '已完成线下讲解，本讲学习反馈可查看。' : '每周固定课次，直播入口和学习反馈入口已准备。'
     };
   });
@@ -678,19 +680,7 @@ const db = {
     }
   ],
 
-  liveRooms: classrooms.map((room) => ({
-    id: `live_${room.id}`,
-    courseSessionId: '',
-    classroomId: room.id,
-    status: 'pending',
-    statusText: '课堂入口准备中',
-    streamUrl: '',
-    previewVideoUrl: '',
-    classinEntryUrl: `https://classin.example.com/classroom/${room.id}`,
-    provider: 'classin',
-    lastHeartbeatAt: '',
-    note: '课堂入口按课次开放。'
-  })),
+  liveRooms: [],
 
   auditLogs: [
     {
@@ -704,6 +694,24 @@ const db = {
     }
   ]
 };
+
+db.liveRooms = db.courseSessions.map((session) => ({
+  id: `live_${session.id}`,
+  courseId: session.courseId,
+  teacherId: session.teacherId,
+  courseSessionId: session.id,
+  classInCourseId: session.classInCourseId,
+  classInTeacherId: session.classInTeacherId,
+  classInSessionId: session.classInSessionId,
+  status: 'ready',
+  statusText: '已配置课堂入口',
+  streamUrl: '',
+  previewVideoUrl: DEMO_VIDEO_URL,
+  classinEntryUrl: `https://classin.example.com/live/${session.classInSessionId}`,
+  provider: 'classin',
+  lastHeartbeatAt: `${session.date} ${session.startTime}`,
+  note: '课堂入口按外部课节标识签发。'
+}));
 
 const userIdByPhone = {};
 db.users = db.phoneAccounts.reduce((users, account) => {
@@ -846,17 +854,5 @@ db.courseMaterialBindings.push(
     updatedBy: 'role_admin_001'
   }
 );
-
-db.liveRooms.forEach((room) => {
-  const session = db.courseSessions.find((item) => item.classroomId === room.classroomId);
-  if (session) {
-    room.courseSessionId = session.id;
-    room.status = 'ready';
-    room.statusText = '已配置课堂入口';
-    room.previewVideoUrl = DEMO_VIDEO_URL;
-    room.classinEntryUrl = `https://classin.example.com/live/${session.id}`;
-    room.lastHeartbeatAt = `${session.date} ${session.startTime}`;
-  }
-});
 
 module.exports = db;

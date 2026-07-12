@@ -54,7 +54,7 @@ Page({
     teacherInitial: '师',
     teacherCourses: [],
     teacherStudents: [],
-    totalFeedbacks: 0
+    totalPassConfirmations: 0
   },
 
   onShow() {
@@ -87,9 +87,9 @@ Page({
 
         // 统计学生（去重）
         const studentMap = new Map();
-        let totalFeedbacks = 0;
+        let totalPassConfirmations = 0;
         courses.forEach((course) => {
-          totalFeedbacks += course.feedbackCount || 0;
+          totalPassConfirmations += course.classConfirmedPasses || 0;
           (course.students || []).forEach((student) => {
             if (!studentMap.has(student.id)) {
               studentMap.set(student.id, {
@@ -115,7 +115,7 @@ Page({
           teacherInitial: (teacher.name || session.displayName || '师').charAt(0),
           teacherCourses: courses,
           teacherStudents,
-          totalFeedbacks
+          totalPassConfirmations
         });
       })
       .catch(() => {

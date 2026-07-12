@@ -35,8 +35,20 @@ function makeError(code, message, details) {
   return error;
 }
 
+function rejectReadOnlyEnrollmentMutation(payload = {}) {
+  const action = payload && typeof payload === 'object' ? (payload.action || payload.type || '') : '';
+  throw makeError('READ_ONLY_ENROLLMENT', '课程、学生、班级和课次数据由报名教务系统同步，本小程序不提供写入操作。', { action });
+}
+
 function nowLabel() {
   const date = new Date();
+  const pad = (value) => String(value).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function addMinutesLabel(minutes) {
+  const date = new Date();
+  date.setMinutes(date.getMinutes() + minutes);
   const pad = (value) => String(value).padStart(2, '0');
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
@@ -945,28 +957,39 @@ function buildFocusStudentRecords(courses) {
 function classInEntryForSession(courseId, courseSessionId) {
   const course = findCourse(courseId) || {};
   const courseSession = findCourseSession(courseSessionId) || {};
-  const classroom = findClassroom(courseSession.classroomId || course.classroomId) || {};
-  const liveRoom = db.liveRooms.find((item) => item.courseSessionId === courseSessionId)
-    || db.liveRooms.find((item) => item.classroomId === classroom.id)
-    || {};
+  const mapping = {
+    classInCourseId: courseSession.classInCourseId || '',
+    classInTeacherId: courseSession.classInTeacherId || '',
+    classInSessionId: courseSession.classInSessionId || ''
+  };
+  if (!mapping.classInCourseId || !mapping.classInTeacherId || !mapping.classInSessionId) return null;
+  const liveRoom = db.liveRooms.find((item) => (
+    item.classInCourseId === mapping.classInCourseId
+    && item.classInTeacherId === mapping.classInTeacherId
+    && item.classInSessionId === mapping.classInSessionId
+  ));
+  if (!liveRoom) return null;
   return {
     status: liveRoom.status || 'ready',
     provider: 'classin',
     message: liveRoom.message || '课堂入口已准备。',
-    classinEntryUrl: liveRoom.classinEntryUrl || 'https://www.classin.com/',
+    entryUrl: liveRoom.classinEntryUrl || '',
+    classinEntryUrl: liveRoom.classinEntryUrl || '',
     streamUrl: liveRoom.streamUrl || '',
     previewVideoUrl: liveRoom.previewVideoUrl || '',
     playerType: 'classin-webview-or-live-player',
     signedAt: liveRoom.signedAt || nowLabel(),
-    expiresAt: liveRoom.expiresAt || addMonthsLabel(1),
-    roomName: classroom.name || '',
+    expiresAt: liveRoom.expiresAt || addMinutesLabel(10),
+    classroomName: (findClassroom(courseSession.classroomId || course.classroomId) || {}).name || '',
     courseName: course.name || '',
     lessonTitle: courseSession.displayTitle || courseSession.title || '',
     startTime: courseSession.startTime || '',
     endTime: courseSession.endTime || '',
     requiredServerFields: ['classinEntryUrl', 'streamUrl', 'signedAt', 'expiresAt'],
     courseId,
-    courseSessionId
+    courseSessionId,
+    requestId: `classin_${courseSessionId}_${Date.now()}`,
+    ...mapping
   };
 }
 
@@ -1834,7 +1857,9 @@ const mockApi = {
     if (!courseSession) throw makeError('NOT_FOUND', '课次不存在。');
     if (!canAccessSession(session, courseSession.id)) throw makeError('NO_PERMISSION', '当前账号不能进入这个直播入口。');
     const courseId = payload.courseId || courseSession.courseId;
-    return delay(classInEntryForSession(courseId, courseSession.id));
+    const entry = classInEntryForSession(courseId, courseSession.id);
+    if (!entry) throw makeError('SESSION_NOT_CONFIGURED', '课堂入口暂未配置。');
+    return delay(entry);
   },
 
   listIdentities() {
@@ -2680,7 +2705,6 @@ const mockApi = {
       studentIds: course.studentIds.slice(),
       status: 'scheduled',
       statusText: '未开始',
-      liveRoomId: '',
       note: '本讲总结课次。'
     };
     db.courseSessions.push(courseSession);
@@ -2798,9 +2822,7 @@ const mockApi = {
   },
 
   syncEnrollmentChange(payload = {}) {
-    throw makeError('READ_ONLY_ENROLLMENT', '课程成员关系由报名教务系统同步，本小程序不提供插班、调班或退班操作。', {
-      action: payload.action || payload.type || ''
-    });
+    return rejectReadOnlyEnrollmentMutation(payload);
   },
 
   createInvite() {
@@ -2811,6 +2833,32 @@ const mockApi = {
     return this.createCourseSession(payload);
   }
 };
+
+[
+  'createTeacher',
+  'updateTeacher',
+  'deleteTeacher',
+  'createStudent',
+  'updateStudent',
+  'deleteStudent',
+  'createStudentGuardian',
+  'createClassroom',
+  'updateClassroom',
+  'deleteClassroom',
+  'createCourse',
+  'updateCourse',
+  'deleteCourse',
+  'createCourseSession',
+  'updateCourseSession',
+  'deleteCourseSession',
+  'addStudentToCourse',
+  'removeStudentFromCourse',
+  'transferStudentCourse'
+].forEach((methodName) => {
+  mockApi[methodName] = function readOnlyEnrollmentMutation(payload) {
+    return rejectReadOnlyEnrollmentMutation(payload);
+  };
+});
 
 function callByMode(mode, methodName, payload) {
   if (!hasWx()) {

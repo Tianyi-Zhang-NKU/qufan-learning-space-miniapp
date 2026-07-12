@@ -28,8 +28,8 @@
           <text class="qf-metric-label">名下学生</text>
         </view>
         <view class="qf-metric stat-metric">
-          <text class="qf-metric-value">{{totalFeedbacks}}</text>
-          <text class="qf-metric-label">累计反馈</text>
+          <text class="qf-metric-value">{{totalPassConfirmations}}</text>
+          <text class="qf-metric-label">累计通关达成</text>
         </view>
       </view>
 

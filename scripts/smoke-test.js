@@ -66,8 +66,7 @@ function assertPageFiles(appJson) {
     'pages/teacher/feedback-students/feedback-students',
     'pages/teacher/feedback-detail/feedback-detail',
     'pages/admin/home/home',
-    'pages/admin/manage/manage',
-    'pages/admin/schedule-board/schedule-board'
+    'pages/admin/manage/manage'
   ];
   requiredPages.forEach((page) => {
     assert(appJson.pages.includes(page), `app.json missing page: ${page}`);
@@ -83,7 +82,8 @@ function assertPageFiles(appJson) {
     'pages/admin/admin',
     'pages/identity-switch/identity-switch',
     'pages/course-detail/course-detail',
-    'pages/wrong-record-editor/wrong-record-editor'
+    'pages/wrong-record-editor/wrong-record-editor',
+    'pages/admin/schedule-board/schedule-board'
   ];
   removedPages.forEach((page) => {
     assert(!appJson.pages.includes(page), `removed pages should not be registered: ${page}`);
@@ -264,6 +264,7 @@ async function run() {
   assert(!profileWxml.includes('profile-schedule-board') && !profileWxssHasCalendarStyle(), 'profile should not keep calendar board styling after schedule moves out');
   assert(profileWxml.includes('goTeacherCourses') && profileJs.includes('/pages/teacher/courses/courses'), 'profile course cards should route to current teacher course schedule');
   assert(!profileWxml.includes('goCourseDetail') && !profileJs.includes('/pages/course-detail/course-detail'), 'profile should not route to removed course detail page');
+  assert(profileWxml.includes('累计通关达成') && profileWxml.includes('totalPassConfirmations') && !profileWxml.includes('累计反馈') && profileJs.includes('course.classConfirmedPasses') && profileJs.includes('totalPassConfirmations'), 'teacher profile should report pass achievements from confirmed passes instead of generic feedback totals');
 
   const teacherHomeJs = readText('pages/teacher/home/home.js');
   const teacherHomeWxml = readText('pages/teacher/home/home.wxml');
@@ -409,7 +410,7 @@ async function run() {
   assert(db.phoneAccounts.some((item) => item.phone === '13800000001' && item.role === 'parent'), 'student demo phone missing');
   assert(db.phoneAccounts.some((item) => item.phone === '13800000003' && item.role === 'admin'), 'admin demo phone missing');
   assert(db.classrooms.length === 15, 'should model 15 classrooms');
-  assert(db.liveRooms.length === 15, 'should keep 15 live room placeholders');
+  assert(db.liveRooms.length === db.courseSessions.length, 'should model one ClassIn entry per course session rather than per classroom');
   assert(db.teachers.length >= 2, 'should model at least 2 teachers');
   assert(db.students.length >= 4, 'should model at least 4 students');
   assert(db.courses.length >= 3, 'should model at least 3 courses');
@@ -422,6 +423,7 @@ async function run() {
   }), 'course subject should match its teacher subject');
   assert(db.courses.every((course) => db.courseSessions.filter((item) => item.courseId === course.id).length >= 2), 'each course should have at least 2 lessons');
   assert(db.courseSessions.every((item) => item.displayTitle === item.sessionTitle) && db.courseSessions.some((item) => item.topic), 'lesson default display title should be short 第x次课 while keeping editable topic metadata');
+  assert(db.courseSessions.every((item) => item.classInCourseId && item.classInTeacherId && item.classInSessionId && !Object.prototype.hasOwnProperty.call(item, 'liveRoomId')), 'every mock lesson should carry the external ClassIn mapping without a classroom-bound live room identifier');
   assert(db.lessonFeedbacks.length >= 3, 'should include lesson feedback samples');
   assert(db.mediaFiles.some((item) => item.type === 'image' && item.downloadable === false), 'image media should preview in miniapp without download');
   assert(db.mediaFiles.some((item) => item.type === 'video' && item.downloadable === false), 'video media should preview in miniapp without download');
@@ -474,12 +476,11 @@ async function run() {
   const lessonDetail = await Api.getTeacherLessonDetail('lesson_bio_001_01');
   assert(lessonDetail.students.length >= 2, 'teacher lesson should list students');
   assert(lessonDetail.students.some((item) => item.id === 'stu_001'), 'lesson should include target student');
-  const renamedLesson = await Api.updateCourseSession({
+  await expectReject(Api.updateCourseSession({
     id: 'lesson_bio_001_02',
     sessionTitle: '第2次课',
     topic: 'Smoke 可编辑主题'
-  });
-  assert(renamedLesson.sessionTitle === '第2次课' && renamedLesson.topic === 'Smoke 可编辑主题', 'teacher should rename own lesson and add topic');
+  }), 'READ_ONLY_ENROLLMENT');
 
   const uploadedImage = await Api.uploadFeedbackImage({
     fileName: 'smoke-feedback.jpg',
@@ -697,7 +698,18 @@ async function run() {
     courseSessionId: 'lesson_bio_001_01'
   });
   assert(liveEntry.status === 'ready' && liveEntry.provider === 'classin', 'ClassIn demo entry shape missing');
-  assert(liveEntry.classinEntryUrl && (liveEntry.previewVideoUrl || liveEntry.streamUrl), 'ClassIn demo entry should expose playable preview fields');
+  const liveEntryDuration = new Date(liveEntry.expiresAt.replace(' ', 'T')).getTime() - new Date(liveEntry.signedAt.replace(' ', 'T')).getTime();
+  assert(liveEntry.classinEntryUrl && liveEntry.entryUrl === liveEntry.classinEntryUrl && liveEntry.requestId && liveEntry.classInCourseId && liveEntry.classInTeacherId && liveEntry.classInSessionId && liveEntryDuration > 0 && liveEntryDuration <= 10 * 60 * 1000, 'ClassIn entry should expose a short-lived signed entry and external session mapping');
+  const classInSession = Api.__mockDb.courseSessions.find((item) => item.id === 'lesson_bio_001_01');
+  const originalClassroomId = classInSession.classroomId;
+  classInSession.classroomId = 'room_01';
+  const entryAfterClassroomChange = await Api.requestClassInLiveEntry({ courseSessionId: classInSession.id });
+  assert(entryAfterClassroomChange.classinEntryUrl === liveEntry.classinEntryUrl && entryAfterClassroomChange.classInSessionId === liveEntry.classInSessionId, 'ClassIn entry should not change when the physical classroom changes');
+  classInSession.classroomId = originalClassroomId;
+  const originalClassInSessionId = classInSession.classInSessionId;
+  classInSession.classInSessionId = '';
+  await expectReject(Api.requestClassInLiveEntry({ courseSessionId: classInSession.id }), 'SESSION_NOT_CONFIGURED');
+  classInSession.classInSessionId = originalClassInSessionId;
 
   const adminSession = await Api.loginByPhone({ phone: '13800000003' });
   assert(adminSession.role === 'admin', 'admin phone should login as admin');
@@ -813,6 +825,46 @@ async function run() {
   assert(teacherRelations.every((item) => item.phone && Array.isArray(item.courses)), 'teacher relation should expose phone and courses');
   const studentRelations = await Api.getAdminStudentRelations();
   assert(studentRelations.every((item) => item.loginPhone && Array.isArray(item.courses)), 'student relation should expose phone and courses');
+
+  const enrollmentSnapshot = JSON.stringify({
+    teachers: Api.__mockDb.teachers,
+    students: Api.__mockDb.students,
+    courses: Api.__mockDb.courses,
+    courseSessions: Api.__mockDb.courseSessions,
+    classrooms: Api.__mockDb.classrooms
+  });
+  const readOnlyEnrollmentMutations = [
+    ['createTeacher', { name: '无效教师' }],
+    ['updateTeacher', { id: 'teacher_001', name: '无效更新' }],
+    ['deleteTeacher', 'teacher_001'],
+    ['createStudent', { name: '无效学生' }],
+    ['createStudentGuardian', { studentName: '无效学生', guardianPhone: '13800000099' }],
+    ['updateStudent', { id: 'stu_001', name: '无效更新' }],
+    ['deleteStudent', 'stu_001'],
+    ['createClassroom', { name: '无效教室' }],
+    ['updateClassroom', { id: 'room_01', name: '无效更新' }],
+    ['deleteClassroom', 'room_01'],
+    ['createCourse', { name: '无效课程' }],
+    ['updateCourse', { id: 'course_bio_001', name: '无效更新' }],
+    ['deleteCourse', 'course_bio_001'],
+    ['createCourseSession', { courseId: 'course_bio_001' }],
+    ['updateCourseSession', { id: 'lesson_bio_001_01' }],
+    ['deleteCourseSession', 'lesson_bio_001_01'],
+    ['addStudentToCourse', { studentId: 'stu_004', courseId: 'course_bio_001' }],
+    ['removeStudentFromCourse', { studentId: 'stu_001', courseId: 'course_bio_001' }],
+    ['transferStudentCourse', { studentId: 'stu_001', fromCourseId: 'course_bio_001', toCourseId: 'course_bio_002' }],
+    ['createSchedule', { courseId: 'course_bio_001' }]
+  ];
+  for (const [methodName, payload] of readOnlyEnrollmentMutations) {
+    await expectReject(Api[methodName](payload), 'READ_ONLY_ENROLLMENT');
+  }
+  assert(JSON.stringify({
+    teachers: Api.__mockDb.teachers,
+    students: Api.__mockDb.students,
+    courses: Api.__mockDb.courses,
+    courseSessions: Api.__mockDb.courseSessions,
+    classrooms: Api.__mockDb.classrooms
+  }) === enrollmentSnapshot, 'read-only enrollment API calls should not mutate local data');
 
   await expectReject(Api.syncEnrollmentChange({
     action: 'transfer',

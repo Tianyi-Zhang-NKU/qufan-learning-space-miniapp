@@ -17,8 +17,7 @@
     "pages/teacher/feedback-students/feedback-students",
     "pages/teacher/feedback-detail/feedback-detail",
     "pages/admin/home/home",
-    "pages/admin/manage/manage",
-    "pages/admin/schedule-board/schedule-board"
+    "pages/admin/manage/manage"
   ],
   "window": {
     "navigationBarTitleText": "趣帆学习空间",
