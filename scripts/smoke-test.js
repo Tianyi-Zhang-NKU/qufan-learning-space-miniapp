@@ -336,6 +336,10 @@ async function run() {
   const allRecordsContentStart = parentExercisesWxml.indexOf('wx:else class="content-area"', allRecordsStart);
   assert(allRecordsStart >= 0 && workbookExportStart > allRecordsContentStart, 'wrong workbook export card should render inside the all-records content area, not in the page header');
   assert(/\.workbook-export-card\s*\{[^}]*flex-wrap:\s*wrap/.test(parentExercisesWxss) && /\.workbook-export-copy\s*\{[^}]*width:\s*100%/.test(parentExercisesWxss), 'wrong workbook export summary should keep its full width when export actions are displayed');
+  ['session-preview-count', 'session-entry-badge', 'session-entry-count', 'all-session-count', 'test-session-label', 'workbook-badge'].forEach((className) => {
+    const selector = new RegExp(`\\.${className.replace(/-/g, '\\-')}\\s*\\{[^}]*display:\\s*(?:inline-)?flex[^}]*align-items:\\s*center[^}]*justify-content:\\s*center`, 's');
+    assert(selector.test(parentExercisesWxss), `${className} should vertically center its label text`);
+  });
 
   const loginWxss = readText('pages/login/login.wxss');
   const loginWxml = readText('pages/login/login.wxml');
