@@ -1,460 +1,124 @@
-<view class="qf-page qf-page-fixed admin-home">
+<view class="qf-page qf-page-fixed admin-dashboard">
   <z-bg mode="dark"></z-bg>
 
   <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
-    <block wx:if="{{viewMode === 'overview'}}">
-      <view class="qf-top">
-        <view class="qf-brand">
-          <text class="qf-brand-title">管理员首页</text>
-          <text class="qf-brand-sub">先选择合集，再进入可搜索的明细列表</text>
-        </view>
-      </view>
-
-      <view wx:if="{{loading}}" class="qf-empty">数据加载中...</view>
-
-      <block wx:else>
-        <view class="overview-panel">
-          <view class="overview-head">
-            <text class="overview-title">数据合集</text>
-            <text class="overview-sub">适合上百条数据的入口式管理</text>
-          </view>
-          <view class="overview-stats">
-            <view class="overview-stat">
-              <text class="stat-number">{{courses.length}}</text>
-              <text class="stat-label">课程</text>
-            </view>
-            <view class="overview-stat">
-              <text class="stat-number">{{students.length}}</text>
-              <text class="stat-label">学生</text>
-            </view>
-            <view class="overview-stat">
-              <text class="stat-number">{{teachers.length}}</text>
-              <text class="stat-label">教师</text>
-            </view>
-            <view class="overview-stat">
-              <text class="stat-number">{{classrooms.length}}</text>
-              <text class="stat-label">教室</text>
-            </view>
-          </view>
-        </view>
-
-        <view class="collection-launch-grid">
-          <view
-            wx:for="{{collections}}"
-            wx:key="type"
-            class="collection-launch {{item.type}}"
-            data-type="{{item.type}}"
-            bindtap="openCollection"
-          >
-            <view class="launch-icon">
-              <image class="qf-icon-lg" src="{{item.icon}}" mode="aspectFit"></image>
-            </view>
-            <view class="launch-body">
-              <text class="launch-title">{{item.title}}</text>
-              <text class="launch-sub">{{item.subtitle}}</text>
-            </view>
-            <view class="launch-meta">
-              <text class="launch-count">{{item.count}}</text>
-              <text class="launch-arrow">›</text>
-            </view>
-          </view>
-        </view>
-      </block>
-    </block>
-
-    <block wx:else>
-      <view class="detail-top">
-        <view class="back-btn" bindtap="backOverview">‹</view>
-        <view class="detail-title-block">
-          <text class="qf-brand-title">{{activeTitle}}</text>
-          <text class="qf-brand-sub">{{activeSubtitle}}</text>
-        </view>
-        <button class="detail-add-btn" bindtap="openCreate">新增</button>
-      </view>
-
-      <view class="search-card">
-        <image class="search-icon" src="/assets/icons/search.svg" mode="aspectFit"></image>
-        <input
-          class="search-input"
-          value="{{searchQuery}}"
-          placeholder="按名称、手机号、老师、课程、教室搜索"
-          confirm-type="search"
-          bindinput="onSearchInput"
-        />
-        <view wx:if="{{searchQuery}}" class="search-clear" bindtap="clearSearch">×</view>
-      </view>
-
-      <view wx:if="{{activeType === 'courses' || activeType === 'students' || activeType === 'teachers'}}" class="filter-panel dropdown-filter-panel">
-        <view wx:if="{{activeType !== 'teachers'}}" class="filter-select">
-          <text class="filter-label">学年</text>
-          <picker range="{{gradeFilterOptions}}" range-key="label" bindchange="onGradeFilterChange">
-            <view class="filter-picker-value">{{activeGradeLabel}}</view>
-          </picker>
-        </view>
-        <view class="filter-select">
-          <text class="filter-label">{{activeType === 'teachers' ? '所教学科' : activeType === 'students' ? '所学学科' : '学科'}}</text>
-          <picker range="{{subjectFilterOptions}}" range-key="label" bindchange="onSubjectFilterChange">
-            <view class="filter-picker-value">{{activeSubjectLabel}}</view>
-          </picker>
-        </view>
-      </view>
-
-      <view class="result-line">
-        <text wx:if="{{activeType === 'courses'}}">共 {{filteredCourses.length}} 门课程</text>
-        <text wx:elif="{{activeType === 'students'}}">共 {{filteredStudents.length}} 名学生</text>
-        <text wx:elif="{{activeType === 'teachers'}}">共 {{filteredTeachers.length}} 名教师</text>
-        <text wx:else>共 {{filteredClassrooms.length}} 间教室</text>
-      </view>
-
-      <view wx:if="{{activeType === 'courses'}}" class="detail-list">
-        <view
-          wx:for="{{filteredCourses}}"
-          wx:key="id"
-          class="qf-card collection-card {{expandedKey === item.id ? 'expanded' : ''}}"
-        >
-          <view class="item-head" data-key="{{item.id}}" bindtap="toggleDetail">
-            <view class="item-icon course-icon">
-              <image class="qf-icon-lg" src="/assets/icons/course.svg" mode="aspectFit"></image>
-            </view>
-            <view class="item-main">
-              <text class="item-title">{{item.name}}</text>
-              <text class="item-sub">{{item.courseMeta}}</text>
-            </view>
-            <view class="item-side">
-              <text class="side-number">{{item.feedbackTotal}}</text>
-              <text class="side-label">反馈</text>
-            </view>
-          </view>
-          <view wx:if="{{expandedKey === item.id}}" class="item-detail">
-            <view class="edit-actions">
-              <button class="edit-btn" data-id="{{item.id}}" catchtap="openEdit">编辑</button>
-              <button class="edit-btn danger" data-id="{{item.id}}" catchtap="deleteItem">删除</button>
-            </view>
-            <view class="detail-row">
-              <text class="detail-label">授课老师</text>
-              <text class="detail-value">{{item.teacherFullName || item.teacherName || '-'}}</text>
-            </view>
-            <view class="detail-row">
-              <text class="detail-label">教室</text>
-              <text class="detail-value">{{item.classroomName || '-'}}</text>
-            </view>
-            <view class="mini-section">学生</view>
-            <view wx:if="{{item.mergedStudents.length}}" class="chip-list">
-              <view wx:for="{{item.mergedStudents}}" wx:for-item="student" wx:key="id" class="info-chip">{{student.name}} · {{student.feedbackCount || 0}}条反馈</view>
-            </view>
-            <view wx:else class="empty-inline">暂无学生</view>
-            <view class="mini-section">课次</view>
-            <view wx:if="{{item.sessions.length}}" class="mini-list">
-              <view wx:for="{{item.sessions}}" wx:for-item="session" wx:key="id" class="mini-row">
-                <view class="mini-row-main">
-                  <text class="mini-title">{{session.displayTitle || session.sessionTitle}}</text>
-                  <text class="mini-meta">{{session.sessionMeta}} · {{session.studentCount}}名学生</text>
-                </view>
-                <navigator class="mini-live" url="/pages/live-player/live-player?id={{session.id}}">直播</navigator>
-              </view>
-            </view>
-            <view wx:else class="empty-inline">暂无课次</view>
-          </view>
-        </view>
-      </view>
-
-      <view wx:elif="{{activeType === 'students'}}" class="detail-list">
-        <view
-          wx:for="{{filteredStudents}}"
-          wx:key="id"
-          class="qf-card collection-card {{expandedKey === item.id ? 'expanded' : ''}}"
-        >
-          <view class="item-head" data-key="{{item.id}}" bindtap="toggleDetail">
-            <view class="item-icon student-icon">
-              <image class="qf-icon-lg" src="/assets/icons/student.svg" mode="aspectFit"></image>
-            </view>
-            <view class="item-main">
-              <text class="item-title">{{item.name}}</text>
-              <text class="item-sub">{{item.grade || '-'}} · {{item.loginPhone || item.phone || '未绑定手机号'}}</text>
-            </view>
-            <view class="item-side">
-              <text class="side-number">{{item.courseTotal}}</text>
-              <text class="side-label">课程</text>
-            </view>
-          </view>
-          <view wx:if="{{expandedKey === item.id}}" class="item-detail">
-            <view class="edit-actions">
-              <button class="edit-btn" data-id="{{item.id}}" catchtap="openEdit">编辑</button>
-              <button class="edit-btn danger" data-id="{{item.id}}" catchtap="deleteItem">删除</button>
-            </view>
-            <view class="detail-row">
-              <text class="detail-label">反馈总数</text>
-              <text class="detail-value">{{item.feedbackTotal}} 条</text>
-            </view>
-            <view class="mini-section">已加入课程</view>
-            <view wx:if="{{item.courses.length}}" class="mini-list">
-              <view wx:for="{{item.courses}}" wx:for-item="course" wx:key="id" class="mini-row">
-                <text class="mini-title">{{course.name}}</text>
-                <text class="mini-meta">{{course.teacherName || '-'}} · {{course.classroomName || '-'}} · {{course.feedbackCount || 0}}条反馈</text>
-              </view>
-            </view>
-            <view wx:else class="empty-inline">暂无课程</view>
-          </view>
-        </view>
-      </view>
-
-      <view wx:elif="{{activeType === 'teachers'}}" class="detail-list">
-        <view
-          wx:for="{{filteredTeachers}}"
-          wx:key="id"
-          class="qf-card collection-card {{expandedKey === item.id ? 'expanded' : ''}}"
-        >
-          <view class="item-head" data-key="{{item.id}}" bindtap="toggleDetail">
-            <view class="item-icon teacher-icon">
-              <image class="qf-icon-lg" src="/assets/icons/teacher.svg" mode="aspectFit"></image>
-            </view>
-            <view class="item-main">
-              <text class="item-title">{{item.displayName}}</text>
-              <text class="item-sub">{{item.subject || '-'}} · {{item.phone || '未绑定手机号'}}</text>
-            </view>
-            <view class="item-side">
-              <text class="side-number">{{item.courseTotal}}</text>
-              <text class="side-label">课程</text>
-            </view>
-          </view>
-          <view wx:if="{{expandedKey === item.id}}" class="item-detail">
-            <view class="edit-actions">
-              <button class="edit-btn" data-id="{{item.id}}" catchtap="openEdit">编辑</button>
-              <button class="edit-btn danger" data-id="{{item.id}}" catchtap="deleteItem">删除</button>
-            </view>
-            <view class="detail-row">
-              <text class="detail-label">覆盖学生</text>
-              <text class="detail-value">{{item.studentTotal}} 名</text>
-            </view>
-            <view class="mini-section">负责课程</view>
-            <view wx:if="{{item.courses.length}}" class="mini-list">
-              <view wx:for="{{item.courses}}" wx:for-item="course" wx:key="id" class="mini-row">
-                <text class="mini-title">{{course.name}}</text>
-                <text class="mini-meta">{{course.studentCount}}名学生 · {{course.studentsText}}</text>
-              </view>
-            </view>
-            <view wx:else class="empty-inline">暂无课程</view>
-          </view>
-        </view>
-      </view>
-
-      <view wx:else class="detail-list">
-        <view
-          wx:for="{{filteredClassrooms}}"
-          wx:key="id"
-          class="qf-card collection-card {{expandedKey === item.id ? 'expanded' : ''}}"
-        >
-          <view class="item-head" data-key="{{item.id}}" bindtap="toggleDetail">
-            <view class="item-icon room-icon">
-              <image class="qf-icon-lg" src="/assets/icons/classroom.svg" mode="aspectFit"></image>
-            </view>
-            <view class="item-main">
-              <text class="item-title">{{item.name}}</text>
-              <text class="item-sub">{{item.campus || '主校区'}} · 容量{{item.capacity || '-'}}人 · {{item.cameraStatusText || '-'}}</text>
-            </view>
-            <view class="item-side">
-              <text class="side-number">{{item.sessionTotal}}</text>
-              <text class="side-label">课次</text>
-            </view>
-          </view>
-          <view wx:if="{{expandedKey === item.id}}" class="item-detail">
-            <view class="edit-actions">
-              <button class="edit-btn" data-id="{{item.id}}" catchtap="openEdit">编辑</button>
-              <button class="edit-btn danger" data-id="{{item.id}}" catchtap="deleteItem">删除</button>
-            </view>
-            <view class="detail-row">
-              <text class="detail-label">涉及课程</text>
-              <text class="detail-value">{{item.courseTotal}} 门</text>
-            </view>
-            <view wx:if="{{item.courseNames.length}}" class="chip-list">
-              <view wx:for="{{item.courseNames}}" wx:key="*this" class="info-chip">{{item}}</view>
-            </view>
-            <view class="mini-section">排课</view>
-            <view wx:if="{{item.sessions.length}}" class="mini-list">
-              <view wx:for="{{item.sessions}}" wx:for-item="session" wx:key="id" class="mini-row">
-                <text class="mini-title">{{session.courseName}}</text>
-                <text class="mini-meta">{{session.displayMeta}} · {{session.teacherName || '-'}}</text>
-              </view>
-            </view>
-            <view wx:else class="empty-inline">暂无排课</view>
-          </view>
-        </view>
-      </view>
-
-      <view
-        wx:if="{{(activeType === 'courses' && !filteredCourses.length) || (activeType === 'students' && !filteredStudents.length) || (activeType === 'teachers' && !filteredTeachers.length) || (activeType === 'classrooms' && !filteredClassrooms.length)}}"
-        class="qf-empty"
-      >没有匹配结果</view>
-    </block>
-
-    <view style="height: 32rpx;"></view>
-  </scroll-view>
-
-  <view wx:if="{{showEditor}}" class="editor-mask" catchtap="closeEditor">
-    <view class="editor-panel" catchtap="noop">
-      <view class="editor-head">
-        <text class="editor-title">{{editorTitle}}</text>
-        <view class="editor-close" bindtap="closeEditor">×</view>
-      </view>
-
-      <view wx:if="{{activeType === 'courses'}}" class="editor-fields">
-        <view class="editor-field">
-          <text class="field-label">课程名称</text>
-          <input class="field-input" value="{{editorForm.name}}" data-field="name" bindinput="onEditorInput" placeholder="例如 初三生物1班" />
-        </view>
-        <view class="editor-row">
-          <view class="editor-field half">
-            <text class="field-label">科目</text>
-            <picker range="{{subjectOptions}}" value="{{editorForm.subjectIndex}}" bindchange="onEditorSubjectChange">
-              <view class="picker-value">{{editorForm.subject || '选择科目'}}</view>
-            </picker>
-          </view>
-          <view class="editor-field half">
-            <text class="field-label">年级</text>
-            <picker range="{{gradeOptions}}" value="{{editorForm.gradeIndex}}" bindchange="onEditorGradeChange">
-              <view class="picker-value">{{editorForm.grade || '选择年级'}}</view>
-            </picker>
-          </view>
-        </view>
-        <view class="editor-field">
-          <text class="field-label">授课老师</text>
-          <picker range="{{teacherOptions}}" range-key="name" value="{{editorForm.teacherIndex}}" bindchange="onTeacherChange">
-            <view class="picker-value">{{editorForm.teacherName || '选择老师'}}</view>
-          </picker>
-        </view>
-        <view class="editor-field">
-          <text class="field-label">默认教室</text>
-          <picker range="{{classroomOptions}}" range-key="name" value="{{editorForm.classroomIndex}}" bindchange="onClassroomChange">
-            <view class="picker-value">{{editorForm.classroomName || '选择教室'}}</view>
-          </picker>
-        </view>
-        <view class="editor-row">
-          <view class="editor-field half session-count-stepper">
-            <text class="field-label">课次数量</text>
-            <input class="field-input" value="{{editorForm.sessionCount}}" type="number" bindinput="onSessionCountInput" placeholder="输入课次数量" />
-          </view>
-          <view class="editor-field half">
-            <text class="field-label">通关标准%</text>
-            <input class="field-input" value="{{editorForm.passThresholdPercent}}" type="number" data-field="passThresholdPercent" bindinput="onEditorInput" placeholder="80" />
-          </view>
-        </view>
-        <view wx:if="{{editorForm.sessionDrafts.length}}" class="session-draft-list">
-          <view wx:for="{{editorForm.sessionDrafts}}" wx:for-item="session" wx:for-index="index" wx:key="sessionIndex" class="session-draft-card">
-            <view class="session-draft-head">
-              <text class="session-draft-title">第{{session.sessionIndex}}次课</text>
-              <text class="session-draft-sub">{{session.date}} {{session.startTime}}-{{session.endTime}}</text>
-            </view>
-            <view class="editor-row">
-              <view class="editor-field half">
-                <text class="field-label">课次名称</text>
-                <input class="field-input" value="{{session.sessionTitle}}" data-index="{{index}}" data-field="sessionTitle" bindinput="onSessionDraftInput" placeholder="第x次课" />
-              </view>
-              <view class="editor-field half">
-                <text class="field-label">主题</text>
-                <input class="field-input" value="{{session.topic}}" data-index="{{index}}" data-field="topic" bindinput="onSessionDraftInput" placeholder="本次主题" />
-              </view>
-            </view>
-            <view class="editor-field">
-              <text class="field-label">日期</text>
-              <input class="field-input" value="{{session.date}}" data-index="{{index}}" data-field="date" bindinput="onSessionDraftInput" placeholder="YYYY-MM-DD" />
-            </view>
-            <view class="editor-row">
-              <view class="editor-field half">
-                <text class="field-label">开始时间</text>
-                <input class="field-input" value="{{session.startTime}}" data-index="{{index}}" data-field="startTime" bindinput="onSessionDraftInput" placeholder="18:30" />
-              </view>
-              <view class="editor-field half">
-                <text class="field-label">结束时间</text>
-                <input class="field-input" value="{{session.endTime}}" data-index="{{index}}" data-field="endTime" bindinput="onSessionDraftInput" placeholder="20:00" />
-              </view>
-            </view>
-            <view class="editor-field">
-              <text class="field-label">教室</text>
-              <picker range="{{classroomOptions}}" range-key="name" value="{{session.classroomIndex}}" data-index="{{index}}" bindchange="onSessionClassroomChange">
-                <view class="picker-value">{{session.classroomName || '选择教室'}}</view>
-              </picker>
-            </view>
-          </view>
-        </view>
-        <view class="editor-field">
-          <text class="field-label">备注</text>
-          <textarea class="field-textarea" value="{{editorForm.description}}" data-field="description" bindinput="onEditorInput" placeholder="课程说明"></textarea>
-        </view>
-      </view>
-
-      <view wx:elif="{{activeType === 'students'}}" class="editor-fields">
-        <view class="editor-field">
-          <text class="field-label">学生姓名</text>
-          <input class="field-input" value="{{editorForm.name}}" data-field="name" bindinput="onEditorInput" placeholder="学生姓名" />
-        </view>
-        <view class="editor-field">
-          <text class="field-label">年级</text>
-          <picker range="{{gradeOptions}}" value="{{editorForm.gradeIndex}}" bindchange="onEditorGradeChange">
-            <view class="picker-value">{{editorForm.grade || '选择年级'}}</view>
-          </picker>
-        </view>
-        <view class="editor-field">
-          <text class="field-label">登录手机号</text>
-          <input class="field-input" value="{{editorForm.phone}}" data-field="phone" bindinput="onEditorInput" type="number" placeholder="家长登录手机号" />
-        </view>
-      </view>
-
-      <view wx:elif="{{activeType === 'teachers'}}" class="editor-fields">
-        <view class="editor-field">
-          <text class="field-label">教师姓名</text>
-          <input class="field-input" value="{{editorForm.fullName}}" data-field="fullName" bindinput="onEditorInput" placeholder="教师姓名" />
-        </view>
-        <view class="editor-field">
-          <text class="field-label">显示名称</text>
-          <input class="field-input" value="{{editorForm.name}}" data-field="name" bindinput="onEditorInput" placeholder="例如 周明远老师" />
-        </view>
-        <view class="editor-row">
-          <view class="editor-field half">
-            <text class="field-label">科目</text>
-            <picker range="{{subjectOptions}}" value="{{editorForm.subjectIndex}}" bindchange="onEditorSubjectChange">
-              <view class="picker-value">{{editorForm.subject || '选择科目'}}</view>
-            </picker>
-          </view>
-          <view class="editor-field half">
-            <text class="field-label">职称</text>
-            <input class="field-input" value="{{editorForm.title}}" data-field="title" bindinput="onEditorInput" placeholder="数学老师" />
-          </view>
-        </view>
-        <view class="editor-field">
-          <text class="field-label">登录手机号</text>
-          <input class="field-input" value="{{editorForm.phone}}" data-field="phone" bindinput="onEditorInput" type="number" placeholder="教师登录手机号" />
-        </view>
-      </view>
-
-      <view wx:else class="editor-fields">
-        <view class="editor-field">
-          <text class="field-label">教室名称</text>
-          <input class="field-input" value="{{editorForm.name}}" data-field="name" bindinput="onEditorInput" placeholder="例如 16号教室" />
-        </view>
-        <view class="editor-row">
-          <view class="editor-field half">
-            <text class="field-label">校区</text>
-            <input class="field-input" value="{{editorForm.campus}}" data-field="campus" bindinput="onEditorInput" placeholder="主校区" />
-          </view>
-          <view class="editor-field half">
-            <text class="field-label">容量</text>
-            <input class="field-input" value="{{editorForm.capacity}}" data-field="capacity" bindinput="onEditorInput" type="number" placeholder="18" />
-          </view>
-        </view>
-        <view class="editor-field">
-          <text class="field-label">摄像头状态</text>
-          <picker range="{{cameraOptions}}" range-key="label" value="{{editorForm.cameraIndex}}" bindchange="onCameraChange">
-            <view class="picker-value">{{editorForm.cameraStatusText || '待配置'}}</view>
-          </picker>
-        </view>
-      </view>
-
-      <view class="editor-actions">
-        <button class="editor-cancel" bindtap="closeEditor">取消</button>
-        <button class="editor-save" bindtap="saveEditor">保存</button>
+    <view class="qf-top">
+      <view class="qf-brand">
+        <text class="qf-brand-title">学习通关看板</text>
+        <text class="qf-brand-sub">{{scope.isSuperAdmin ? '全机构数据' : '授权范围内的数据'}}</text>
       </view>
     </view>
-  </view>
+
+    <view wx:if="{{loading}}" class="qf-empty"><text>正在汇总通关数据</text></view>
+
+    <block wx:else>
+      <view class="summary-strip">
+        <view class="summary-main">
+          <text class="summary-kicker">累计通关率</text>
+          <text class="summary-rate">{{summary.passRateText}}</text>
+          <text class="summary-meta">{{summary.confirmationText}} 次学生课次已确认</text>
+        </view>
+        <view class="summary-side">
+          <text class="summary-side-value">{{summary.courseCount || 0}}</text>
+          <text class="summary-side-label">在管课程</text>
+        </view>
+      </view>
+
+      <view class="qf-section">年级通关率</view>
+      <view wx:if="{{gradeStatistics.length}}" class="dashboard-list">
+        <view wx:for="{{gradeStatistics}}" wx:key="grade" class="qf-card analytics-row" data-grade="{{item.grade}}" bindtap="toggleGrade">
+          <view class="analytics-row-main">
+            <text class="analytics-title">{{item.gradeName}}</text>
+            <text class="analytics-meta">{{item.confirmationText}} 次学生课次已确认</text>
+          </view>
+          <view class="analytics-score">
+            <text class="analytics-rate">{{item.passRateText}}</text>
+            <image class="qf-inline-icon" src="{{expandedGrade === item.grade ? '/assets/icons/chevron-up.svg' : '/assets/icons/chevron-down.svg'}}" mode="aspectFit"></image>
+          </view>
+          <view wx:if="{{expandedGrade === item.grade}}" class="grade-subject-breakdown">
+            <view wx:for="{{item.subjects}}" wx:for-item="subject" wx:key="subjectName" class="subject-stat">
+              <text>{{subject.subjectName}}</text>
+              <text>{{subject.passRateText}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view wx:else class="qf-empty compact">暂无已结束课次</view>
+
+      <view class="qf-section">学科通关率</view>
+      <view wx:if="{{subjectStatistics.length}}" class="metric-grid">
+        <view wx:for="{{subjectStatistics}}" wx:key="subject" class="subject-metric">
+          <text class="subject-name">{{item.subjectName}}</text>
+          <text class="subject-rate">{{item.passRateText}}</text>
+          <text class="subject-meta">{{item.confirmationText}}</text>
+        </view>
+      </view>
+      <view wx:else class="qf-empty compact">暂无学科统计</view>
+
+      <view class="qf-section">教师通关率</view>
+      <view wx:if="{{teacherStatistics.length}}" class="dashboard-list">
+        <view wx:for="{{teacherStatistics}}" wx:key="teacherId" class="qf-card analytics-row teacher-row">
+          <image class="analytics-avatar" src="/assets/icons/teacher.svg" mode="aspectFit"></image>
+          <view class="analytics-row-main">
+            <text class="analytics-title">{{item.teacherName}}</text>
+            <text class="analytics-meta">{{item.courseStatistics.length}} 门课程 · {{item.confirmationText}}</text>
+          </view>
+          <text class="analytics-rate">{{item.passRateText}}</text>
+        </view>
+      </view>
+      <view wx:else class="qf-empty compact">暂无教师统计</view>
+
+      <view class="qf-section">重点关注学员</view>
+      <view wx:if="{{needsAttention.length}}" class="focus-list">
+        <view wx:for="{{needsAttention}}" wx:key="id" class="qf-card focus-card attention">
+          <view class="focus-head">
+            <view class="focus-avatar">{{item.studentName[0]}}</view>
+            <view class="focus-main">
+              <text class="focus-name">{{item.studentName}}</text>
+              <text class="focus-meta">{{item.courseName}} · {{item.teacherName}}</text>
+            </view>
+            <view class="focus-status">{{item.attentionText}}</view>
+          </view>
+          <view class="focus-stats">
+            <text>通关率 {{item.passRateText}}</text>
+            <text>{{item.confirmationText}}</text>
+          </view>
+          <view class="focus-note-row">
+            <input class="focus-note-input" value="{{item.noteDraft}}" placeholder="填写跟进备注" data-id="{{item.id}}" bindinput="onNoteInput" />
+            <button class="focus-save" data-id="{{item.id}}" bindtap="saveFocusNote" disabled="{{savingFocusId === item.id}}">保存</button>
+          </view>
+        </view>
+      </view>
+      <view wx:else class="qf-empty compact">暂无需要重点跟进的学员</view>
+
+      <view class="excellent-toggle" wx:if="{{excellentStudents.length}}" bindtap="toggleExcellent">
+        <text>表现优秀学员 {{excellentStudents.length}} 人</text>
+        <image class="qf-inline-icon" src="{{showExcellent ? '/assets/icons/chevron-up.svg' : '/assets/icons/chevron-down.svg'}}" mode="aspectFit"></image>
+      </view>
+      <view wx:if="{{showExcellent}}" class="focus-list excellent-list">
+        <view wx:for="{{excellentStudents}}" wx:key="id" class="qf-card focus-card excellent">
+          <view class="focus-head">
+            <view class="focus-avatar excellent-avatar">{{item.studentName[0]}}</view>
+            <view class="focus-main">
+              <text class="focus-name">{{item.studentName}}</text>
+              <text class="focus-meta">{{item.courseName}} · {{item.teacherName}}</text>
+            </view>
+            <view class="focus-status">{{item.passRateText}}</view>
+          </view>
+          <view class="focus-note-row">
+            <input class="focus-note-input" value="{{item.noteDraft}}" placeholder="填写鼓励或备注" data-id="{{item.id}}" bindinput="onNoteInput" />
+            <button class="focus-save" data-id="{{item.id}}" bindtap="saveFocusNote" disabled="{{savingFocusId === item.id}}">保存</button>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{scope.isSuperAdmin && grants.length}}" class="grant-summary">
+        <text class="grant-title">分级管理员授权</text>
+        <text class="grant-meta">已配置 {{grants.length}} 个管理员身份；完整授权编辑将在教研后台统一维护。</text>
+      </view>
+    </block>
+    <view class="qf-safe-bottom"></view>
+  </scroll-view>
 
   <qf-role-tabbar role="admin" current="/pages/admin/home/home" fixed="{{false}}"></qf-role-tabbar>
 </view>

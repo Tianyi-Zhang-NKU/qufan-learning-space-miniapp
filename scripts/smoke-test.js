@@ -266,16 +266,6 @@ async function run() {
 
   const adminHomeJs = readText('pages/admin/home/home.js');
   const adminHomeWxml = readText('pages/admin/home/home.wxml');
-  assert(adminHomeJs.includes('gradeFilters') && adminHomeJs.includes('subjectFilters') && adminHomeJs.includes('teacherSubjectFilters'), 'admin collections should expose grade and subject filters');
-  assert(adminHomeJs.includes('GRADE_OPTIONS') && adminHomeJs.includes('SUBJECT_OPTIONS'), 'admin filters should use full grade and subject option catalogs');
-  assert(adminHomeWxml.includes('bindchange="onGradeFilterChange"') && adminHomeWxml.includes('bindchange="onSubjectFilterChange"'), 'admin filters should be picker dropdowns');
-  assert(adminHomeWxml.includes('bindchange="onEditorSubjectChange"') && adminHomeWxml.includes('bindchange="onEditorGradeChange"'), 'course editor subject and grade should be picker dropdowns');
-  assert(adminHomeWxml.includes('cameraStatusText'), 'admin classroom list should display human-readable camera status');
-
-  const adminManageWxml = readText('pages/admin/manage/manage.wxml');
-  assert(adminManageWxml.includes('导入学生') && !adminManageWxml.includes('导入课程'), 'admin data management should only keep import-student action');
-  assert(adminManageWxml.includes('教务同步') && adminManageWxml.includes('data-action="transfer"') && adminManageWxml.includes('data-action="withdraw"'), 'admin data management should expose enrollment sync actions for insert, transfer and withdraw');
-  assert(readText('pages/admin/manage/manage.js').includes('syncEnrollmentChange'), 'admin data management should call enrollment sync API');
 
   assert(readText('pages/parent/home/home.wxml').includes('/pages/live-player/live-player'), 'student pages should expose course live entry');
   assert(readText('pages/parent/home/home.wxml').includes('course-actions tests-row') && readText('pages/parent/home/home.wxml').includes('course-actions live-row'), 'student home should split test buttons and live entry into separate rows');
@@ -296,10 +286,6 @@ async function run() {
   assert(readText('pages/teacher/courses/courses.wxml').includes('current="/pages/teacher/courses/courses"'), 'teacher schedule page tabbar current should point to itself');
   assert(readText('pages/teacher/courses/courses.wxml').includes('bindtap="editSession"') && readText('pages/teacher/courses/courses.wxml').includes('session-editor'), 'teacher schedule should expose lesson rename/topic editor');
   assert(!readText('pages/teacher/courses/courses.wxml').includes('课前错题') && !readText('pages/teacher/courses/courses.wxml').includes('课后错题'), 'teacher schedule should use classroom quiz/summary wording instead of pre/post wrong-question copy');
-  assert(readText('pages/admin/home/home.wxml').includes('/pages/live-player/live-player'), 'admin course collection should expose course live entry');
-  assert(adminHomeWxml.includes('课次数量') && adminHomeWxml.includes('onSessionCountInput') && adminHomeWxml.includes('onSessionDraftInput') && adminHomeWxml.includes('onSessionClassroomChange'), 'admin course editor should expose editable session count, classroom and time fields');
-  assert(adminHomeWxml.includes('通关标准%') && adminHomeWxml.includes('data-field="passThresholdPercent"') && adminHomeJs.includes('passThresholdPercent'), 'admin course editor should expose teacher-defined pass threshold');
-  assert(adminHomeJs.includes('syncCourseSessionsForEditor') && adminHomeJs.includes('saveCourseEditor'), 'admin course editor should persist course session count and lesson edits');
   assert(teacherHomeWxml.includes('教师待办') && teacherHomeWxml.includes('confirmPass') === false && teacherHomeWxml.includes('确认通关'), 'teacher home should expose pass-confirmation todo cards');
   assert(readText('pages/teacher/home/home.js').includes('getTeacherTodos') && readText('pages/teacher/home/home.wxss').includes('todo-card'), 'teacher home should load and style teacher todos');
   assert(readText('pages/teacher/feedback-detail/feedback-detail.wxml').includes('pass-quick-card') && readText('pages/teacher/feedback-detail/feedback-detail.js').includes('confirmPassNow'), 'feedback detail should expose fixed pass confirmation action');
@@ -324,6 +310,9 @@ async function run() {
       && parentSummaryWxml.includes('feedback-voice-bar disabled'),
     'lesson summary feedback card should render image, comment and voice state inline in the client-requested order'
   );
+  assert(adminHomeWxml.includes('年级通关率') && adminHomeWxml.includes('学科通关率') && adminHomeWxml.includes('教师通关率') && adminHomeWxml.includes('重点关注学员'), 'admin home should center pass analytics and focus students');
+  assert(!adminHomeWxml.includes('课程合集') && !adminHomeWxml.includes('教室合集') && !adminHomeWxml.includes('全校课表'), 'admin home should not expose legacy course, classroom, or timetable management as primary content');
+  assert(adminHomeJs.includes('getAdminDashboard') && adminHomeJs.includes('saveStudentAttentionNote'), 'admin home should load analytics and persist focus-student notes');
   const parentExercisesWxml = readText('pages/parent/exercises/exercises.wxml');
   const parentExercisesWxss = readText('pages/parent/exercises/exercises.wxss');
   assert(parentExercisesWxml.includes('workbook-export-card') && readText('pages/parent/exercises/exercises.js').includes('exportStudentWrongWorkbook'), 'wrong workbook should expose printable PDF export');
@@ -351,8 +340,7 @@ async function run() {
     ['pages/teacher/test-upload/test-upload.wxss', 'session-tab-status'],
     ['pages/teacher/feedback-detail/feedback-detail.wxss', 'session-tab-status-dot'],
     ['pages/teacher/feedback-detail/feedback-detail.wxss', 'media-tag'],
-    ['pages/profile/profile.wxss', 'avatar-badge'],
-    ['pages/admin/home/home.wxss', 'info-chip']
+    ['pages/profile/profile.wxss', 'avatar-badge']
   ];
   centeredLabelStyles.forEach(([file, className]) => {
     const stylesheet = readText(file);
@@ -415,6 +403,7 @@ async function run() {
   assert(typeof Api.getPassStatistics === 'function', 'pass statistics API missing');
   assert(typeof Api.getFocusStudents === 'function', 'focus students API missing');
   assert(typeof Api.saveStudentAttentionNote === 'function', 'student attention note API missing');
+  assert(typeof Api.getAdminDashboard === 'function', 'admin dashboard API missing');
   assert(typeof Api.getAvailableRoles === 'function', 'available roles API missing');
   assert(typeof Api.selectActiveRole === 'function', 'active role selection API missing');
   assert(typeof Api.getAdminGrants === 'function', 'admin grants API missing');
@@ -694,6 +683,9 @@ async function run() {
   assert(savedAttentionNote.note === '连续未通关，需联系任课老师跟进。' && savedAttentionNote.status === 'following', 'admin should save a focus-student note');
   const focusStudentsWithNote = await Api.getFocusStudents({ courseId: 'course_bio_001' });
   assert(focusStudentsWithNote.needsAttention.find((item) => item.studentId === 'stu_003').note === '连续未通关，需联系任课老师跟进。', 'focus-student note should persist in the focus list');
+  const adminDashboard = await Api.getAdminDashboard({});
+  assert(adminDashboard.gradeStatistics.length && adminDashboard.subjectStatistics.length && adminDashboard.teacherStatistics.length, 'admin dashboard should expose grade, subject, and teacher pass statistics');
+  assert(adminDashboard.focusStudents.needsAttention.some((item) => item.studentId === 'stu_003'), 'admin dashboard should include focus students');
   const availableTeacherRoles = await Api.getAvailableRoles({ phone: '13800000002' });
   assert(availableTeacherRoles.roles.some((item) => item.role === 'teacher') && availableTeacherRoles.roles.some((item) => item.role === 'admin'), 'one phone should expose teacher and administrator roles');
   await Api.loginByPhone({ phone: '13800000002' });

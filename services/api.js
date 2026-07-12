@@ -1369,6 +1369,41 @@ const mockApi = {
     });
   },
 
+  getAdminDashboard(payload = {}) {
+    const session = requireRole('admin');
+    const courses = filterCoursesForAdminScope(session, db.courses)
+      .filter((course) => !payload.grade || course.grade === payload.grade)
+      .filter((course) => !payload.subject || course.subject === payload.subject)
+      .filter((course) => !payload.teacherId || course.teacherId === payload.teacherId);
+    const summary = buildPassStatisticSummary(courses);
+    const focusStudents = buildFocusStudentRecords(courses);
+    return delay({
+      scope: {
+        grade: payload.grade || '',
+        subject: payload.subject || '',
+        teacherId: payload.teacherId || '',
+        isSuperAdmin: !!session.isSuperAdmin,
+        gradeScopes: (session.gradeScopes || []).slice(),
+        subjectScopes: (session.subjectScopes || []).slice()
+      },
+      summary: {
+        courseCount: courses.length,
+        completedSessions: summary.completedSessions,
+        eligibleStudentSessions: summary.eligibleStudentSessions,
+        confirmedPasses: summary.confirmedPasses,
+        passRate: summary.passRate
+      },
+      gradeStatistics: groupPassStatistics(courses, 'grade', 'gradeName'),
+      subjectStatistics: groupPassStatistics(courses, 'subject', 'subjectName'),
+      teacherStatistics: groupPassStatistics(courses, 'teacherId', 'teacherName').map((item) => ({
+        ...item,
+        teacherName: (findTeacher(item.teacherId) || {}).name || item.teacherId
+      })),
+      focusStudents,
+      attentionRules: clone(db.attentionRules || {})
+    });
+  },
+
   getPassStatistics(payload = {}) {
     const session = requireRole('admin');
     const courses = filterCoursesForAdminScope(session, db.courses)
