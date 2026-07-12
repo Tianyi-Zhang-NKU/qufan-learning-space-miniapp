@@ -57,9 +57,9 @@
               <text class="session-preview-dot"></text>
               <text class="session-preview-label">{{item.sessionTitle}}</text>
               <text class="session-preview-date" wx:if="{{item.date}}">{{item.date}}</text>
-              <text class="session-preview-count {{item.recordCount ? 'has-records' : ''}}">
+              <view class="session-preview-count {{item.recordCount ? 'has-records' : ''}}">
                 {{item.recordCount ? item.recordCount + ' 条错题' : '暂无'}}
-              </text>
+              </view>
             </view>
           </view>
 
@@ -112,8 +112,8 @@
                 <text class="workbook-record-meta">{{item.courseName}} · {{item.wrongCount}} 道错题</text>
               </view>
               <view class="workbook-record-badges">
-                <text wx:if="{{item.accuracyText}}" class="workbook-badge">{{item.accuracyText}}</text>
-                <text wx:if="{{item.rankText}}" class="workbook-badge muted">{{item.rankText}}</text>
+                <view wx:if="{{item.accuracyText}}" class="workbook-badge">{{item.accuracyText}}</view>
+                <view wx:if="{{item.rankText}}" class="workbook-badge muted">{{item.rankText}}</view>
               </view>
             </view>
             <view class="workbook-question-list">
@@ -137,7 +137,7 @@
         >
           <view class="session-entry-header">
             <text class="session-entry-index">第{{item.sessionIndex}}次课</text>
-            <text class="session-entry-badge">本讲总结</text>
+            <view class="session-entry-badge">本讲总结</view>
           </view>
           <text class="session-entry-title">{{item.sessionTitle}}</text>
 
@@ -157,9 +157,9 @@
           </view>
 
           <view class="session-entry-footer">
-            <text class="session-entry-count {{item.recordCount ? 'has-records' : ''}}">
+            <view class="session-entry-count {{item.recordCount ? 'has-records' : ''}}">
               {{item.recordCount ? item.recordCount + ' 条错题记录' : '暂无记录'}}
-            </text>
+            </view>
             <text class="session-entry-arrow">›</text>
           </view>
         </view>
@@ -224,8 +224,8 @@
                 <text class="workbook-record-meta">{{item.courseName}} · {{item.wrongCount}} 道错题</text>
               </view>
               <view class="workbook-record-badges">
-                <text wx:if="{{item.accuracyText}}" class="workbook-badge">{{item.accuracyText}}</text>
-                <text wx:if="{{item.rankText}}" class="workbook-badge muted">{{item.rankText}}</text>
+                <view wx:if="{{item.accuracyText}}" class="workbook-badge">{{item.accuracyText}}</view>
+                <view wx:if="{{item.rankText}}" class="workbook-badge muted">{{item.rankText}}</view>
               </view>
             </view>
             <view class="workbook-question-list">
@@ -363,8 +363,8 @@
                 <text class="workbook-record-meta">{{item.courseName}} · {{item.wrongCount}} 道错题</text>
               </view>
               <view class="workbook-record-badges">
-                <text wx:if="{{item.accuracyText}}" class="workbook-badge">{{item.accuracyText}}</text>
-                <text wx:if="{{item.rankText}}" class="workbook-badge muted">{{item.rankText}}</text>
+                <view wx:if="{{item.accuracyText}}" class="workbook-badge">{{item.accuracyText}}</view>
+                <view wx:if="{{item.rankText}}" class="workbook-badge muted">{{item.rankText}}</view>
               </view>
             </view>
             <view class="workbook-question-list">
@@ -390,7 +390,7 @@
           <view class="qf-card all-session-card">
             <view class="all-session-head">
               <text class="all-session-title">{{item.sessionTitle || '课次'}}</text>
-              <text class="all-session-count">{{item.records.length}} 条</text>
+              <view class="all-session-count">{{item.records.length}} 条</view>
             </view>
 
             <!-- Records in this session -->

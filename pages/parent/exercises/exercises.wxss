@@ -178,6 +178,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-height: 40rpx;
+  line-height: 1;
   flex-shrink: 0;
   color: rgba(45, 75, 64, 0.42);
   font-size: 21rpx;
@@ -242,6 +244,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-height: 48rpx;
+  line-height: 1;
   font-size: 21rpx;
   color: #fff9ec;
   padding: 6rpx 18rpx;
@@ -277,6 +281,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-height: 50rpx;
+  line-height: 1;
   color: rgba(45, 75, 64, 0.42);
   font-size: 23rpx;
   padding: 6rpx 16rpx;
@@ -438,6 +444,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-height: 40rpx;
+  line-height: 1;
   color: #f97316;
   font-size: 21rpx;
   font-weight: 600;
@@ -572,6 +580,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-height: 48rpx;
+  line-height: 1;
   font-size: 21rpx;
   color: #fff9ec;
   padding: 6rpx 18rpx;
@@ -917,6 +927,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-height: 42rpx;
+  line-height: 1;
   max-width: 220rpx;
   padding: 6rpx 14rpx;
   border-radius: 999rpx;
