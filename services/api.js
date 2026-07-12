@@ -2837,10 +2837,33 @@ function createPlaceholderAdapter(mode) {
   return adapter;
 }
 
+function createCloudAdapter() {
+  const adapter = {};
+  Object.keys(mockApi).forEach((methodName) => {
+    adapter[methodName] = function cloudMethod(payload) {
+      if (!hasWx() || !wx.cloud || typeof wx.cloud.callFunction !== 'function') {
+        return Promise.reject(makeError('CLOUD_NOT_READY', '微信云开发尚未初始化，请检查云环境配置。', { methodName }));
+      }
+      return wx.cloud.callFunction({
+        name: config.cloudFunctionName || 'learning-platform',
+        data: {
+          method: methodName,
+          payload: payload || {}
+        }
+      }).then((response) => {
+        const result = response && response.result ? response.result : {};
+        if (result.ok === false) throw makeError(result.code || 'CLOUD_ERROR', result.message || '云函数请求失败。', result.details);
+        return result.data === undefined ? result : result.data;
+      });
+    };
+  });
+  return adapter;
+}
+
 const adapters = {
   mock: mockApi,
   local: createPlaceholderAdapter('local'),
-  cloud: createPlaceholderAdapter('cloud'),
+  cloud: createCloudAdapter(),
   http: createPlaceholderAdapter('http')
 };
 

@@ -82,3 +82,21 @@ node scripts/smoke-test.js
 ```
 
 `check-js` 检查 JavaScript 语法；`smoke-test` 覆盖手机号登录、老师课程课次学生路径、反馈创建、图片/语音媒体权限、学生/家长查看反馈、ClassIn 占位、15 间教室/直播占位和旧品牌/旧主流程文案清理。
+
+## 教研电脑后台
+
+本地开发可启动当前 Node 服务后，在浏览器访问：
+
+```bash
+node server/index.js
+```
+
+`http://127.0.0.1:8787/research-admin`
+
+教研后台与小程序复用资料包、题目单元、课程绑定和权限 API。资料包发布后可以绑定多个平行班；对已发布资料的修改会新建版本，已绑定课次继续引用原版本。
+
+生产环境推荐使用微信云开发：小程序将 `services/config.js` 的 `apiMode` 切换为 `cloud`，并部署名为 `learning-platform` 的云函数。环境 ID、密钥和真实接口地址不得写入前端或提交仓库。部署协议见：
+
+- `docs/integrations/cloudbase-function-contract.md`
+- `docs/integrations/enrollment-readonly-sync-contract.md`
+- `docs/integrations/classin-entry-contract.md`

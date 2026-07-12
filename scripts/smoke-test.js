@@ -211,6 +211,7 @@ async function run() {
   assert(appWxss.includes('#E9E6DA') && appWxss.includes('#10224A') && appWxss.includes('#FFFDF6'), 'app.wxss should expose the new paper theme colors');
   const apiSource = readText('services/api.js');
   assert(!apiSource.includes('mock 占位') && !apiSource.includes('ClassIn 接口待接入') && !apiSource.includes('adapter 待接入真实服务'), 'service copy should avoid engineering placeholder wording');
+  assert(apiSource.includes('createCloudAdapter') && apiSource.includes('wx.cloud.callFunction'), 'service layer should provide a CloudBase function adapter');
 
   const feedbackTypes = require('../utils/feedback-types');
   assert(feedbackTypes.feedbackTypeText('pre') === '课堂小测学习反馈', 'shared feedback type text should format pre-test feedback');

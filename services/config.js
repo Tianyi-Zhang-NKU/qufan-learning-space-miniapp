@@ -3,6 +3,7 @@ module.exports = {
   authMode: 'mock', // mock | wechatPhone | sms | http
   localBaseUrl: 'http://127.0.0.1:8787',
   cloudEnv: '',
+  cloudFunctionName: 'learning-platform',
   httpBaseUrl: '',
   demoPhones: {
     student: '13800000001',
