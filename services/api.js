@@ -1562,7 +1562,49 @@ const mockApi = {
   saveAdminGrant(payload = {}) {
     const session = requireRole('admin');
     if (!session.isSuperAdmin) throw makeError('NO_PERMISSION', '只有超级管理员可以修改管理员授权。');
-    const role = findUserRole(payload.roleId);
+    let role = findUserRole(payload.roleId);
+    if (!role && payload.phone) {
+      const phone = String(payload.phone).trim();
+      if (!/^1\d{10}$/.test(phone)) throw makeError('VALIDATION_ERROR', '请输入有效的管理员手机号。');
+      const users = ensureCollection('users');
+      let user = users.find((item) => item.phone === phone);
+      if (!user) {
+        user = {
+          id: nextId('user', users),
+          phone,
+          displayName: phone,
+          avatarUrl: '',
+          status: 'active'
+        };
+        users.push(user);
+      }
+      const roles = ensureCollection('userRoles');
+      role = roles.find((item) => item.userId === user.id && item.role === 'admin');
+      if (!role) {
+        let admin = db.admins.find((item) => item.phone === phone);
+        if (!admin) {
+          admin = {
+            id: nextId('admin', db.admins),
+            name: user.displayName || phone,
+            phone,
+            campus: '主校区',
+            roleTitle: '分级管理员',
+            status: 'active'
+          };
+          db.admins.push(admin);
+        }
+        role = {
+          id: nextId('role_admin', roles),
+          userId: user.id,
+          phone,
+          role: 'admin',
+          linkedId: admin.id,
+          nickname: admin.name,
+          enabled: true
+        };
+        roles.push(role);
+      }
+    }
     if (!role || role.role !== 'admin') throw makeError('VALIDATION_ERROR', '请选择有效的管理员身份。');
     const store = ensureCollection('adminGrants');
     let grant = store.find((item) => item.roleId === role.id);
@@ -1584,7 +1626,11 @@ const mockApi = {
       updatedBy: session.identityId
     });
     pushAudit(session.identityId, 'save_admin_grant', 'adminGrant', grant.id, `更新 ${role.phone} 的管理员授权`);
-    return delay(grant);
+    return delay({
+      ...grant,
+      phone: role.phone,
+      displayName: (ensureCollection('users').find((item) => item.id === role.userId) || {}).displayName || role.nickname || role.phone
+    });
   },
 
   getResearchMaterialPackages(payload = {}) {

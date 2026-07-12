@@ -11,8 +11,7 @@ const TABS = {
   ],
   admin: [
     { text: '首页', icon: '/assets/icons/home.svg', url: '/pages/admin/home/home' },
-    { text: '数据', icon: '/assets/icons/data.svg', url: '/pages/admin/manage/manage' },
-    { text: '课表', icon: '/assets/icons/calendar.svg', url: '/pages/admin/schedule-board/schedule-board' },
+    { text: '授权', icon: '/assets/icons/users.svg', url: '/pages/admin/manage/manage' },
     { text: '我的', icon: '/assets/icons/profile.svg', url: '/pages/profile/profile' }
   ]
 };

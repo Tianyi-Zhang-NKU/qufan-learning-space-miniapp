@@ -1,127 +1,56 @@
-<view class="qf-page qf-page-fixed admin-manage">
+<view class="qf-page qf-page-fixed admin-grants-page">
   <z-bg mode="dark"></z-bg>
-
   <scroll-view scroll-y enhanced show-scrollbar="{{false}}" class="qf-scroll-body">
     <view class="qf-top">
       <view class="qf-brand">
-        <text class="qf-brand-title">数据管理</text>
-        <text class="qf-brand-sub">将学生加入已有课程</text>
+        <text class="qf-brand-title">管理员授权</text>
+        <text class="qf-brand-sub">手机号是唯一识别，授权范围按年级和学科生效</text>
       </view>
     </view>
 
-    <view class="qf-panel">
-      <view class="qf-section">导入学生</view>
-
-      <view class="qf-card import-card">
-        <view class="form-group">
-          <text class="form-label">选择学生</text>
-          <picker range="{{studentOptions}}" value="{{selectedStudentIndex}}" bindchange="pickStudent">
-            <view class="qf-picker import-picker">
-              <text class="qf-picker-label">学生</text>
-              <text class="qf-picker-value">{{studentOptions[selectedStudentIndex] || '请选择学生'}}</text>
-            </view>
-          </picker>
+    <view wx:if="{{loading}}" class="qf-empty">正在加载授权范围</view>
+    <block wx:else>
+      <view class="qf-section">新增或更新授权</view>
+      <view class="qf-card grant-editor">
+        <view class="grant-field">
+          <text class="grant-label">授权手机号</text>
+          <input class="grant-input" type="number" maxlength="11" value="{{phone}}" placeholder="输入教师或教务手机号" bindinput="onPhoneInput" />
         </view>
-
-        <view wx:if="{{studentList[selectedStudentIndex]}}" class="selected-preview">
-          <view class="preview-avatar student-avatar-bg">
-            <text class="preview-avatar-text">{{studentList[selectedStudentIndex].name[0] || '生'}}</text>
-          </view>
-          <view class="preview-info">
-            <text class="preview-name">{{studentList[selectedStudentIndex].name}}</text>
-            <text class="preview-meta">{{studentList[selectedStudentIndex].grade}} · {{studentList[selectedStudentIndex].phone || '未绑定手机'}}</text>
-            <text class="preview-courses">已加入 {{studentList[selectedStudentIndex].courseIds.length}} 门课程</text>
+        <view class="grant-field">
+          <text class="grant-label">可管理年级</text>
+          <view class="scope-grid">
+            <button wx:for="{{gradeOptions}}" wx:key="*this" class="scope-option {{selectedGrades.indexOf(item) >= 0 ? 'active' : ''}}" data-value="{{item}}" bindtap="toggleGradeScope">{{item}}</button>
           </view>
         </view>
-
-        <view class="import-arrow">
-          <text class="arrow-down">↓</text>
-        </view>
-
-        <view class="form-group">
-          <text class="form-label">目标课程</text>
-          <picker range="{{courseOptions}}" value="{{selectedCourseIndex}}" bindchange="pickCourse">
-            <view class="qf-picker import-picker">
-              <text class="qf-picker-label">课程</text>
-              <text class="qf-picker-value">{{courseOptions[selectedCourseIndex] || '请选择课程'}}</text>
-            </view>
-          </picker>
-        </view>
-
-        <view wx:if="{{courseList[selectedCourseIndex]}}" class="selected-preview course-preview">
-          <view class="preview-avatar course-avatar-bg">
-            <text class="preview-avatar-text">课</text>
-          </view>
-          <view class="preview-info">
-            <text class="preview-name">{{courseList[selectedCourseIndex].name}}</text>
-            <text class="preview-meta">{{courseList[selectedCourseIndex].subject}} · {{courseList[selectedCourseIndex].grade}} · 当前{{courseList[selectedCourseIndex].studentIds.length}}名学生</text>
+        <view class="grant-field">
+          <text class="grant-label">可管理学科</text>
+          <view class="scope-grid">
+            <button wx:for="{{subjectOptions}}" wx:key="*this" class="scope-option {{selectedSubjects.indexOf(item) >= 0 ? 'active' : ''}}" data-value="{{item}}" bindtap="toggleSubjectScope">{{item}}</button>
           </view>
         </view>
-
-        <button class="qf-btn full import-btn" bindtap="doImportStudent" disabled="{{importingStudent}}">
-          <text wx:if="{{!importingStudent}}">确认导入</text>
-          <text wx:else>导入中...</text>
-        </button>
-
-        <view wx:if="{{studentResult}}" class="result-banner {{studentResult.success ? 'success' : 'error'}}">
-          <text class="result-icon">{{studentResult.success ? '✓' : '!'}}</text>
-          <text class="result-text">{{studentResult.message}}</text>
-        </view>
+        <button class="qf-btn full grant-save" disabled="{{saving}}" bindtap="saveGrant">{{saving ? '保存中' : '保存授权'}}</button>
       </view>
 
-      <view class="qf-section sync-section-title">教务同步</view>
-      <view class="qf-card enrollment-sync-card">
-        <view class="sync-action-row">
-          <button class="sync-action {{syncAction === 'enroll' ? 'active' : ''}}" data-action="enroll" bindtap="switchSyncAction">插班</button>
-          <button class="sync-action {{syncAction === 'transfer' ? 'active' : ''}}" data-action="transfer" bindtap="switchSyncAction">调班</button>
-          <button class="sync-action {{syncAction === 'withdraw' ? 'active' : ''}}" data-action="withdraw" bindtap="switchSyncAction">退班</button>
-        </view>
-
-        <view class="sync-student-line" wx:if="{{studentList[selectedStudentIndex]}}">
-          <text class="sync-label">学生</text>
-          <text class="sync-value">{{studentList[selectedStudentIndex].name}} · {{studentList[selectedStudentIndex].grade}}</text>
-        </view>
-
-        <view class="form-group" wx:if="{{syncAction !== 'enroll'}}">
-          <text class="form-label">原课程</text>
-          <picker range="{{courseOptions}}" value="{{selectedSourceCourseIndex}}" bindchange="pickSourceCourse">
-            <view class="qf-picker import-picker">
-              <text class="qf-picker-label">来源</text>
-              <text class="qf-picker-value">{{courseOptions[selectedSourceCourseIndex] || '请选择原课程'}}</text>
+      <view class="qf-section">已授权管理员</view>
+      <view wx:if="{{grants.length}}" class="grant-list">
+        <view wx:for="{{grants}}" wx:key="id" class="qf-card grant-card">
+          <view class="grant-card-head">
+            <view>
+              <text class="grant-name">{{item.displayName || item.phone}}</text>
+              <text class="grant-phone">{{item.phone}}</text>
             </view>
-          </picker>
-        </view>
-
-        <view class="form-group" wx:if="{{syncAction !== 'withdraw'}}">
-          <text class="form-label">目标课程</text>
-          <picker range="{{courseOptions}}" value="{{selectedCourseIndex}}" bindchange="pickCourse">
-            <view class="qf-picker import-picker">
-              <text class="qf-picker-label">目标</text>
-              <text class="qf-picker-value">{{courseOptions[selectedCourseIndex] || '请选择目标课程'}}</text>
-            </view>
-          </picker>
-        </view>
-
-        <button class="qf-btn full import-btn sync-submit" bindtap="doSyncEnrollment" disabled="{{syncingEnrollment}}">
-          <text wx:if="{{!syncingEnrollment}}">{{syncAction === 'transfer' ? '确认调班' : syncAction === 'withdraw' ? '确认退班' : '确认插班'}}</text>
-          <text wx:else>同步中...</text>
-        </button>
-
-        <view wx:if="{{syncResult}}" class="result-banner {{syncResult.success ? 'success' : 'error'}}">
-          <text class="result-icon">{{syncResult.success ? '✓' : '!'}}</text>
-          <text class="result-text">{{syncResult.message}}</text>
+            <view class="grant-status {{item.fullAccess ? 'full' : ''}}">{{item.fullAccess ? '超级管理员' : '分级管理员'}}</view>
+          </view>
+          <view wx:if="{{item.fullAccess}}" class="grant-all-scope">可管理全部年级和学科</view>
+          <view wx:else class="grant-scope-lines">
+            <text>年级：{{item.gradeScopes.join('、') || '全部'}}</text>
+            <text>学科：{{item.subjectScopes.join('、') || '全部'}}</text>
+          </view>
         </view>
       </view>
-      <view class="qf-card tight help-card">
-        <text class="help-title">使用说明</text>
-        <text class="help-text">1. 选择一名学生和一门目标课程</text>
-        <text class="help-text">2. 点击“确认导入”将该学生加入课程</text>
-        <text class="help-text">3. 课程新建和排课请回到管理端课程合集处理</text>
-      </view>
-    </view>
-
-    <view style="height: 32rpx;"></view>
+      <view wx:else class="qf-empty compact">尚未配置分级管理员</view>
+    </block>
+    <view class="qf-safe-bottom"></view>
   </scroll-view>
-
   <qf-role-tabbar role="admin" current="/pages/admin/manage/manage" fixed="{{false}}"></qf-role-tabbar>
 </view>

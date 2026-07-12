@@ -321,6 +321,10 @@ async function run() {
   assert(adminHomeWxml.includes('年级通关率') && adminHomeWxml.includes('学科通关率') && adminHomeWxml.includes('教师通关率') && adminHomeWxml.includes('重点关注学员'), 'admin home should center pass analytics and focus students');
   assert(!adminHomeWxml.includes('课程合集') && !adminHomeWxml.includes('教室合集') && !adminHomeWxml.includes('全校课表'), 'admin home should not expose legacy course, classroom, or timetable management as primary content');
   assert(adminHomeJs.includes('getAdminDashboard') && adminHomeJs.includes('saveStudentAttentionNote'), 'admin home should load analytics and persist focus-student notes');
+  const adminManageWxml = readText('pages/admin/manage/manage.wxml');
+  const adminManageJs = readText('pages/admin/manage/manage.js');
+  assert(adminManageWxml.includes('管理员授权') && adminManageWxml.includes('授权手机号') && !adminManageWxml.includes('教务同步'), 'admin management should provide phone-based grants instead of enrollment mutation');
+  assert(adminManageJs.includes('getAdminGrants') && adminManageJs.includes('saveAdminGrant') && adminManageJs.includes('toggleGradeScope'), 'admin management should load and save scoped grants');
   const parentExercisesWxml = readText('pages/parent/exercises/exercises.wxml');
   const parentExercisesWxss = readText('pages/parent/exercises/exercises.wxss');
   assert(parentExercisesWxml.includes('workbook-export-card') && readText('pages/parent/exercises/exercises.js').includes('exportStudentWrongWorkbook'), 'wrong workbook should expose printable PDF export');
@@ -729,6 +733,20 @@ async function run() {
     enabled: true
   });
   assert(updatedGrant.gradeScopes[0] === '初二' && updatedGrant.subjectScopes[0] === '数学', 'super admin should save scoped administrator grants');
+  const phoneGrantedAdmin = await Api.saveAdminGrant({
+    phone: '13800000012',
+    gradeScopes: ['初一'],
+    subjectScopes: ['英语'],
+    enabled: true
+  });
+  assert(phoneGrantedAdmin.phone === '13800000012' && phoneGrantedAdmin.roleId, 'super admin should grant administrator access by phone');
+  const phoneGrantedRoles = await Api.getAvailableRoles({ phone: '13800000012' });
+  assert(phoneGrantedRoles.roles.some((item) => item.id === phoneGrantedAdmin.roleId && item.role === 'admin'), 'phone grant should add an administrator role to the user');
+  await Api.loginByPhone({ phone: '13800000012' });
+  await Api.selectActiveRole({ roleId: phoneGrantedAdmin.roleId });
+  const phoneGrantedStatistics = await Api.getPassStatistics({});
+  assert(phoneGrantedStatistics.courses.every((item) => item.grade === '初一' && item.subject === '英语'), 'phone-granted administrator should only read its assigned scope');
+  Api.setSession(fullAdminSession);
   const materialPackageCountBeforeInvalidSave = Api.__mockDb.materialPackages.length;
   await expectReject(Api.saveMaterialPackage({
     title: '空资料包',
