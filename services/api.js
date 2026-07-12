@@ -2798,17 +2798,9 @@ const mockApi = {
   },
 
   syncEnrollmentChange(payload = {}) {
-    const action = payload.action || payload.type || 'enroll';
-    if (action === 'enroll' || action === 'insert') {
-      return this.addStudentToCourse({ studentId: payload.studentId, courseId: payload.courseId || payload.toCourseId || payload.targetCourseId });
-    }
-    if (action === 'transfer') {
-      return this.transferStudentCourse(payload);
-    }
-    if (action === 'withdraw' || action === 'drop' || action === 'remove') {
-      return this.removeStudentFromCourse({ studentId: payload.studentId, courseId: payload.courseId || payload.fromCourseId || payload.sourceCourseId });
-    }
-    throw makeError('VALIDATION_ERROR', '未知教务同步动作。');
+    throw makeError('READ_ONLY_ENROLLMENT', '课程成员关系由报名教务系统同步，本小程序不提供插班、调班或退班操作。', {
+      action: payload.action || payload.type || ''
+    });
   },
 
   createInvite() {
