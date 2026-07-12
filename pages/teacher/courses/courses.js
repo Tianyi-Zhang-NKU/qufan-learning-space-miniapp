@@ -22,13 +22,7 @@ Page({
     courseDates: [],
 
     // Date course list
-    dateCourses: [],
-    showSessionEditor: false,
-    sessionEditor: {
-      id: '',
-      sessionTitle: '',
-      topic: ''
-    }
+    dateCourses: []
   },
 
   onShow() {
@@ -158,66 +152,5 @@ Page({
     wx.navigateTo({
       url: `/pages/teacher/feedback-students/feedback-students?courseId=${courseId}&courseName=${encodeURIComponent(courseName)}&feedbackType=post&courseSessionId=${sessionId || ''}`
     });
-  },
-
-  /** Navigate to feedback student list */
-  goFeedback(event) {
-    const { courseId, courseName, sessionId } = event.currentTarget.dataset;
-    wx.navigateTo({
-      url: `/pages/teacher/feedback-students/feedback-students?courseId=${courseId}&courseName=${encodeURIComponent(courseName)}&feedbackType=general&courseSessionId=${sessionId || ''}`
-    });
-  },
-
-  goLive(event) {
-    const { sessionId } = event.currentTarget.dataset;
-    if (!sessionId) return;
-    wx.navigateTo({ url: `/pages/live-player/live-player?id=${sessionId}` });
-  },
-
-  noop() {},
-
-  editSession(event) {
-    const { sessionId, sessionTitle, topic } = event.currentTarget.dataset;
-    if (!sessionId) return;
-    this.setData({
-      showSessionEditor: true,
-      sessionEditor: {
-        id: sessionId,
-        sessionTitle: sessionTitle || '',
-        topic: topic || ''
-      }
-    });
-  },
-
-  closeSessionEditor() {
-    this.setData({
-      showSessionEditor: false,
-      sessionEditor: {
-        id: '',
-        sessionTitle: '',
-        topic: ''
-      }
-    });
-  },
-
-  onSessionEditorInput(event) {
-    const field = event.currentTarget.dataset.field;
-    this.setData({ [`sessionEditor.${field}`]: event.detail.value });
-  },
-
-  saveSessionEditor() {
-    const editor = this.data.sessionEditor;
-    if (!editor.id) return;
-    Api.updateCourseSession({
-      id: editor.id,
-      sessionTitle: editor.sessionTitle,
-      topic: editor.topic
-    })
-      .then(() => {
-        Notice.toast('课次已更新');
-        this.closeSessionEditor();
-        this.load();
-      })
-      .catch((error) => Notice.alert(error.message || '课次保存失败'));
   }
 });

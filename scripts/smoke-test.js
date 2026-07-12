@@ -290,6 +290,8 @@ async function run() {
   assert(readText('pages/teacher/home/home.js').includes('getTeacherTodos') && readText('pages/teacher/home/home.wxss').includes('todo-card'), 'teacher home should load and style teacher todos');
   assert(readText('pages/teacher/feedback-detail/feedback-detail.wxml').includes('pass-quick-card') && readText('pages/teacher/feedback-detail/feedback-detail.js').includes('confirmPassNow'), 'feedback detail should expose fixed pass confirmation action');
   assert(!readText('pages/teacher/feedback-detail/feedback-detail.js').includes("{ value: 'general'") && !readText('pages/teacher/feedback-detail/feedback-detail.wxml').includes('pass-toggle-area'), 'teacher feedback editor should not expose a pass-confirmation feedback type');
+  assert(!readText('pages/teacher/feedback-students/feedback-students.js').includes("'通关确认'"), 'teacher student selection should default unsupported feedback types to lesson summary');
+  assert(!readText('pages/teacher/courses/courses.js').includes('feedbackType=general') && !readText('pages/teacher/courses/courses.js').includes('goFeedback(event)') && !readText('pages/teacher/courses/courses.js').includes('goLive(event)') && !readText('pages/teacher/courses/courses.js').includes('showSessionEditor') && !readText('pages/teacher/courses/courses.wxml').includes('session-editor'), 'teacher schedule should not retain unused legacy feedback, live, or course-editing routes');
   const researchAdminHtml = readText('research-admin/index.html');
   const researchAdminJs = readText('research-admin/app.js');
   const researchAdminCss = readText('research-admin/styles.css');
