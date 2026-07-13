@@ -49,7 +49,7 @@ Page({
     const phone = String(this.data.phone || '').trim();
     if (!/^1\d{10}$/.test(phone)) {
       Notice.toast('请输入 11 位手机号');
-      return;
+      return Promise.resolve(null);
     }
     this.setData({ logging: true });
     let Api;
@@ -58,9 +58,9 @@ Page({
     } catch (error) {
       Notice.alert(error.message || '登录服务加载失败，请重新编译。');
       this.setData({ logging: false });
-      return;
+      return Promise.resolve(null);
     }
-    Api.getAvailableRoles({ phone })
+    return Api.getAvailableRoles({ phone })
       .then((result) => {
         const roles = result.roles || [];
         if (roles.length === 1) return this.activateRole(phone, roles[0].id);
@@ -73,12 +73,12 @@ Page({
         return null;
       })
       .then((session) => {
-        if (!session) return;
-        this.finishLogin(session);
+        return session ? this.finishLogin(session) : null;
       })
       .catch((error) => {
         Notice.alert(error.message || '登录失败，请确认手机号。');
         this.setData({ logging: false });
+        return null;
       });
   },
 
@@ -92,6 +92,7 @@ Page({
     getApp().setSession(session);
     wx.redirectTo({ url: Guard.roleHome(session.role) });
     this.setData({ logging: false, choosingRole: false, availableRoles: [], selectedRoleId: '' });
+    return session;
   },
 
   selectRole(event) {
@@ -101,13 +102,14 @@ Page({
   confirmRole() {
     const phone = String(this.data.phone || '').trim();
     const roleId = this.data.selectedRoleId;
-    if (!phone || !roleId || this.data.logging) return;
+    if (!phone || !roleId || this.data.logging) return Promise.resolve(null);
     this.setData({ logging: true });
-    this.activateRole(phone, roleId)
+    return this.activateRole(phone, roleId)
       .then((session) => this.finishLogin(session))
       .catch((error) => {
         Notice.alert(error.message || '身份切换失败，请重试。');
         this.setData({ logging: false });
+        return null;
       });
   },
 

@@ -780,6 +780,48 @@ async function run() {
   assert(scopedBootstrap.courses.length > 0 && scopedBootstrap.courses.every((item) => item.grade === '初二' && item.subject === '数学'), 'scoped admin bootstrap should exclude unauthorized course data');
   const fullAdminSession = await Api.loginByPhone({ phone: '13800000003' });
   Api.setSession(fullAdminSession);
+  const loginPagePath = require.resolve('../pages/login/login');
+  const originalPageForLogin = global.Page;
+  const originalWxForLogin = global.wx;
+  const originalGetAppForLogin = global.getApp;
+  let loginPageDefinition;
+  const redirectedLoginUrls = [];
+  let storedLoginSession = null;
+  try {
+    delete require.cache[loginPagePath];
+    global.Page = (definition) => { loginPageDefinition = definition; };
+    global.wx = {
+      redirectTo: ({ url }) => redirectedLoginUrls.push(url),
+      setStorageSync: (key, value) => {
+        if (key === 'session') storedLoginSession = value;
+      },
+      removeStorageSync() {},
+      showToast() {},
+      showModal() {}
+    };
+    global.getApp = () => ({ setSession: (session) => { storedLoginSession = session; } });
+    require('../pages/login/login');
+    const loginPageInstance = {
+      data: { phone: '13800000002', logging: false, choosingRole: false, availableRoles: [], selectedRoleId: '', showDemo: false },
+      setData(update) { this.data = { ...this.data, ...update }; },
+      activateRole: loginPageDefinition.activateRole,
+      finishLogin: loginPageDefinition.finishLogin
+    };
+    const roleSelectionPromise = loginPageDefinition.login.call(loginPageInstance);
+    assert(roleSelectionPromise && typeof roleSelectionPromise.then === 'function', 'login page should return its multi-role selection flow for callers and tests');
+    await roleSelectionPromise;
+    assert(loginPageInstance.data.choosingRole && loginPageInstance.data.availableRoles.length === 2 && !redirectedLoginUrls.length, 'multi-role phone should enter identity selection before routing');
+    loginPageDefinition.selectRole.call(loginPageInstance, { currentTarget: { dataset: { roleId: 'role_admin_scoped_math_001' } } });
+    const roleConfirmPromise = loginPageDefinition.confirmRole.call(loginPageInstance);
+    assert(roleConfirmPromise && typeof roleConfirmPromise.then === 'function', 'role confirmation should return its activation flow for callers and tests');
+    await roleConfirmPromise;
+    assert(storedLoginSession && storedLoginSession.role === 'admin' && storedLoginSession.isScopedAdmin && redirectedLoginUrls[0] === '/pages/admin/home/home', 'selected administrator identity should persist and route to its workspace');
+  } finally {
+    global.Page = originalPageForLogin;
+    global.wx = originalWxForLogin;
+    global.getApp = originalGetAppForLogin;
+    Api.setSession(fullAdminSession);
+  }
   const adminGrants = await Api.getAdminGrants();
   assert(adminGrants.some((item) => item.roleId === 'role_admin_scoped_math_001'), 'super admin should view scoped administrator grants');
   const updatedGrant = await Api.saveAdminGrant({
