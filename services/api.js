@@ -1687,13 +1687,18 @@ const mockApi = {
     if (payload.id && !source) throw makeError('NOT_FOUND', '待修订的资料包不存在。');
     if (source && !canManageMaterial(session, source.grade, source.subject)) throw makeError('NO_PERMISSION', '当前身份不能维护该资料包。');
     if (!source && !canManageMaterial(session, grade, subject)) throw makeError('NO_PERMISSION', '当前身份不能在该年级和学科创建资料包。');
-    const units = Array.isArray(payload.units) ? payload.units : [];
+    const sourceFileId = payload.sourceFileId !== undefined
+      ? payload.sourceFileId || ''
+      : source ? source.sourceFileId || '' : '';
+    if (sourceFileId && !findOptionalFile(sourceFileId)) throw makeError('VALIDATION_ERROR', '原始资料文件不存在。');
+    const units = (Array.isArray(payload.units) ? payload.units : []).map((unit) => ({
+      ...unit,
+      fileId: unit.fileId || sourceFileId
+    }));
     if (!units.length) throw makeError('VALIDATION_ERROR', '资料包至少需要一个题目单元。');
     units.forEach((unit) => {
       if (unit.fileId && !findOptionalFile(unit.fileId)) throw makeError('VALIDATION_ERROR', '题目单元关联的文件不存在。');
     });
-    const sourceFileId = payload.sourceFileId || '';
-    if (sourceFileId && !findOptionalFile(sourceFileId)) throw makeError('VALIDATION_ERROR', '原始资料文件不存在。');
     const unitStore = ensureCollection('materialUnits');
     const packages = ensureCollection('materialPackages');
     const isPublishedRevision = Boolean(source && source.status === 'published');

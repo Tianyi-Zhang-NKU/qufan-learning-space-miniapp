@@ -829,7 +829,8 @@ async function run() {
     ]
   });
   assert(materialDraft.status === 'draft' && materialDraft.version === 1 && materialDraft.units.length === 2 && materialDraft.sourceFile.id === materialSourceFile.id, 'researcher should save a versioned draft material package with its source file');
-  assert(materialDraft.units[1].file.id === materialSourceFile.id && materialDraft.units[1].sourcePageStart === 3 && materialDraft.units[1].sourcePageEnd === 4, 'material units should retain source file and page-range references');
+  assert(materialDraft.units.every((unit) => unit.file.id === materialSourceFile.id), 'material units should inherit their package source file when an individual source is not specified');
+  assert(materialDraft.units[1].sourcePageStart === 3 && materialDraft.units[1].sourcePageEnd === 4, 'material units should retain source page-range references');
   const materialPackageCountBeforeDraftUpdate = Api.__mockDb.materialPackages.length;
   const updatedDraft = await Api.saveMaterialPackage({
     id: materialDraft.id,
@@ -839,7 +840,7 @@ async function run() {
     term: '2026 秋季',
     units: [{ title: '一次函数图像综合题（草稿调整）', unitType: 'group', selectable: true, order: 1 }]
   });
-  assert(updatedDraft.id === materialDraft.id && updatedDraft.status === 'draft' && updatedDraft.version === 1 && updatedDraft.units.length === 1 && Api.__mockDb.materialPackages.length === materialPackageCountBeforeDraftUpdate, 'saving an unpublished draft should update it in place without creating a duplicate version');
+  assert(updatedDraft.id === materialDraft.id && updatedDraft.status === 'draft' && updatedDraft.version === 1 && updatedDraft.units.length === 1 && updatedDraft.sourceFile.id === materialSourceFile.id && Api.__mockDb.materialPackages.length === materialPackageCountBeforeDraftUpdate, 'saving an unpublished draft should update it in place without losing its source file or creating a duplicate version');
   const publishedMaterial = await Api.publishMaterialPackage({ packageId: materialDraft.id });
   assert(publishedMaterial.status === 'published' && publishedMaterial.version === 1, 'researcher should publish a material package version');
   await Api.bindMaterialPackage({ courseId: 'course_math_001', courseSessionId: 'lesson_math_001_01', packageId: materialDraft.id });
