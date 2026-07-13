@@ -9,6 +9,7 @@ Page({
   data: {
     loading: true,
     saving: false,
+    isSuperAdmin: false,
     grants: [],
     phone: '',
     gradeOptions: GRADE_OPTIONS,
@@ -18,7 +19,13 @@ Page({
   },
 
   onShow() {
-    if (!Guard.ensureLogin('admin')) return;
+    const session = Guard.ensureLogin('admin');
+    if (!session) return;
+    if (!session.isSuperAdmin) {
+      wx.redirectTo({ url: Guard.roleHome('admin') });
+      return;
+    }
+    this.setData({ isSuperAdmin: true });
     this.loadGrants();
   },
 

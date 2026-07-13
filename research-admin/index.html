@@ -84,6 +84,18 @@
         <label>学科<select id="packageSubject" required><option value="">请选择</option><option>数学</option><option>英语</option><option>生物</option></select></label>
       </div>
 
+      <section class="source-file-section">
+        <div>
+          <h3>原始资料文件</h3>
+          <p class="muted">关联 Word 或 PDF，题目单元可保留原文件上下文与页码。</p>
+        </div>
+        <label class="source-file-picker" for="sourceFileInput">
+          <span>选择资料文件</span>
+          <input id="sourceFileInput" type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+        </label>
+        <p id="sourceFileName" class="source-file-name">尚未关联原始资料文件</p>
+      </section>
+
       <section class="unit-section">
         <div class="section-row">
           <div><h3>题目单元</h3><p class="muted">长阅读、综合题可作为整道题组保留完整上下文。</p></div>

@@ -112,6 +112,11 @@ async function route(req, res) {
     return;
   }
 
+  if (req.method === 'POST' && path === '/api/research/material-source-files') {
+    send(res, 200, await Api.uploadResearchMaterialSourceFile(body));
+    return;
+  }
+
   if (req.method === 'POST' && path === '/api/research/material-packages/publish') {
     send(res, 200, await Api.publishMaterialPackage(body));
     return;

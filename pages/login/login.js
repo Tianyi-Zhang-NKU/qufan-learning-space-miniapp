@@ -15,6 +15,9 @@ Page({
   data: {
     phone: '',
     logging: false,
+    choosingRole: false,
+    availableRoles: [],
+    selectedRoleId: '',
     showDemo: false,
     demoPhones: [
       { label: '学生/家长', phone: config.demoPhones.student },
@@ -57,16 +60,59 @@ Page({
       this.setData({ logging: false });
       return;
     }
-    Api.loginByPhone({ phone })
+    Api.getAvailableRoles({ phone })
+      .then((result) => {
+        const roles = result.roles || [];
+        if (roles.length === 1) return this.activateRole(phone, roles[0].id);
+        this.setData({
+          logging: false,
+          choosingRole: true,
+          availableRoles: roles,
+          selectedRoleId: roles[0] ? roles[0].id : ''
+        });
+        return null;
+      })
       .then((session) => {
-        getApp().setSession(session);
-        wx.redirectTo({ url: Guard.roleHome(session.role) });
-        this.setData({ logging: false });
+        if (!session) return;
+        this.finishLogin(session);
       })
       .catch((error) => {
         Notice.alert(error.message || '登录失败，请确认手机号。');
         this.setData({ logging: false });
       });
+  },
+
+  activateRole(phone, roleId) {
+    const Api = getApi();
+    return Api.loginByPhone({ phone, roleId })
+      .then(() => Api.selectActiveRole({ roleId }));
+  },
+
+  finishLogin(session) {
+    getApp().setSession(session);
+    wx.redirectTo({ url: Guard.roleHome(session.role) });
+    this.setData({ logging: false, choosingRole: false, availableRoles: [], selectedRoleId: '' });
+  },
+
+  selectRole(event) {
+    this.setData({ selectedRoleId: event.currentTarget.dataset.roleId || '' });
+  },
+
+  confirmRole() {
+    const phone = String(this.data.phone || '').trim();
+    const roleId = this.data.selectedRoleId;
+    if (!phone || !roleId || this.data.logging) return;
+    this.setData({ logging: true });
+    this.activateRole(phone, roleId)
+      .then((session) => this.finishLogin(session))
+      .catch((error) => {
+        Notice.alert(error.message || '身份切换失败，请重试。');
+        this.setData({ logging: false });
+      });
+  },
+
+  backToPhoneLogin() {
+    this.setData({ choosingRole: false, availableRoles: [], selectedRoleId: '', logging: false });
   },
 
   onGetPhoneNumber() {

@@ -115,6 +115,59 @@
   box-shadow: 0 16rpx 34rpx rgba(47, 111, 174, 0.2);
 }
 
+.role-panel {
+  gap: 22rpx;
+}
+
+.role-options {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+}
+
+.role-option {
+  width: 100%;
+  min-height: 112rpx;
+  margin: 0;
+  padding: 20rpx 22rpx;
+  box-sizing: border-box;
+  border: 1rpx solid rgba(16, 34, 74, 0.12);
+  border-radius: 8rpx;
+  text-align: left;
+  color: #10224A;
+  background: #FFFDF6;
+}
+
+.role-option.active {
+  border-color: #2F6FAE;
+  background: #E8EEFF;
+}
+
+.role-option-title,
+.role-option-sub {
+  display: block;
+}
+
+.role-option-title {
+  font-size: 27rpx;
+  font-weight: 750;
+}
+
+.role-option-sub {
+  margin-top: 5rpx;
+  color: #69758B;
+  font-size: 21rpx;
+}
+
+.role-back {
+  min-height: 48rpx;
+  margin: 0;
+  padding: 0;
+  color: #69758B;
+  font-size: 22rpx;
+  background: transparent;
+}
+
 .login-helper {
   margin: 4rpx auto 0;
   max-width: 520rpx;

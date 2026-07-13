@@ -1,7 +1,8 @@
 const state = {
   session: null,
   packages: [],
-  editingPackage: null
+  editingPackage: null,
+  sourceFile: null
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -87,8 +88,15 @@ function refreshUnitIndexes() {
   });
 }
 
+function renderSourceFile() {
+  $('#sourceFileName').textContent = state.sourceFile
+    ? `已关联：${state.sourceFile.name}`
+    : '尚未关联原始资料文件';
+}
+
 function openEditor(materialPackage = null) {
   state.editingPackage = materialPackage;
+  state.sourceFile = materialPackage ? materialPackage.sourceFile || null : null;
   $('#editorTitle').textContent = materialPackage ? `修订 ${materialPackage.title}` : '新建资料包';
   $('#packageTitle').value = materialPackage ? materialPackage.title : '';
   $('#packageTerm').value = materialPackage ? materialPackage.term || '' : '';
@@ -96,12 +104,15 @@ function openEditor(materialPackage = null) {
   $('#packageSubject').value = materialPackage ? materialPackage.subject : '';
   $('#unitList').innerHTML = '';
   (materialPackage && materialPackage.units.length ? materialPackage.units : [{}]).forEach(addUnit);
+  $('#sourceFileInput').value = '';
+  renderSourceFile();
   $('#editorDialog').showModal();
 }
 
 function closeEditor() {
   $('#editorDialog').close();
   state.editingPackage = null;
+  state.sourceFile = null;
 }
 
 function collectPackagePayload() {
@@ -117,8 +128,21 @@ function collectPackagePayload() {
     term: $('#packageTerm').value.trim(),
     grade: $('#packageGrade').value,
     subject: $('#packageSubject').value,
+    sourceFileId: state.sourceFile ? state.sourceFile.id : '',
     units
   };
+}
+
+async function selectSourceFile(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  const sourceFile = await request('/api/research/material-source-files', {
+    method: 'POST',
+    body: JSON.stringify({ fileName: file.name, size: file.size, mimeType: file.type })
+  });
+  state.sourceFile = sourceFile;
+  renderSourceFile();
+  notify('原始资料文件已关联', 'success');
 }
 
 async function saveDraft() {
@@ -144,6 +168,7 @@ async function submitPackage(event) {
     const courseSessionId = $('#bindSessionId').value.trim();
     if (courseId && courseSessionId) {
       await request('/api/research/material-bindings', { method: 'POST', body: JSON.stringify({ courseId, courseSessionId, packageId: materialPackage.id }) });
+      await loadPackages();
       notify('资料包已发布并绑定课次', 'success');
     }
     closeEditor();
@@ -175,6 +200,7 @@ $('#logoutButton').addEventListener('click', async () => {
 $('#newPackageButton').addEventListener('click', () => openEditor());
 $('#closeEditorButton').addEventListener('click', closeEditor);
 $('#addUnitButton').addEventListener('click', () => addUnit());
+$('#sourceFileInput').addEventListener('change', (event) => selectSourceFile(event).catch((error) => notify(error.message || '资料文件关联失败', 'error')));
 $('#saveDraftButton').addEventListener('click', () => saveDraft().catch((error) => notify(error.message, 'error')));
 $('#packageForm').addEventListener('submit', submitPackage);
 ['gradeFilter', 'subjectFilter', 'statusFilter'].forEach((id) => $( `#${id}`).addEventListener('change', () => loadPackages().catch((error) => notify(error.message, 'error'))));

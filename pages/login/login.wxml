@@ -10,7 +10,30 @@
       <text class="login-sub">本讲总结看得见，学习进度不打扰</text>
     </view>
 
-    <view class="qf-card qf-hero login-panel">
+    <view wx:if="{{choosingRole}}" class="qf-card qf-hero login-panel role-panel">
+      <view class="login-card-head">
+        <text class="login-card-title">选择进入身份</text>
+        <text class="login-card-sub">同一手机号可使用不同身份进入对应工作区</text>
+      </view>
+
+      <view class="role-options">
+        <button
+          wx:for="{{availableRoles}}"
+          wx:key="id"
+          class="role-option {{selectedRoleId === item.id ? 'active' : ''}}"
+          data-role-id="{{item.id}}"
+          bindtap="selectRole"
+        >
+          <text class="role-option-title">{{item.label}}</text>
+          <text class="role-option-sub">{{item.nickname || phone}}</text>
+        </button>
+      </view>
+
+      <button class="qf-btn full login-primary" loading="{{logging}}" bindtap="confirmRole">进入所选身份</button>
+      <button class="role-back" disabled="{{logging}}" bindtap="backToPhoneLogin">更换手机号</button>
+    </view>
+
+    <view wx:else class="qf-card qf-hero login-panel">
       <view class="login-card-head">
         <text class="login-card-title">手机号登录</text>
         <text class="login-card-sub">请输入报班时预留的手机号</text>
@@ -31,9 +54,9 @@
       <button class="qf-btn full login-primary" loading="{{logging}}" bindtap="login">登录</button>
     </view>
 
-    <view class="login-helper">登录即代表已阅读并同意平台服务与隐私规则</view>
+    <view wx:if="{{!choosingRole}}" class="login-helper">登录即代表已阅读并同意平台服务与隐私规则</view>
 
-    <view class="login-quick">
+    <view wx:if="{{!choosingRole}}" class="login-quick">
       <button class="quick-login-toggle" bindtap="toggleDemo">{{showDemo ? '收起快速体验' : '快速体验'}}</button>
       <view wx:if="{{showDemo}}" class="quick-login-panel">
         <button

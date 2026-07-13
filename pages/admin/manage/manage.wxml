@@ -52,5 +52,5 @@
     </block>
     <view class="qf-safe-bottom"></view>
   </scroll-view>
-  <qf-role-tabbar role="admin" current="/pages/admin/manage/manage" fixed="{{false}}"></qf-role-tabbar>
+  <qf-role-tabbar role="admin" is-super-admin="{{isSuperAdmin}}" current="/pages/admin/manage/manage" fixed="{{false}}"></qf-role-tabbar>
 </view>

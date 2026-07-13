@@ -791,8 +791,11 @@ function decorateMaterialUnit(item) {
 
 function decorateMaterialPackage(item) {
   if (!item) return null;
+  const sourceFile = item.sourceFileId ? findOptionalFile(item.sourceFileId) : null;
   return {
     ...item,
+    sourceFile: decorateOptionalFile(sourceFile),
+    sourceFileName: sourceFile ? sourceFile.name : '未关联原始资料',
     units: getMaterialUnits(item.id).map(decorateMaterialUnit),
     publishedScopeCount: ensureCollection('materialPublishScopes').filter((scope) => scope.packageId === item.id).length
   };
@@ -1267,6 +1270,12 @@ const mockApi = {
     return delay(decorateOptionalFile(file));
   },
 
+  uploadResearchMaterialSourceFile(payload = {}) {
+    const session = requireRole(['admin', 'researcher']);
+    const file = optionalFilePlaceholder(payload, session, 'researchMaterialSource');
+    return delay(decorateOptionalFile(file));
+  },
+
   uploadFeedbackImage(payload = {}) {
     const session = requireRole(['teacher', 'admin']);
     return delay(decorateMedia(mediaPlaceholder('image', payload, session)));
@@ -1683,27 +1692,47 @@ const mockApi = {
     units.forEach((unit) => {
       if (unit.fileId && !findOptionalFile(unit.fileId)) throw makeError('VALIDATION_ERROR', '题目单元关联的文件不存在。');
     });
-    const packages = ensureCollection('materialPackages');
-    const record = {
-      id: nextId('material_package', packages),
-      familyId: source ? source.familyId || source.id : '',
-      title,
-      grade,
-      subject,
-      term: String(payload.term || '').trim(),
-      lessonTopic: String(payload.lessonTopic || '').trim(),
-      sourceFileId: payload.sourceFileId || '',
-      status: 'draft',
-      version: source ? Number(source.version || 1) + 1 : 1,
-      createdAt: nowLabel(),
-      createdBy: session.identityId,
-      updatedAt: nowLabel(),
-      updatedBy: session.identityId,
-      basedOnPackageId: source ? source.id : ''
-    };
-    if (!record.familyId) record.familyId = record.id;
-    packages.unshift(record);
+    const sourceFileId = payload.sourceFileId || '';
+    if (sourceFileId && !findOptionalFile(sourceFileId)) throw makeError('VALIDATION_ERROR', '原始资料文件不存在。');
     const unitStore = ensureCollection('materialUnits');
+    const packages = ensureCollection('materialPackages');
+    const isPublishedRevision = Boolean(source && source.status === 'published');
+    let record;
+
+    if (source && !isPublishedRevision) {
+      record = source;
+      Object.assign(record, {
+        title,
+        grade,
+        subject,
+        term: String(payload.term || '').trim(),
+        lessonTopic: String(payload.lessonTopic || '').trim(),
+        sourceFileId,
+        updatedAt: nowLabel(),
+        updatedBy: session.identityId
+      });
+      removeFromCollection(unitStore, (unit) => unit.packageId === record.id);
+    } else {
+      record = {
+        id: nextId('material_package', packages),
+        familyId: source ? source.familyId || source.id : '',
+        title,
+        grade,
+        subject,
+        term: String(payload.term || '').trim(),
+        lessonTopic: String(payload.lessonTopic || '').trim(),
+        sourceFileId,
+        status: 'draft',
+        version: source ? Number(source.version || 1) + 1 : 1,
+        createdAt: nowLabel(),
+        createdBy: session.identityId,
+        updatedAt: nowLabel(),
+        updatedBy: session.identityId,
+        basedOnPackageId: source ? source.id : ''
+      };
+      if (!record.familyId) record.familyId = record.id;
+      packages.unshift(record);
+    }
     units.forEach((unit, index) => {
       unitStore.push({
         id: nextId('material_unit', unitStore),
@@ -1719,7 +1748,8 @@ const mockApi = {
         updatedAt: nowLabel()
       });
     });
-    pushAudit(session.identityId, 'save_material_package', 'materialPackage', record.id, `创建 ${record.grade}${record.subject}资料包第 ${record.version} 版`);
+    const action = source && !isPublishedRevision ? '更新' : '创建';
+    pushAudit(session.identityId, 'save_material_package', 'materialPackage', record.id, `${action} ${record.grade}${record.subject}资料包第 ${record.version} 版`);
     return delay(decorateMaterialPackage(record));
   },
 

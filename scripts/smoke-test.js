@@ -62,7 +62,6 @@ function assertPageFiles(appJson) {
     'pages/parent/summary/summary',
     'pages/teacher/home/home',
     'pages/teacher/courses/courses',
-    'pages/teacher/test-upload/test-upload',
     'pages/teacher/feedback-students/feedback-students',
     'pages/teacher/feedback-detail/feedback-detail',
     'pages/admin/home/home',
@@ -197,6 +196,22 @@ async function run() {
   assert(roleTabbarWxml.includes('<image') && roleTabbarWxml.includes('item.icon'), 'role tabbar should render icon images');
   assert(!roleTabbarJs.includes("mark: '+'") && !roleTabbarJs.includes('primary: true'), 'role tabbar should not keep raised plus primary entry');
   assert(!roleTabbarJs.includes('/pages/parent/exercises/exercises'), 'student tabbar should not expose standalone wrong-feedback page');
+  assert(!appJson.pages.includes('pages/teacher/test-upload/test-upload'), 'legacy teacher material-upload page should not be registered');
+  assert(roleTabbarJs.includes('isSuperAdmin') && roleTabbarJs.includes("text: '授权'"), 'admin tabbar should reserve grant management for super administrators');
+  let roleTabbarDefinition;
+  const originalComponent = global.Component;
+  global.Component = (definition) => { roleTabbarDefinition = definition; };
+  require('../components/qf-role-tabbar/qf-role-tabbar');
+  global.Component = originalComponent;
+  const adminTabbarInstance = {
+    data: { role: 'admin', current: '/pages/admin/home/home', isSuperAdmin: false },
+    setData(update) { this.data = { ...this.data, ...update }; }
+  };
+  roleTabbarDefinition.methods.refresh.call(adminTabbarInstance);
+  assert(!adminTabbarInstance.data.list.some((item) => item.url === '/pages/admin/manage/manage'), 'scoped administrator tabbar should not expose grant management');
+  adminTabbarInstance.data.isSuperAdmin = true;
+  roleTabbarDefinition.methods.refresh.call(adminTabbarInstance);
+  assert(adminTabbarInstance.data.list.some((item) => item.url === '/pages/admin/manage/manage'), 'super administrator tabbar should expose grant management');
   assert(roleTabbarJs.includes('/pages/parent/courses/courses') && roleTabbarJs.includes("text: '课表'"), 'student tabbar should expose schedule as a bottom tab');
   assert(roleTabbarJs.includes('/pages/teacher/courses/courses') && roleTabbarJs.includes("text: '课程表'"), 'teacher schedule should be a standalone bottom tab');
   assert(!roleTabbarWxss.includes('.qf-role-tab.primary'), 'role tabbar CSS should use unified item styling');
@@ -265,6 +280,12 @@ async function run() {
   assert(profileWxml.includes('goTeacherCourses') && profileJs.includes('/pages/teacher/courses/courses'), 'profile course cards should route to current teacher course schedule');
   assert(!profileWxml.includes('goCourseDetail') && !profileJs.includes('/pages/course-detail/course-detail'), 'profile should not route to removed course detail page');
   assert(profileWxml.includes('累计通关达成') && profileWxml.includes('totalPassConfirmations') && !profileWxml.includes('累计反馈') && profileJs.includes('course.classConfirmedPasses') && profileJs.includes('totalPassConfirmations'), 'teacher profile should report pass achievements from confirmed passes instead of generic feedback totals');
+  assert(profileWxml.includes('可切换身份') && profileJs.includes('Api.listIdentities') && profileJs.includes('Api.switchIdentity'), 'profile should let a multi-role user view and switch available identities');
+
+  const roleLoginWxml = readText('pages/login/login.wxml');
+  const roleLoginJs = readText('pages/login/login.js');
+  assert(roleLoginWxml.includes('选择进入身份') && roleLoginWxml.includes('availableRoles'), 'login page should render a role-selection state for multi-role phones');
+  assert(roleLoginJs.includes('Api.getAvailableRoles') && roleLoginJs.includes('Api.selectActiveRole'), 'login flow should fetch and activate the selected role');
 
   const teacherHomeJs = readText('pages/teacher/home/home.js');
   const teacherHomeWxml = readText('pages/teacher/home/home.wxml');
@@ -316,7 +337,10 @@ async function run() {
   const researchAdminCss = readText('research-admin/styles.css');
   const serverSource = readText('server/index.js');
   assert(researchAdminHtml.includes('教研资料库') && researchAdminHtml.includes('资料包') && researchAdminHtml.includes('题目单元'), 'research web admin should expose package and material-unit workflows');
+  assert(researchAdminHtml.includes('sourceFileInput') && researchAdminHtml.includes('原始资料文件'), 'research web admin should accept a source PDF or Word file');
   assert(researchAdminJs.includes('/api/research/material-packages') && researchAdminJs.includes('publishMaterialPackage'), 'research web admin should call package list and publish APIs');
+  assert(researchAdminJs.includes('/api/research/material-source-files') && researchAdminJs.includes('sourceFileId'), 'research web admin should persist a source-file reference with each material package');
+  assert(/\/api\/research\/material-bindings[\s\S]*await loadPackages\(\)[\s\S]*资料包已发布并绑定课次/.test(researchAdminJs), 'research admin should refresh package scope counts after a successful binding');
   assert(researchAdminCss.includes('.package-grid') && researchAdminCss.includes('.editor-shell'), 'research web admin should include its dedicated responsive layout');
   assert(serverSource.includes("/research-admin") && serverSource.includes("/api/research/material-packages"), 'local server should host the research web admin and research APIs');
   assert(readText('pages/teacher/feedback-detail/feedback-detail.wxml').includes('wrong-question-card') && readText('pages/teacher/feedback-detail/feedback-detail.js').includes('markStudentWrongQuestions'), 'feedback detail should let teachers mark student wrong questions');
@@ -374,7 +398,6 @@ async function run() {
     ['app.wxss', 'qf-tag'],
     ['components/z-status/z-status.wxss', 'status'],
     ['components/z-chip/z-chip.wxss', 'chip'],
-    ['pages/teacher/test-upload/test-upload.wxss', 'session-tab-status'],
     ['pages/teacher/feedback-detail/feedback-detail.wxss', 'session-tab-status-dot'],
     ['pages/teacher/feedback-detail/feedback-detail.wxss', 'media-tag'],
     ['pages/profile/profile.wxss', 'avatar-badge']
@@ -447,6 +470,7 @@ async function run() {
   assert(typeof Api.saveMaterialPackage === 'function', 'research material save API missing');
   assert(typeof Api.publishMaterialPackage === 'function', 'research material publish API missing');
   assert(typeof Api.bindMaterialPackage === 'function', 'course material binding API missing');
+  assert(typeof Api.uploadResearchMaterialSourceFile === 'function', 'research source-file upload API missing');
   assert(typeof Api.getTeacherPublishedMaterial === 'function', 'teacher published material API missing');
   assert(typeof Api.getAvailableRoles === 'function', 'available roles API missing');
   assert(typeof Api.selectActiveRole === 'function', 'active role selection API missing');
@@ -786,17 +810,34 @@ async function run() {
     units: []
   }), 'VALIDATION_ERROR');
   assert(Api.__mockDb.materialPackages.length === materialPackageCountBeforeInvalidSave, 'invalid material package save should not leave a partial draft');
+  const materialSourceFile = await Api.uploadResearchMaterialSourceFile({
+    fileName: '一次函数教研原稿.docx',
+    size: 2048,
+    tempPath: '/tmp/once-function.docx'
+  });
+  assert(materialSourceFile.ownerType === 'researchMaterialSource' && materialSourceFile.canPreview, 'research source upload should retain a previewable PDF or Word file');
   const materialDraft = await Api.saveMaterialPackage({
     title: '初二数学一次函数资料',
     grade: '初二',
     subject: '数学',
     term: '2026 秋季',
+    sourceFileId: materialSourceFile.id,
     units: [
       { title: '一次函数图像综合题', unitType: 'group', selectable: true, order: 1 },
       { title: '函数解析式计算', unitType: 'standalone', selectable: true, order: 2 }
     ]
   });
-  assert(materialDraft.status === 'draft' && materialDraft.version === 1 && materialDraft.units.length === 2, 'researcher should save a versioned draft material package');
+  assert(materialDraft.status === 'draft' && materialDraft.version === 1 && materialDraft.units.length === 2 && materialDraft.sourceFile.id === materialSourceFile.id, 'researcher should save a versioned draft material package with its source file');
+  const materialPackageCountBeforeDraftUpdate = Api.__mockDb.materialPackages.length;
+  const updatedDraft = await Api.saveMaterialPackage({
+    id: materialDraft.id,
+    title: '初二数学一次函数资料（草稿调整）',
+    grade: '初二',
+    subject: '数学',
+    term: '2026 秋季',
+    units: [{ title: '一次函数图像综合题（草稿调整）', unitType: 'group', selectable: true, order: 1 }]
+  });
+  assert(updatedDraft.id === materialDraft.id && updatedDraft.status === 'draft' && updatedDraft.version === 1 && updatedDraft.units.length === 1 && Api.__mockDb.materialPackages.length === materialPackageCountBeforeDraftUpdate, 'saving an unpublished draft should update it in place without creating a duplicate version');
   const publishedMaterial = await Api.publishMaterialPackage({ packageId: materialDraft.id });
   assert(publishedMaterial.status === 'published' && publishedMaterial.version === 1, 'researcher should publish a material package version');
   await Api.bindMaterialPackage({ courseId: 'course_math_001', courseSessionId: 'lesson_math_001_01', packageId: materialDraft.id });

@@ -47,6 +47,8 @@ Page({
     identitySub: '',
     identityInitial: '',
     identityBadge: '',
+    identities: [],
+    switchingIdentityId: '',
 
     // 教师端专属
     teacherName: '',
@@ -60,14 +62,15 @@ Page({
   onShow() {
     const session = Guard.ensureLogin();
     if (!session) return;
-    Api.getCurrentUserProfile()
-      .then((result) => {
+    Promise.all([Api.getCurrentUserProfile(), Api.listIdentities()])
+      .then(([result, identities]) => {
         const active = result.session || session;
         this.setData({
           session: active,
           profile: result.profile || {},
           roleName: roleName(active.role),
-          ...buildIdentity(active, result.profile || {})
+          ...buildIdentity(active, result.profile || {}),
+          identities: identities || []
         });
 
         // 教师端加载额外数据
@@ -149,6 +152,21 @@ Page({
 
   goMedals() {
     wx.navigateTo({ url: '/pages/parent/medals/medals' });
+  },
+
+  switchIdentity(event) {
+    const identityId = event.currentTarget.dataset.id;
+    if (!identityId || identityId === this.data.session.identityId || this.data.switchingIdentityId) return;
+    this.setData({ switchingIdentityId: identityId });
+    Api.switchIdentity(identityId)
+      .then((session) => {
+        getApp().setSession(session);
+        wx.redirectTo({ url: Guard.roleHome(session.role) });
+      })
+      .catch((error) => {
+        this.setData({ switchingIdentityId: '' });
+        Notice.alert(error.message || '身份切换失败');
+      });
   },
 
   logout() {

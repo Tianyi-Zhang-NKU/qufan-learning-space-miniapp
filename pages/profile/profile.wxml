@@ -89,8 +89,28 @@
       </view>
     </block>
 
+    <block wx:if="{{identities.length > 1}}">
+      <view class="qf-section">可切换身份</view>
+      <view class="qf-card tight identity-switch-list">
+        <button
+          wx:for="{{identities}}"
+          wx:key="id"
+          class="identity-switch-row {{item.active ? 'active' : ''}}"
+          data-id="{{item.id}}"
+          disabled="{{item.active || switchingIdentityId}}"
+          bindtap="switchIdentity"
+        >
+          <view>
+            <text class="identity-switch-title">{{item.roleName}}</text>
+            <text class="identity-switch-sub">{{item.nickname || item.phone}}</text>
+          </view>
+          <text class="identity-switch-state">{{item.active ? '当前使用' : '切换'}}</text>
+        </button>
+      </view>
+    </block>
+
     <button class="qf-btn ghost full profile-logout" bindtap="logout">退出登录</button>
   </scroll-view>
 
-  <qf-role-tabbar role="{{session.role}}" current="/pages/profile/profile" fixed="{{false}}"></qf-role-tabbar>
+  <qf-role-tabbar role="{{session.role}}" is-super-admin="{{session.isSuperAdmin}}" current="/pages/profile/profile" fixed="{{false}}"></qf-role-tabbar>
 </view>
