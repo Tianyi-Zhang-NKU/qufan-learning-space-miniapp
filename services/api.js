@@ -792,11 +792,24 @@ function decorateMaterialUnit(item) {
 function decorateMaterialPackage(item) {
   if (!item) return null;
   const sourceFile = item.sourceFileId ? findOptionalFile(item.sourceFileId) : null;
+  const bindings = ensureCollection('courseMaterialBindings')
+    .filter((binding) => binding.packageId === item.id)
+    .sort((left, right) => String(left.courseId).localeCompare(String(right.courseId)) || String(left.courseSessionId).localeCompare(String(right.courseSessionId)))
+    .map((binding) => {
+      const course = findCourse(binding.courseId);
+      const courseSession = findCourseSession(binding.courseSessionId);
+      return {
+        ...binding,
+        course: course ? { id: course.id, name: course.name, grade: course.grade, subject: course.subject } : null,
+        courseSession: courseSession ? { id: courseSession.id, title: courseSession.title, sessionIndex: courseSession.sessionIndex } : null
+      };
+    });
   return {
     ...item,
     sourceFile: decorateOptionalFile(sourceFile),
     sourceFileName: sourceFile ? sourceFile.name : '未关联原始资料',
     units: getMaterialUnits(item.id).map(decorateMaterialUnit),
+    bindings,
     publishedScopeCount: ensureCollection('materialPublishScopes').filter((scope) => scope.packageId === item.id).length
   };
 }

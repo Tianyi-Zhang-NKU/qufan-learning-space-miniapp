@@ -68,6 +68,9 @@ input:focus, select:focus { outline: 2px solid rgba(47, 111, 174, 0.28); border-
 .source-file-picker { width: fit-content; min-height: 40px; padding: 0 14px; display: inline-flex; align-items: center; color: #FFFFFF; background: #2F6FAE; cursor: pointer; }
 .source-file-picker input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .source-file-name { color: #69758B; font-size: 13px; }
+.binding-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.binding-label, .binding-empty { width: 100%; margin: 0; color: #69758B; font-size: 13px; }
+.binding-chip { padding: 6px 9px; border: 1px solid rgba(16, 34, 74, 0.12); color: #4D5B73; background: #F6F3E8; font-size: 13px; }
 .section-row { align-items: flex-start; justify-content: space-between; gap: 18px; }
 .section-row .muted, .binding-section .muted { margin-bottom: 0; font-size: 13px; }
 .unit-list { display: grid; gap: 10px; margin-top: 16px; }

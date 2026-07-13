@@ -342,6 +342,7 @@ async function run() {
   assert(researchAdminJs.includes('/api/research/material-packages') && researchAdminJs.includes('publishMaterialPackage'), 'research web admin should call package list and publish APIs');
   assert(researchAdminJs.includes('/api/research/material-source-files') && researchAdminJs.includes('sourceFileId') && researchAdminJs.includes('sourcePageStart'), 'research web admin should persist source-file and page-range references with each material package');
   assert(/\/api\/research\/material-bindings[\s\S]*await loadPackages\(\)[\s\S]*资料包已发布并绑定课次/.test(researchAdminJs), 'research admin should refresh package scope counts after a successful binding');
+  assert(researchAdminHtml.includes('currentBindingList') && researchAdminJs.includes('renderExistingBindings') && researchAdminJs.includes('materialPackage.bindings'), 'research editor should render existing parallel-class bindings when reopening a material package');
   assert(researchAdminCss.includes('.package-grid') && researchAdminCss.includes('.editor-shell'), 'research web admin should include its dedicated responsive layout');
   assert(serverSource.includes("/research-admin") && serverSource.includes("/api/research/material-packages"), 'local server should host the research web admin and research APIs');
   assert(readText('pages/teacher/feedback-detail/feedback-detail.wxml').includes('wrong-question-card') && readText('pages/teacher/feedback-detail/feedback-detail.js').includes('markStudentWrongQuestions'), 'feedback detail should let teachers mark student wrong questions');
@@ -845,6 +846,9 @@ async function run() {
   const phoneGrantedStatistics = await Api.getPassStatistics({});
   assert(phoneGrantedStatistics.courses.every((item) => item.grade === '初一' && item.subject === '英语'), 'phone-granted administrator should only read its assigned scope');
   Api.setSession(fullAdminSession);
+  const existingResearchPackages = await Api.getResearchMaterialPackages({});
+  const seededBiologyPackage = existingResearchPackages.packages.find((item) => item.id === 'material_package_bio_cell_v1');
+  assert(seededBiologyPackage.bindings.length === 2 && seededBiologyPackage.bindings.every((binding) => binding.course.id && binding.courseSession.id), 'published material packages should expose their parallel-class course-session bindings for editor prefill');
   const materialPackageCountBeforeInvalidSave = Api.__mockDb.materialPackages.length;
   await expectReject(Api.saveMaterialPackage({
     title: '空资料包',

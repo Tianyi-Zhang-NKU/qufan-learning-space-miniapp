@@ -97,6 +97,20 @@ function renderSourceFile() {
     : '尚未关联原始资料文件';
 }
 
+function renderExistingBindings(materialPackage = null) {
+  const bindings = materialPackage && Array.isArray(materialPackage.bindings) ? materialPackage.bindings : [];
+  const bindingList = $('#currentBindingList');
+  if (!bindings.length) {
+    bindingList.innerHTML = '<p class="binding-empty">当前版本尚未绑定课次。</p>';
+    return;
+  }
+  bindingList.innerHTML = `<p class="binding-label">当前已发布版本已绑定课次</p>${bindings.map((binding) => {
+    const course = binding.course || {};
+    const courseSession = binding.courseSession || {};
+    return `<span class="binding-chip">${escapeHtml(course.name || binding.courseId)} · ${escapeHtml(courseSession.title || binding.courseSessionId)}</span>`;
+  }).join('')}`;
+}
+
 function openEditor(materialPackage = null) {
   state.editingPackage = materialPackage;
   state.sourceFile = materialPackage ? materialPackage.sourceFile || null : null;
@@ -109,6 +123,7 @@ function openEditor(materialPackage = null) {
   (materialPackage && materialPackage.units.length ? materialPackage.units : [{}]).forEach(addUnit);
   $('#sourceFileInput').value = '';
   renderSourceFile();
+  renderExistingBindings(materialPackage);
   $('#editorDialog').showModal();
 }
 
