@@ -338,8 +338,9 @@ async function run() {
   const serverSource = readText('server/index.js');
   assert(researchAdminHtml.includes('教研资料库') && researchAdminHtml.includes('资料包') && researchAdminHtml.includes('题目单元'), 'research web admin should expose package and material-unit workflows');
   assert(researchAdminHtml.includes('sourceFileInput') && researchAdminHtml.includes('原始资料文件'), 'research web admin should accept a source PDF or Word file');
+  assert(researchAdminHtml.includes('source-page-start') && researchAdminHtml.includes('source-page-end'), 'research web admin should capture source page ranges for material units');
   assert(researchAdminJs.includes('/api/research/material-packages') && researchAdminJs.includes('publishMaterialPackage'), 'research web admin should call package list and publish APIs');
-  assert(researchAdminJs.includes('/api/research/material-source-files') && researchAdminJs.includes('sourceFileId'), 'research web admin should persist a source-file reference with each material package');
+  assert(researchAdminJs.includes('/api/research/material-source-files') && researchAdminJs.includes('sourceFileId') && researchAdminJs.includes('sourcePageStart'), 'research web admin should persist source-file and page-range references with each material package');
   assert(/\/api\/research\/material-bindings[\s\S]*await loadPackages\(\)[\s\S]*资料包已发布并绑定课次/.test(researchAdminJs), 'research admin should refresh package scope counts after a successful binding');
   assert(researchAdminCss.includes('.package-grid') && researchAdminCss.includes('.editor-shell'), 'research web admin should include its dedicated responsive layout');
   assert(serverSource.includes("/research-admin") && serverSource.includes("/api/research/material-packages"), 'local server should host the research web admin and research APIs');
@@ -824,10 +825,11 @@ async function run() {
     sourceFileId: materialSourceFile.id,
     units: [
       { title: '一次函数图像综合题', unitType: 'group', selectable: true, order: 1 },
-      { title: '函数解析式计算', unitType: 'standalone', selectable: true, order: 2 }
+      { title: '函数解析式计算', unitType: 'standalone', selectable: true, order: 2, fileId: materialSourceFile.id, sourcePageStart: 3, sourcePageEnd: 4 }
     ]
   });
   assert(materialDraft.status === 'draft' && materialDraft.version === 1 && materialDraft.units.length === 2 && materialDraft.sourceFile.id === materialSourceFile.id, 'researcher should save a versioned draft material package with its source file');
+  assert(materialDraft.units[1].file.id === materialSourceFile.id && materialDraft.units[1].sourcePageStart === 3 && materialDraft.units[1].sourcePageEnd === 4, 'material units should retain source file and page-range references');
   const materialPackageCountBeforeDraftUpdate = Api.__mockDb.materialPackages.length;
   const updatedDraft = await Api.saveMaterialPackage({
     id: materialDraft.id,

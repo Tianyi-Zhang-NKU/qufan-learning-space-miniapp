@@ -74,6 +74,9 @@ function addUnit(unit = {}) {
   const row = fragment.querySelector('.unit-row');
   row.querySelector('.unit-title').value = unit.title || '';
   row.querySelector('.unit-type').value = unit.unitType || 'standalone';
+  row.querySelector('.source-page-start').value = unit.sourcePageStart || '';
+  row.querySelector('.source-page-end').value = unit.sourcePageEnd || '';
+  row.dataset.fileId = unit.fileId || '';
   row.querySelector('.remove-unit').addEventListener('click', () => {
     row.remove();
     refreshUnitIndexes();
@@ -120,7 +123,10 @@ function collectPackagePayload() {
     title: row.querySelector('.unit-title').value.trim(),
     unitType: row.querySelector('.unit-type').value,
     selectable: true,
-    order: index + 1
+    order: index + 1,
+    fileId: state.sourceFile ? state.sourceFile.id : row.dataset.fileId || '',
+    sourcePageStart: Number(row.querySelector('.source-page-start').value || 0),
+    sourcePageEnd: Number(row.querySelector('.source-page-end').value || 0)
   })).filter((unit) => unit.title);
   return {
     id: state.editingPackage ? state.editingPackage.id : '',

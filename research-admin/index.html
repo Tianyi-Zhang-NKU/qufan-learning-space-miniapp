@@ -124,6 +124,13 @@
       <span class="unit-index"></span>
       <label class="unit-title-field">题目名称<input class="unit-title" required placeholder="例如：函数图像综合题"></label>
       <label>类型<select class="unit-type"><option value="standalone">独立题目</option><option value="group">整道题组</option></select></label>
+      <label class="unit-page-field">页码范围
+        <span class="unit-page-inputs">
+          <input class="source-page-start" type="number" min="1" inputmode="numeric" placeholder="起页">
+          <span>至</span>
+          <input class="source-page-end" type="number" min="1" inputmode="numeric" placeholder="止页">
+        </span>
+      </label>
       <button type="button" class="icon-button remove-unit" title="移除题目单元" aria-label="移除题目单元">×</button>
     </article>
   </template>
